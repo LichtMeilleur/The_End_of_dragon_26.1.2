@@ -1,0 +1,13 @@
+plugins {
+    id 'java-library'
+}
+
+subprojects {
+    version = rootProject.mod_version
+    group = rootProject.mod_group_id
+
+    tasks.withType(JavaCompile).configureEach {
+        options.encoding = 'UTF-8'
+        options.release = 25
+    }
+}

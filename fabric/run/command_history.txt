@@ -1,0 +1,50 @@
+/polluted_place village
+/polluted_place entrance
+/polluted_place start
+/polluted_place network
+/polluted_place two_station
+/polluted_place two_station_underground
+/polluted_place two_station_surface
+/polluted_place two_station
+/polluted_place two_station_middle
+/polluted_place two_station_layout
+/polluted_place side_layout
+/polluted_place station_dungeon_station
+/polluted_place station_unit
+/polluted_place station_dungeon_station
+/polluted_place unit_chain
+/weather clear
+/polluted_place unit_chain
+/polluted_place
+/polluted_place unit_chain
+/time add 1200d
+/time set
+/time set minecraft:day
+/polluted_place unit_chain
+/gamemode survival
+/polluted_place unit_chain
+/gamemode survival
+/gamemode creative
+/polluted_place unit_chain
+/gamemode survival
+/gamemode creative
+/gamemode survival
+/polluted_place unit_chain
+/polluted_place
+/polluted_place unit_chain
+/time set minecraft:day
+/polluted_place unit_chain
+/gamemode survival
+/gamemode creative
+/gamemode survival
+/gamemode creative
+/gamemode survival
+/gamemode creative
+/gamemode survival
+/gamemode creative
+/gamemode survival
+/gamemode creative
+/gamemode survival
+/give Player57 netherite
+/give Player57 minecraft:netherite_axe
+/gamemode spectator

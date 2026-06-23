@@ -1,0 +1,31 @@
+license="All Rights Reserved"
+
+[[mods]]
+modId="the_end_of_dragon
+version="1.0.0"
+displayName="the_end_of_dragon"
+authors="LichtMeilleur"
+description='''
+The end
+'''
+
+[[dependencies.the_end_of_dragon]]
+modId="neoforge"
+type="required"
+versionRange="[26.1.2.42-beta,)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.the_end_of_dragon]]
+modId="minecraft"
+type="required"
+versionRange="[26.1.2]"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.the_end_of_dragon]]
+modId="terrablender"
+type="required"
+versionRange="[0,)"
+ordering="AFTER"
+side="BOTH"
