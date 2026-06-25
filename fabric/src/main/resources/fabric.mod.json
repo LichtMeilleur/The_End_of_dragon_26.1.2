@@ -11,13 +11,10 @@
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"com.licht_meilleur.polluted_world.PollutedWorldFabric"
-		],
-		"terrablender": [
-			"com.licht_meilleur.polluted_world.PollutedWorldTerraBlender"
+			"com.licht_meilleur.the_end_of_dragon.TheEndOfDragonFabric"
 		],
 		"client": [
-			"com.licht_meilleur.polluted_world.client.PollutedWorldClient"
+			"com.licht_meilleur.the_end_of_dragon.client.TheEndOfDragonFabricClient"
 		]
 	},
 	"depends": {

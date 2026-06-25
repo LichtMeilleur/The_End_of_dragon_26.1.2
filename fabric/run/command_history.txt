@@ -1,14 +1,3 @@
-/polluted_place village
-/polluted_place entrance
-/polluted_place start
-/polluted_place network
-/polluted_place two_station
-/polluted_place two_station_underground
-/polluted_place two_station_surface
-/polluted_place two_station
-/polluted_place two_station_middle
-/polluted_place two_station_layout
-/polluted_place side_layout
 /polluted_place station_dungeon_station
 /polluted_place station_unit
 /polluted_place station_dungeon_station
@@ -48,3 +37,14 @@
 /give Player57 netherite
 /give Player57 minecraft:netherite_axe
 /gamemode spectator
+/ted kill_ender_dragon
+/ted kill_ender_dragon]
+/ted kill_ender_dragon
+/ted spawn
+/ted kill_ender_dragon
+/ted bow
+/give @s bow[minecraft:enchantments={levels:{mine"power":255}}]
+/ted bow
+/ted spawn
+/ted
+/ted spawn

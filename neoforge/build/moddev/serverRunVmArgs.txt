@@ -4,7 +4,7 @@
 java.base/java.lang.invoke=ALL-UNNAMED
 --add-exports
 jdk.naming.dns/com.sun.jndi.dns=java.naming
-"-Dlog4j2.configurationFile=J:\\minecraft orgenal mod with GPT\\the_end_of_dragon\\neoforge\\build\\moddev\\serverLog4j2.xml"
+"-Dlog4j2.configurationFile=J:\\minecraft orgenal mod with GPT\\the_end_of_dragon_old\\neoforge\\build\\moddev\\serverLog4j2.xml"
 -Djava.net.preferIPv6Addresses=system
--Dneoforge.enabledGameTestNamespaces=polluted_world
+-Dneoforge.enabledGameTestNamespaces=the_end_of_dragon
 -Dforge.logging.markers=REGISTRIES

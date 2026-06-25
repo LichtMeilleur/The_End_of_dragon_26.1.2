@@ -95,7 +95,8 @@ configurations {
 
 dependencies {
 
-    implementation files("libs/TerraBlender-neoforge-26.1.2-26.1.2.0.2.jar")
+    implementation "curse.maven:geckolib-388172:7913641"
+    localRuntime "curse.maven:geckolib-388172:7913641"
 
 }
 

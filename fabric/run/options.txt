@@ -67,7 +67,7 @@ narratorHotkey:true
 resourcePacks:["vanilla"]
 incompatibleResourcePacks:[]
 lastServer:
-lang:en_ca
+lang:ja_jp
 chatVisibility:0
 chatOpacity:1.0
 chatLineSpacing:0.0
@@ -167,7 +167,6 @@ key_key.debug.profilingChart:key.keyboard.1
 key_key.debug.fpsCharts:key.keyboard.2
 key_key.debug.networkCharts:key.keyboard.3
 key_key.debug.lightmapTexture:key.keyboard.4
-key_key.polluted_world.change_filter:key.keyboard.c
 soundCategory_master:1.0
 soundCategory_music:1.0
 soundCategory_record:1.0
