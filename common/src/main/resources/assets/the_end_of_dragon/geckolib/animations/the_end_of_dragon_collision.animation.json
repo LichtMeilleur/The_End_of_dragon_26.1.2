@@ -1,0 +1,53 @@
+{
+	"format_version": "1.8.0",
+	"animations": {
+		"animation.model.orb_of_annihilation_6tick_start_24tick_fire": {
+			"animation_length": 1.375
+		},
+		"animation.model.roar_of_obliteration_3tick_start": {
+			"animation_length": 1.5
+		},
+		"animation.model.flames_of_ragnarok": {
+			"animation_length": 5
+		},
+		"animation.model.light_of_destruction_24tick_start": {
+			"animation_length": 1.25
+		},
+		"animation.model.photon_blaster_6tick_start": {
+			"animation_length": 1.5
+		},
+		"animation.model.blaster_tackle_12tick_start": {
+			"animation_length": 1
+		},
+		"animation.model.fly_start_12tick_start": {
+			"animation_length": 1
+		},
+		"animation.model.fly": {
+			"loop": true
+		},
+		"animation.model.fly_shot_6tick_start": {
+			"animation_length": 0.5
+		},
+		"animation.model.fly_left": {
+			"loop": true
+		},
+		"animation.model.fly_right": {
+			"loop": true
+		},
+		"animation.model.fall": {
+			"animation_length": 0.1667
+		},
+		"animation.model.landing": {
+			"animation_length": 0.25
+		},
+		"animation.model.idle": {
+			"loop": true
+		},
+		"animation.model.walk": {
+			"animation_length": 1
+		},
+		"animation.model.super_landing": {
+			"animation_length": 1
+		}
+	}
+}
