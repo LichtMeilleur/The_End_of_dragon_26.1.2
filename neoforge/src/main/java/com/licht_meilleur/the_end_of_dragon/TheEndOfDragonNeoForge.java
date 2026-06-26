@@ -28,6 +28,17 @@ public final class TheEndOfDragonNeoForge {
                 ModEntities.THE_END_OF_DRAGON,
                 TheEndOfDragonEntity.createAttributes().build()
         );
+
+
+        event.put(
+                ModEntities.THE_END_OF_DRAGON_DISPLAY,
+                TheEndOfDragonEntity.createAttributes().build()
+        );
+
+        event.put(
+                ModEntities.THE_END_OF_DRAGON_COLLISION,
+                TheEndOfDragonEntity.createAttributes().build()
+        );
     }
 
     @SubscribeEvent

@@ -1,6 +1,6 @@
 package com.licht_meilleur.the_end_of_dragon.client.hitbox;
 
-import com.licht_meilleur.the_end_of_dragon.entity.TheEndOfDragonEntity;
+import com.licht_meilleur.the_end_of_dragon.entity.OldTheEndOfDragonEntity;
 import com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonPartHitBox;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
@@ -13,7 +13,7 @@ import java.util.List;
 public final class DragonHitBoxPushDebug {
     public static boolean ENABLED = true;
 
-    public static void pushPlayer(TheEndOfDragonEntity dragon, List<DragonPartHitBox> boxes) {
+    public static void pushPlayer(OldTheEndOfDragonEntity dragon, List<DragonPartHitBox> boxes) {
         if (!ENABLED) {
             return;
         }
@@ -35,7 +35,7 @@ public final class DragonHitBoxPushDebug {
         }
     }
 
-    private static void pushOut(Entity entity, AABB box, TheEndOfDragonEntity dragon) {
+    private static void pushOut(Entity entity, AABB box, OldTheEndOfDragonEntity dragon) {
         Vec3 entityCenter = entity.getBoundingBox().getCenter();
         Vec3 boxCenter = box.getCenter();
 

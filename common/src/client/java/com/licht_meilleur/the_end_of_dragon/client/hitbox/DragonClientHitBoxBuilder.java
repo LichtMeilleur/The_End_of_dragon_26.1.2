@@ -1,6 +1,6 @@
 package com.licht_meilleur.the_end_of_dragon.client.hitbox;
 
-import com.licht_meilleur.the_end_of_dragon.entity.TheEndOfDragonEntity;
+import com.licht_meilleur.the_end_of_dragon.entity.OldTheEndOfDragonEntity;
 import com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonHitPart;
 import com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonHitParts;
 import com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonPartHitBox;
@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 public final class DragonClientHitBoxBuilder {
-    public static List<DragonPartHitBox> build(TheEndOfDragonEntity dragon) {
+    public static List<DragonPartHitBox> build(OldTheEndOfDragonEntity dragon) {
         Map<String, Vec3> locators = DragonLocatorSnapshot.get(dragon.getUUID());
         List<DragonPartHitBox> result = new ArrayList<>();
 

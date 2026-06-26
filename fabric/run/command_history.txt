@@ -1,40 +1,3 @@
-/polluted_place station_dungeon_station
-/polluted_place station_unit
-/polluted_place station_dungeon_station
-/polluted_place unit_chain
-/weather clear
-/polluted_place unit_chain
-/polluted_place
-/polluted_place unit_chain
-/time add 1200d
-/time set
-/time set minecraft:day
-/polluted_place unit_chain
-/gamemode survival
-/polluted_place unit_chain
-/gamemode survival
-/gamemode creative
-/polluted_place unit_chain
-/gamemode survival
-/gamemode creative
-/gamemode survival
-/polluted_place unit_chain
-/polluted_place
-/polluted_place unit_chain
-/time set minecraft:day
-/polluted_place unit_chain
-/gamemode survival
-/gamemode creative
-/gamemode survival
-/gamemode creative
-/gamemode survival
-/gamemode creative
-/gamemode survival
-/gamemode creative
-/gamemode survival
-/gamemode creative
-/gamemode survival
-/give Player57 netherite
 /give Player57 minecraft:netherite_axe
 /gamemode spectator
 /ted kill_ender_dragon
@@ -48,3 +11,40 @@
 /ted spawn
 /ted
 /ted spawn
+/ted_anim idle
+/ted spawn
+/ted_anim idle
+/ted_anim walk
+/ted_anim idle
+/ted_anim walk
+/ted spawn
+/ted_anim idle
+/ted spawn
+/ted_anim idle
+/ted_anim fly
+/ted_anim walk
+/ted_anim fly
+/ted_anim idle
+/ted_anim fly
+/ted spawn
+/ted_anim idle
+/ted_anim fly
+/ted_anim idle
+/ted_anim fly
+/ted spawn
+/ted_anim idle
+/ted_anim fly
+/ted_anim idle
+/ted_anim fly
+/ted spawn
+/ted_anim walk
+/ted_anim idle
+/ted_anim walk
+/ted spawn
+/ted_anim walk
+/ted spawn
+/ted_anim walk
+/ted_anim fly
+/ted_anim walk
+/ted_anim fly
+/ted_anim idel

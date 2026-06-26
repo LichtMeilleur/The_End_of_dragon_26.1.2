@@ -1,7 +1,7 @@
 package com.licht_meilleur.the_end_of_dragon;
 
 import com.licht_meilleur.the_end_of_dragon.command.TEDDebugCommands;
-import com.licht_meilleur.the_end_of_dragon.entity.TheEndOfDragonEntity;
+import com.licht_meilleur.the_end_of_dragon.entity.TheEndOfDragonCoreEntity;
 import com.licht_meilleur.the_end_of_dragon.registry.ModEntities;
 import com.licht_meilleur.the_end_of_dragon.world.EndDragonSpawnHandler;
 import net.fabricmc.api.ModInitializer;
@@ -16,17 +16,24 @@ public final class TheEndOfDragonFabric implements ModInitializer {
     public void onInitialize() {
         TheEndOfDragon.init();
 
+
         FabricDefaultAttributeRegistry.register(
                 ModEntities.THE_END_OF_DRAGON,
-                TheEndOfDragonEntity.createAttributes()
+                TheEndOfDragonCoreEntity.createAttributes().build()
+        );
+
+        FabricDefaultAttributeRegistry.register(
+                ModEntities.THE_END_OF_DRAGON_DISPLAY,
+                TheEndOfDragonCoreEntity.createAttributes().build()
+        );
+
+        FabricDefaultAttributeRegistry.register(
+                ModEntities.THE_END_OF_DRAGON_COLLISION,
+                TheEndOfDragonCoreEntity.createAttributes().build()
         );
 
         ServerEntityCombatEvents.AFTER_KILLED_OTHER_ENTITY.register((level, entity, killedEntity, damageSource) -> {
-            if (!(level instanceof ServerLevel serverLevel)) {
-                return;
-            }
-
-            if (killedEntity instanceof EnderDragon dragon) {
+            if (level instanceof ServerLevel serverLevel && killedEntity instanceof EnderDragon dragon) {
                 EndDragonSpawnHandler.spawn(serverLevel, dragon.position());
             }
         });
@@ -34,7 +41,5 @@ public final class TheEndOfDragonFabric implements ModInitializer {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             TEDDebugCommands.register(dispatcher);
         });
-
-
     }
 }
