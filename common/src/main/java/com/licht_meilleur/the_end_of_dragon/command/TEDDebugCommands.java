@@ -2,6 +2,9 @@ package com.licht_meilleur.the_end_of_dragon.command;
 
 import com.licht_meilleur.the_end_of_dragon.entity.DragonState;
 import com.licht_meilleur.the_end_of_dragon.entity.TheEndOfDragonCoreEntity;
+import com.licht_meilleur.the_end_of_dragon.entity.vfx.TedVfxEntity;
+import com.licht_meilleur.the_end_of_dragon.entity.vfx.TedVfxType;
+import com.licht_meilleur.the_end_of_dragon.registry.ModEntities;
 import com.licht_meilleur.the_end_of_dragon.registry.ModItems;
 import com.licht_meilleur.the_end_of_dragon.world.EndDragonSpawnHandler;
 import com.mojang.brigadier.CommandDispatcher;
@@ -73,6 +76,8 @@ public final class TEDDebugCommands {
                                     return 1;
                                 })
                         )
+
+
         );
 
         dispatcher.register(
@@ -170,6 +175,126 @@ public final class TEDDebugCommands {
                                 })
                         )
         );
+
+        dispatcher.register(
+                Commands.literal("ted_debug")
+
+                        .then(Commands.literal("yaw")
+                                .then(Commands.argument("yaw", com.mojang.brigadier.arguments.FloatArgumentType.floatArg())
+                                        .executes(ctx -> {
+                                            float yaw = com.mojang.brigadier.arguments.FloatArgumentType.getFloat(ctx, "yaw");
+
+                                            var source = ctx.getSource();
+                                            var player = source.getPlayerOrException();
+                                            var level = player.level();
+
+                                            var dragons = level.getEntitiesOfClass(
+                                                    TheEndOfDragonCoreEntity.class,
+                                                    player.getBoundingBox().inflate(128.0D)
+                                            );
+
+                                            for (TheEndOfDragonCoreEntity dragon : dragons) {
+                                                dragon.snapTo(
+                                                        dragon.getX(),
+                                                        dragon.getY(),
+                                                        dragon.getZ(),
+                                                        yaw,
+                                                        dragon.getXRot()
+                                                );
+
+                                                dragon.setYBodyRot(yaw);
+                                                dragon.setYHeadRot(yaw);
+                                                dragon.yRotO = yaw;
+                                                dragon.yBodyRotO = yaw;
+                                                dragon.yHeadRotO = yaw;
+                                            }
+
+                                            source.sendSuccess(
+                                                    () -> Component.literal("[TED] yaw set: " + yaw + " count=" + dragons.size()),
+                                                    false
+                                            );
+
+                                            return dragons.size();
+                                        })
+                                )
+                        )
+
+                        .then(Commands.literal("tp_here")
+                                .executes(ctx -> {
+                                    var source = ctx.getSource();
+                                    var player = source.getPlayerOrException();
+                                    var level = player.level();
+
+                                    var dragons = level.getEntitiesOfClass(
+                                            TheEndOfDragonCoreEntity.class,
+                                            player.getBoundingBox().inflate(128.0D)
+                                    );
+
+                                    for (TheEndOfDragonCoreEntity dragon : dragons) {
+                                        dragon.snapTo(
+                                                player.getX(),
+                                                player.getY(),
+                                                player.getZ(),
+                                                dragon.getYRot(),
+                                                dragon.getXRot()
+                                        );
+                                    }
+
+                                    source.sendSuccess(
+                                            () -> Component.literal("[TED] teleported count=" + dragons.size()),
+                                            false
+                                    );
+
+                                    return dragons.size();
+                                })
+                        )
+
+                        .then(Commands.literal("vfx")
+                                .then(Commands.argument("type", StringArgumentType.word())
+                                        .executes(context -> {
+                                            var source = context.getSource();
+                                            var player = source.getPlayerOrException();
+                                            var level = player.level();
+
+                                            String key = StringArgumentType.getString(context, "type");
+
+                                            TedVfxType type = switch (key) {
+                                                case "orb" -> TedVfxType.ORB_OF_ANIHILATION;
+                                                case "laser" -> TedVfxType.TED_LASER_BEAM;
+                                                case "jet" -> TedVfxType.TED_JET;
+                                                case "light" -> TedVfxType.LIGHT_OF_DESTRUCTION;
+                                                default -> TedVfxType.LIGHT_PROJECTILE;
+                                            };
+
+                                            TedVfxEntity vfx = new TedVfxEntity(
+                                                    ModEntities.TED_VFX,
+                                                    level
+                                            );
+
+                                            vfx.setup(type, 2.0F, 8.0F, 200);
+
+                                            vfx.snapTo(
+                                                    player.getX(),
+                                                    player.getY() + 1.5D,
+                                                    player.getZ(),
+                                                    player.getYRot(),
+                                                    player.getXRot()
+                                            );
+
+                                            level.addFreshEntity(vfx);
+
+                                            source.sendSuccess(
+                                                    () -> Component.literal("[TED] spawned vfx: " + type.id),
+                                                    false
+                                            );
+
+                                            return 1;
+                                        })
+                                )
+                        )
+        );
+
+
 
     }
 

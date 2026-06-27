@@ -4,6 +4,7 @@ import com.licht_meilleur.the_end_of_dragon.TheEndOfDragon;
 import com.licht_meilleur.the_end_of_dragon.entity.TheEndOfDragonCollisionEntity;
 import com.licht_meilleur.the_end_of_dragon.entity.TheEndOfDragonCoreEntity;
 import com.licht_meilleur.the_end_of_dragon.entity.TheEndOfDragonDisplayEntity;
+import com.licht_meilleur.the_end_of_dragon.entity.vfx.TedVfxEntity;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -77,7 +78,23 @@ public final class ModEntities {
                             .build(THE_END_OF_DRAGON_COLLISION_KEY)
             );
 
+    public static final ResourceKey<EntityType<?>> TED_VFX_KEY =
+            ResourceKey.create(
+                    Registries.ENTITY_TYPE,
+                    TheEndOfDragon.id("ted_vfx")
+            );
 
+    public static final EntityType<TedVfxEntity> TED_VFX =
+            Registry.register(
+                    BuiltInRegistries.ENTITY_TYPE,
+                    TED_VFX_KEY.identifier(),
+                    EntityType.Builder.<TedVfxEntity>of(TedVfxEntity::new, MobCategory.MISC)
+                            .sized(1.0F, 1.0F)
+                            .clientTrackingRange(128)
+                            .updateInterval(1)
+                            .noSave()
+                            .build(TED_VFX_KEY)
+            );
 
 
     public static void init() {

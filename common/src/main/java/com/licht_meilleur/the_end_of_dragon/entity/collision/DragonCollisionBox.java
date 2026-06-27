@@ -5,10 +5,8 @@ import net.minecraft.world.phys.Vec3;
 
 public record DragonCollisionBox(
         DragonCollisionPart part,
-        AABB aabb,
-        Vec3[] points
+        AABB box,
+        Vec3[] points,
+        DragonOBB obb
 ) {
-    public AABB box() {
-        return aabb;
-    }
 }

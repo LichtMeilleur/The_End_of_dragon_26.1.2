@@ -1,41 +1,3 @@
-/give Player57 minecraft:netherite_axe
-/gamemode spectator
-/ted kill_ender_dragon
-/ted kill_ender_dragon]
-/ted kill_ender_dragon
-/ted spawn
-/ted kill_ender_dragon
-/ted bow
-/give @s bow[minecraft:enchantments={levels:{mine"power":255}}]
-/ted bow
-/ted spawn
-/ted
-/ted spawn
-/ted_anim idle
-/ted spawn
-/ted_anim idle
-/ted_anim walk
-/ted_anim idle
-/ted_anim walk
-/ted spawn
-/ted_anim idle
-/ted spawn
-/ted_anim idle
-/ted_anim fly
-/ted_anim walk
-/ted_anim fly
-/ted_anim idle
-/ted_anim fly
-/ted spawn
-/ted_anim idle
-/ted_anim fly
-/ted_anim idle
-/ted_anim fly
-/ted spawn
-/ted_anim idle
-/ted_anim fly
-/ted_anim idle
-/ted_anim fly
 /ted spawn
 /ted_anim walk
 /ted_anim idle
@@ -48,3 +10,41 @@
 /ted_anim walk
 /ted_anim fly
 /ted_anim idel
+/ted spawn
+/ted_anim fly
+/ted_anim walk
+/ted spawn
+/ted_debug tp_here
+/ted_debug yaw 90
+/ted_debug yaw 180
+/ted_debug yaw 90
+/ted_debug yaw 180
+/ted_debug yaw 270
+/ted_debug yaw 360
+/ted_debug yaw 0
+/ted_debug yaw 90
+/ted_debug yaw 270
+/ted_debug yaw 0
+/ted_anim fly
+/ted_debug tp_here
+/ted_debug vfx light_projectile
+/ted_debug vfx orb
+/ted_anim orb
+/ted spawn
+/ted_anim orb
+/ted_anim roar
+/ted_anim idle
+/ted_anim fly
+/ted_anim photon
+/ted_anim light
+/ted_anim flames
+/ted_anim fly_shot
+/ted_anim orb
+/ted_anim idle
+/ted_anim orb
+/ted_anim fly
+/ted_anim flames
+/ted_anim fly
+/ted_anim flames
+/ted_anim photon
+/ted_anim fly

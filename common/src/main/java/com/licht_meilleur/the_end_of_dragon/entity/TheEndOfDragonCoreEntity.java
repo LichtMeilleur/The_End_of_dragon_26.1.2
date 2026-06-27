@@ -1,5 +1,8 @@
 package com.licht_meilleur.the_end_of_dragon.entity;
 
+import com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonLocatorSampler;
+import com.licht_meilleur.the_end_of_dragon.entity.vfx.TedVfxSpawner;
+import com.licht_meilleur.the_end_of_dragon.entity.vfx.TedVfxType;
 import com.licht_meilleur.the_end_of_dragon.registry.ModEntities;
 import com.licht_meilleur.the_end_of_dragon.world.EndPortalSealHandler;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -12,6 +15,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 
 public class TheEndOfDragonCoreEntity extends Monster {
     private static final EntityDataAccessor<Integer> DATA_STATE =
@@ -27,6 +31,15 @@ public class TheEndOfDragonCoreEntity extends Monster {
         this.setInvisible(true);
         this.noPhysics = true;
         this.setNoGravity(true);
+
+        float yaw = 0.0F;
+
+        this.setYRot(yaw);
+        this.setYBodyRot(yaw);
+        this.setYHeadRot(yaw);
+        this.yRotO = yaw;
+        this.yBodyRotO = yaw;
+        this.yHeadRotO = yaw;
     }
 
     @Override
@@ -67,8 +80,12 @@ public class TheEndOfDragonCoreEntity extends Monster {
         this.noPhysics = true;
         this.setNoGravity(true);
 
+
+
         if (!this.level().isClientSide()) {
             this.tickChildren();
+            this.tickAttackVfx();
+            this.tickAttackStateTimeout();
         }
     }
 
@@ -170,5 +187,201 @@ public class TheEndOfDragonCoreEntity extends Monster {
                 .add(Attributes.FOLLOW_RANGE, 128.0D)
                 .add(Attributes.MOVEMENT_SPEED, 0.35D)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 1.0D);
+    }
+
+    private void tickAttackVfx() {
+        if (!(this.level() instanceof net.minecraft.server.level.ServerLevel serverLevel)) {
+            return;
+        }
+
+        int age = this.getDragonStateAgeTicks();
+
+        switch (this.getDragonState()) {
+            case ORB_OF_ANNIHILATION -> {
+                if (age == 1) {
+                    com.licht_meilleur.the_end_of_dragon.entity.vfx.TedVfxSpawner.spawnForwardFromLocator(
+                            serverLevel,
+                            this,
+                            com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonLocators.CHEST_CRYSTAL,
+                            3.0D,
+                            com.licht_meilleur.the_end_of_dragon.entity.vfx.TedVfxType.ORB_OF_ANIHILATION,
+                            1.5F,
+                            1.0F,
+                            80
+                    );
+                }
+            }
+
+            case PHOTON_BLASTER -> {
+                if (age == 1) {
+                    spawnLaser(serverLevel, com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonLocators.MOUTH);
+
+                    spawnLaser(serverLevel, com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonLocators.FRONT_LEFT_JET);
+                    spawnLaser(serverLevel, com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonLocators.FRONT_RIGHT_JET);
+                    spawnLaser(serverLevel, com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonLocators.BACK_LEFT_JET);
+                    spawnLaser(serverLevel, com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonLocators.BACK_RIGHT_JET);
+                }
+            }
+
+            case FLAMES_OF_RAGNAROK -> {
+
+
+                // レーザー部分
+                if (age == 120) {
+                    spawnLaser(serverLevel, com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonLocators.FRONT_LEFT_JET);
+                    spawnLaser(serverLevel, com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonLocators.FRONT_RIGHT_JET);
+                    spawnLaser(serverLevel, com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonLocators.BACK_LEFT_JET);
+                    spawnLaser(serverLevel, com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonLocators.BACK_RIGHT_JET);
+                }
+            }
+
+            case LIGHT_OF_DESTRUCTION -> {
+                if (age == 1) {
+                    com.licht_meilleur.the_end_of_dragon.entity.vfx.TedVfxSpawner.spawnAtLocator(
+                            serverLevel,
+                            this,
+                            com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonLocators.CHEST_CRYSTAL,
+                            com.licht_meilleur.the_end_of_dragon.entity.vfx.TedVfxType.LIGHT_OF_DESTRUCTION,
+                            2.0F,
+                            1.0F,
+                            60
+                    );
+                }
+            }
+
+            case FLY_SHOT -> {
+                // ジェットは攻撃中ずっと短寿命VFXを出し続ける
+                if (age % 2 == 0) {
+                    spawnJet(serverLevel, com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonLocators.FRONT_LEFT_JET);
+                    spawnJet(serverLevel, com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonLocators.FRONT_RIGHT_JET);
+                    spawnJet(serverLevel, com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonLocators.BACK_LEFT_JET);
+                    spawnJet(serverLevel, com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonLocators.BACK_RIGHT_JET);
+                }
+
+
+
+                if (age % 12 == 1) {
+                    com.licht_meilleur.the_end_of_dragon.entity.vfx.TedVfxSpawner.spawnForwardFromLocator(
+                            serverLevel,
+                            this,
+                            com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonLocators.MOUTH,
+                            2.0D,
+                            com.licht_meilleur.the_end_of_dragon.entity.vfx.TedVfxType.LIGHT_PROJECTILE,
+                            1.0F,
+                            1.0F,
+                            80
+                    );
+                }
+            }
+
+            case FLY -> {
+                // ジェットは攻撃中ずっと短寿命VFXを出し続ける
+                if (age % 2 == 0) {
+                    spawnJet(serverLevel, com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonLocators.FRONT_LEFT_JET);
+                    spawnJet(serverLevel, com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonLocators.FRONT_RIGHT_JET);
+                    spawnJet(serverLevel, com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonLocators.BACK_LEFT_JET);
+                    spawnJet(serverLevel, com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonLocators.BACK_RIGHT_JET);
+                }
+
+            }
+            case FLY_LEFT -> {
+                // ジェットは攻撃中ずっと短寿命VFXを出し続ける
+                if (age % 2 == 0) {
+                    spawnJet(serverLevel, com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonLocators.FRONT_LEFT_JET);
+                    spawnJet(serverLevel, com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonLocators.FRONT_RIGHT_JET);
+                    spawnJet(serverLevel, com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonLocators.BACK_LEFT_JET);
+                    spawnJet(serverLevel, com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonLocators.BACK_RIGHT_JET);
+                }
+
+            }
+            case FLY_RIGHT -> {
+                // ジェットは攻撃中ずっと短寿命VFXを出し続ける
+                if (age % 2 == 0) {
+                    spawnJet(serverLevel, com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonLocators.FRONT_LEFT_JET);
+                    spawnJet(serverLevel, com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonLocators.FRONT_RIGHT_JET);
+                    spawnJet(serverLevel, com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonLocators.BACK_LEFT_JET);
+                    spawnJet(serverLevel, com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonLocators.BACK_RIGHT_JET);
+                }
+
+            }
+
+            default -> {
+            }
+        }
+    }
+
+    private void spawnLaser(ServerLevel level, String locator) {
+        Vec3 start = DragonLocatorSampler.worldPos(this, locator);
+        Vec3 dir = DragonLocatorSampler.forward(this);
+
+        double maxLength = 64.0D;
+        Vec3 end = start.add(dir.scale(maxLength));
+
+        var hit = level.clip(new net.minecraft.world.level.ClipContext(
+                start,
+                end,
+                net.minecraft.world.level.ClipContext.Block.COLLIDER,
+                net.minecraft.world.level.ClipContext.Fluid.NONE,
+                this
+        ));
+
+        double length = hit.getLocation().distanceTo(start);
+
+        TedVfxSpawner.spawnAt(
+                level,
+                start.add(dir.scale(length * 0.5D)),
+                this.getYRot(),
+                this.getXRot(),
+                TedVfxType.TED_LASER_BEAM,
+                1.0F,
+                (float) length,
+                20
+        );
+    }
+
+    private void spawnJet(net.minecraft.server.level.ServerLevel serverLevel, String locator) {
+        var pos = com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonLocatorSampler.worldPos(this, locator);
+
+        System.out.println("[TED VFX JET] locator=" + locator + " pos=" + pos);
+
+        com.licht_meilleur.the_end_of_dragon.entity.vfx.TedVfxSpawner.spawnAt(
+                serverLevel,
+                pos,
+                this.getYRot(),
+                this.getXRot(),
+                com.licht_meilleur.the_end_of_dragon.entity.vfx.TedVfxType.TED_JET,
+                1.5F,
+                5.0F,
+                20
+        );
+    }
+    private void tickAttackStateTimeout() {
+        int age = this.getDragonStateAgeTicks();
+
+        switch (this.getDragonState()) {
+            case ORB_OF_ANNIHILATION -> {
+                if (age > 33) this.setDragonState(DragonState.IDLE);
+            }
+            case ROAR_OF_OBLITERATION -> {
+                if (age > 36) this.setDragonState(DragonState.IDLE);
+            }
+            case FLAMES_OF_RAGNAROK -> {
+                if (age > 120) this.setDragonState(DragonState.IDLE);
+            }
+            case LIGHT_OF_DESTRUCTION -> {
+                if (age > 30) this.setDragonState(DragonState.IDLE);
+            }
+            case PHOTON_BLASTER -> {
+                if (age > 36) this.setDragonState(DragonState.IDLE);
+            }
+            case BLASTER_TACKLE -> {
+                if (age > 24) this.setDragonState(DragonState.IDLE);
+            }
+            case FLY_SHOT -> {
+                if (age > 12) this.setDragonState(DragonState.FLY);
+            }
+            default -> {
+            }
+        }
     }
 }

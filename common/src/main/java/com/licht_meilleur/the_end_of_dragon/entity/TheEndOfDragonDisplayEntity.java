@@ -8,4 +8,28 @@ public class TheEndOfDragonDisplayEntity extends TheEndOfDragonEntity {
     public TheEndOfDragonDisplayEntity(EntityType<? extends Monster> type, Level level) {
         super(type, level);
     }
+
+    @Override
+    public void tick() {
+        super.tick();
+        syncRotationFromParent();
+    }
+
+    private void syncRotationFromParent() {
+        if (!(this.getVehicle() instanceof TheEndOfDragonCoreEntity parent)) {
+            return;
+        }
+
+        float yaw = parent.getYRot();
+
+        this.setYRot(yaw);
+        this.setYBodyRot(yaw);
+        this.setYHeadRot(yaw);
+
+        this.yRotO = parent.yRotO;
+        this.yBodyRotO = parent.yBodyRotO;
+        this.yHeadRotO = parent.yHeadRotO;
+    }
+
+
 }

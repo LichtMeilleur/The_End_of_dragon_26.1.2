@@ -62,14 +62,17 @@ public final class DragonCollisionSampler {
         List<DragonCollisionBox> result = new ArrayList<>();
 
         for (CubeSpec cube : CUBES.values()) {
+            /*
             if (!cube.boneName.equals(DEBUG_BONE)) {
                 continue;
             }
 
+             */
+
             BoneAnim boneAnim = animation.bones.get(cube.boneName);
             if (boneAnim == null) {
                 if (entity.tickCount % 40 == 0) {
-                    System.out.println("[TED ARM DEBUG] boneAnim not found: " + cube.boneName);
+                    //System.out.println("[TED ARM DEBUG] boneAnim not found: " + cube.boneName);
                 }
                 continue;
             }
@@ -77,14 +80,10 @@ public final class DragonCollisionSampler {
             Vector3f pos = boneAnim.position.sample(time);
             Vector3f rot = boneAnim.rotation.sample(time);
 
-            // アニメ移動・回転後の箱から、実判定用AABBを作る
-            AABB box = makeWorldAabb(entity, cube, pos, rot);
 
-            if (entity.tickCount % 20 == 0) {
-                logBoneDebug(entity, cube, pos, rot, box, time);
-            }
 
-            if (entity.tickCount % 2 == 0) {
+
+            if (entity.tickCount % 2 == 0 && cube.boneName.equals(DEBUG_BONE)) {
                 // アニメ移動・回転後の「箱そのもの」をパーティクルで表示
                 debugDrawAnimatedCube(serverLevel, entity, cube, pos, rot);
 
@@ -112,8 +111,18 @@ public final class DragonCollisionSampler {
 
             Vec3[] points = buildAnimatedCubePoints(entity, cube, pos, rot);
             AABB box = aabbFromPoints(points);
+            DragonOBB obb = DragonOBB.fromPoints(points);
 
-            result.add(new DragonCollisionBox(partFromBone(cube.boneName), box, points));
+            if (entity.tickCount % 20 == 0 && cube.boneName.equals(DEBUG_BONE)) {
+                logBoneDebug(entity, cube, pos, rot, box, time);
+            }
+
+            result.add(new DragonCollisionBox(
+                    partFromBone(cube.boneName),
+                    box,
+                    points,
+                    obb
+            ));
         }
 
         return result;
@@ -135,6 +144,7 @@ public final class DragonCollisionSampler {
         double sizeY = box.maxY - box.minY;
         double sizeZ = box.maxZ - box.minZ;
 
+        /*
         System.out.println(
                 "[TED ARM DEBUG]"
                         + " state=" + entity.getDragonState()
@@ -174,9 +184,14 @@ public final class DragonCollisionSampler {
                         + f(box.maxX) + ", "
                         + f(box.maxY) + ", "
                         + f(box.maxZ) + ")"
+
+
         );
+
+         */
     }
 
+    /*
     private static String v(Vector3f v) {
         return "(" + f(v.x()) + ", " + f(v.y()) + ", " + f(v.z()) + ")";
     }
@@ -184,6 +199,8 @@ public final class DragonCollisionSampler {
     private static String f(double value) {
         return String.format(java.util.Locale.ROOT, "%.3f", value);
     }
+
+     */
 
     private static AABB makeWorldAabb(
             TheEndOfDragonCollisionEntity entity,
@@ -266,12 +283,14 @@ public final class DragonCollisionSampler {
     }
 
     private static Vec3 applyEntityYaw(TheEndOfDragonCollisionEntity entity, Vec3 local) {
-        double yaw = Math.toRadians(-entity.getYRot());
+        // south固定なら、モデル全体を180度回す
+        double yaw = Math.toRadians(-entity.getYRot() + 180);
+
         double cos = Math.cos(yaw);
         double sin = Math.sin(yaw);
 
-        double x = local.x * cos - local.z * sin;
-        double z = local.x * sin + local.z * cos;
+        double x = local.x * cos + local.z * sin;
+        double z = -local.x * sin + local.z * cos;
 
         return new Vec3(
                 entity.getX() + x,
@@ -280,32 +299,7 @@ public final class DragonCollisionSampler {
         );
     }
 
-    private static Vec3 rotateXYZ(Vec3 v, double rx, double ry, double rz) {
-        double x = v.x;
-        double y = v.y;
-        double z = v.z;
 
-        double cosX = Math.cos(rx);
-        double sinX = Math.sin(rx);
-        double y1 = y * cosX - z * sinX;
-        double z1 = y * sinX + z * cosX;
-        y = y1;
-        z = z1;
-
-        double cosY = Math.cos(ry);
-        double sinY = Math.sin(ry);
-        double x1 = x * cosY + z * sinY;
-        z1 = -x * sinY + z * cosY;
-        x = x1;
-        z = z1;
-
-        double cosZ = Math.cos(rz);
-        double sinZ = Math.sin(rz);
-        x1 = x * cosZ - y * sinZ;
-        y1 = x * sinZ + y * cosZ;
-
-        return new Vec3(x1, y1, z);
-    }
 
     private static void load(ServerLevel level) {
         if (loaded) {
@@ -320,7 +314,7 @@ public final class DragonCollisionSampler {
             loadAnimations(level);
 
             loaded = !CUBES.isEmpty() && !ANIMATIONS.isEmpty();
-
+/*
             System.out.println(
                     "[TED COLLISION] load result loaded=" + loaded
                             + " cubes=" + CUBES.size()
@@ -329,9 +323,11 @@ public final class DragonCollisionSampler {
 
             System.out.println("[TED COLLISION] cube keys=" + CUBES.keySet());
             System.out.println("[TED COLLISION] animation keys=" + ANIMATIONS.keySet());
+
+ */
         } catch (Throwable e) {
             loaded = false;
-            System.err.println("[TED COLLISION] failed to load collision resources");
+            //System.err.println("[TED COLLISION] failed to load collision resources");
             e.printStackTrace();
         }
     }
@@ -655,24 +651,24 @@ public final class DragonCollisionSampler {
     ) {
         Vec3 pivot = new Vec3(cube.pivot.x(), cube.pivot.y(), cube.pivot.z());
 
-        // 先に Blockbench/GeckoLib 座標系の Z を Minecraft 側へ合わせる
-        Vec3 p = new Vec3(localPoint.x, localPoint.y, -localPoint.z);
-        Vec3 pv = new Vec3(pivot.x, pivot.y, -pivot.z);
+        Vec3 local = localPoint.subtract(pivot);
 
-        // position も同じ座標系へ変換
-        Vec3 animPos = new Vec3(pos.x(), pos.y(), -pos.z());
-
-        Vec3 local = p.subtract(pv);
-
-        // Z反転したので Y/Z回転の符号を反転して試す
-        local = rotateZYX(
+        local = rotateXYZ(
                 local,
-                Math.toRadians(rotDeg.x()),
-                Math.toRadians(-rotDeg.y()),
+                Math.toRadians(-rotDeg.x()),
+                Math.toRadians(rotDeg.y()),
                 Math.toRadians(-rotDeg.z())
         );
+        // 180度反転テスト：Y軸回り
+        //local = new Vec3(-local.x, local.y, -local.z);
 
-        local = local.add(pv).add(animPos).scale(PIXEL);
+        local = local.add(pivot).add(pos.x(), pos.y(), pos.z());
+
+        local = new Vec3(
+                -local.x,
+                local.y,
+                local.z
+        ).scale(PIXEL);
 
         local = local.add(
                 MODEL_OFFSET_X,
@@ -706,6 +702,35 @@ public final class DragonCollisionSampler {
                     0.0D
             );
         }
+    }
+    private static Vec3 rotateYXZ(Vec3 v, double rx, double ry, double rz) {
+        double x = v.x;
+        double y = v.y;
+        double z = v.z;
+
+        // Y
+        double cos = Math.cos(ry);
+        double sin = Math.sin(ry);
+        double nx = x * cos + z * sin;
+        double nz = -x * sin + z * cos;
+        x = nx;
+        z = nz;
+
+        // X
+        cos = Math.cos(rx);
+        sin = Math.sin(rx);
+        double ny = y * cos - z * sin;
+        nz = y * sin + z * cos;
+        y = ny;
+        z = nz;
+
+        // Z
+        cos = Math.cos(rz);
+        sin = Math.sin(rz);
+        nx = x * cos - y * sin;
+        ny = x * sin + y * cos;
+
+        return new Vec3(nx, ny, z);
     }
 
     private static Vec3 rotateZYX(Vec3 v, double rx, double ry, double rz) {
@@ -741,6 +766,63 @@ public final class DragonCollisionSampler {
         nz = y * sin + z * cos;
 
         return new Vec3(x, ny, nz);
+    }
+
+    private static Vec3 rotateXYZ(Vec3 v, double rx, double ry, double rz) {
+        double x = v.x;
+        double y = v.y;
+        double z = v.z;
+
+        double cosX = Math.cos(rx);
+        double sinX = Math.sin(rx);
+        double y1 = y * cosX - z * sinX;
+        double z1 = y * sinX + z * cosX;
+        y = y1;
+        z = z1;
+
+        double cosY = Math.cos(ry);
+        double sinY = Math.sin(ry);
+        double x1 = x * cosY + z * sinY;
+        z1 = -x * sinY + z * cosY;
+        x = x1;
+        z = z1;
+
+        double cosZ = Math.cos(rz);
+        double sinZ = Math.sin(rz);
+        x1 = x * cosZ - y * sinZ;
+        y1 = x * sinZ + y * cosZ;
+
+        return new Vec3(x1, y1, z);
+    }
+
+    private static Vec3 rotateXZY(Vec3 v, double rx, double ry, double rz) {
+        double x = v.x;
+        double y = v.y;
+        double z = v.z;
+
+        // X
+        double cos = Math.cos(rx);
+        double sin = Math.sin(rx);
+        double ny = y * cos - z * sin;
+        double nz = y * sin + z * cos;
+        y = ny;
+        z = nz;
+
+        // Z
+        cos = Math.cos(rz);
+        sin = Math.sin(rz);
+        double nx = x * cos - y * sin;
+        ny = x * sin + y * cos;
+        x = nx;
+        y = ny;
+
+        // Y
+        cos = Math.cos(ry);
+        sin = Math.sin(ry);
+        nx = x * cos + z * sin;
+        nz = -x * sin + z * cos;
+
+        return new Vec3(nx, y, nz);
     }
 
     private static Vec3[] buildAnimatedCubePoints(

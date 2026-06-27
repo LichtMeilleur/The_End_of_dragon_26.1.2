@@ -30,6 +30,11 @@ public final class TheEndOfDragonFabricClient implements ClientModInitializer {
                 TheEndOfDragonCollisionRenderer::new
         );
 
+        EntityRendererRegistry.register(
+                ModEntities.TED_VFX,
+                com.licht_meilleur.the_end_of_dragon.client.render.TedVfxRenderer::new
+        );
+
 
 
     }

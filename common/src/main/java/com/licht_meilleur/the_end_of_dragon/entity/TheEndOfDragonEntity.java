@@ -53,25 +53,27 @@ public abstract class TheEndOfDragonEntity extends Monster implements GeoEntity 
     }
 
     public void syncFromCore(TheEndOfDragonCoreEntity core) {
-        this.setPos(core.getX(), core.getY(), core.getZ());
-        this.setYRot(core.getYRot());
-        this.setXRot(core.getXRot());
+        float yaw = core.getYRot();
+        float pitch = core.getXRot();
 
-        this.yBodyRot = core.yBodyRot;
-        this.yHeadRot = core.yHeadRot;
+        this.snapTo(
+                core.getX(),
+                core.getY(),
+                core.getZ(),
+                yaw,
+                pitch
+        );
+
+        this.setYBodyRot(yaw);
+        this.setYHeadRot(yaw);
+
         this.yRotO = core.yRotO;
         this.xRotO = core.xRotO;
+        this.yBodyRotO = core.yBodyRotO;
+        this.yHeadRotO = core.yHeadRotO;
+
         this.dragonStateAgeTicks = core.getDragonStateAgeTicks();
-
         this.setDragonState(core.getDragonState());
-
-        if (!this.level().isClientSide() && this.tickCount % 40 == 0) {
-            System.out.println(
-                    "[TED SYNC] " + this.getClass().getSimpleName()
-                            + " id=" + this.getId()
-                            + " state=" + this.getDragonState()
-            );
-        }
     }
 
     public void setDragonState(DragonState state) {

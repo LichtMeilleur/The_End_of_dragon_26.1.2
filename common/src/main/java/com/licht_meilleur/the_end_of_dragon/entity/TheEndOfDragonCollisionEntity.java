@@ -25,6 +25,8 @@ public class TheEndOfDragonCollisionEntity extends TheEndOfDragonEntity {
     public void tick() {
         super.tick();
 
+        syncRotationFromParent();
+
         if (!this.level().isClientSide()) {
             for (DragonCollisionBox collisionBox : this.getCollisionBoxes()) {
                 var players = this.level().getEntitiesOfClass(
@@ -33,13 +35,17 @@ public class TheEndOfDragonCollisionEntity extends TheEndOfDragonEntity {
                 );
 
                 for (var player : players) {
+                    if (!collisionBox.obb().intersects(player.getBoundingBox())) {
+                        continue;
+                    }
+
                     player.hurtServer(
                             (net.minecraft.server.level.ServerLevel) this.level(),
                             this.damageSources().mobAttack(this),
                             1.0F
                     );
 
-                    System.out.println("[TED HIT] part=" + collisionBox.part() + " player=" + player.getName().getString());
+                    //System.out.println("[TED HIT OBB] part=" + collisionBox.part() + " player=" + player.getName().getString());
                 }
             }
         }
@@ -48,6 +54,22 @@ public class TheEndOfDragonCollisionEntity extends TheEndOfDragonEntity {
             this.debugDrawCollisionBoxes();
             this.pushPlayersOutOfCollisionBoxes();
         }
+    }
+
+    private void syncRotationFromParent() {
+        if (!(this.getVehicle() instanceof TheEndOfDragonCoreEntity parent)) {
+            return;
+        }
+
+        float yaw = parent.getYRot();
+
+        this.setYRot(yaw);
+        this.setYBodyRot(yaw);
+        this.setYHeadRot(yaw);
+
+        this.yRotO = parent.yRotO;
+        this.yBodyRotO = parent.yBodyRotO;
+        this.yHeadRotO = parent.yHeadRotO;
     }
 
     public List<DragonCollisionBox> getCollisionBoxes() {
@@ -70,7 +92,7 @@ public class TheEndOfDragonCollisionEntity extends TheEndOfDragonEntity {
             for (var player : players) {
                 AABB playerBox = player.getBoundingBox();
 
-                if (!playerBox.intersects(box)) {
+                if (!collisionBox.obb().intersects(playerBox)) {
                     continue;
                 }
 
@@ -103,7 +125,7 @@ public class TheEndOfDragonCollisionEntity extends TheEndOfDragonEntity {
 
                 player.hurtMarked = true;
 
-                System.out.println("[TED PUSH] part=" + collisionBox.part());
+                //System.out.println("[TED PUSH] part=" + collisionBox.part());
             }
         }
     }
@@ -120,7 +142,7 @@ public class TheEndOfDragonCollisionEntity extends TheEndOfDragonEntity {
         var boxes = this.getCollisionBoxes();
 
         if (this.tickCount % 40 == 0) {
-            System.out.println("[TED COLLISION DEBUG] boxes=" + boxes.size());
+            //System.out.println("[TED COLLISION DEBUG] boxes=" + boxes.size());
         }
 
         for (var collisionBox : boxes) {
