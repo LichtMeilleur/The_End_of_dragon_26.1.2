@@ -1,24 +1,3 @@
-/ted spawn
-/ted_anim walk
-/ted_anim idle
-/ted_anim walk
-/ted spawn
-/ted_anim walk
-/ted spawn
-/ted_anim walk
-/ted_anim fly
-/ted_anim walk
-/ted_anim fly
-/ted_anim idel
-/ted spawn
-/ted_anim fly
-/ted_anim walk
-/ted spawn
-/ted_debug tp_here
-/ted_debug yaw 90
-/ted_debug yaw 180
-/ted_debug yaw 90
-/ted_debug yaw 180
 /ted_debug yaw 270
 /ted_debug yaw 360
 /ted_debug yaw 0
@@ -48,3 +27,24 @@
 /ted_anim flames
 /ted_anim photon
 /ted_anim fly
+/ted_anim flames
+/ted_anim fly
+/ted_anim orb
+/ted_anim fly
+/ted_anim flames
+/ted_anim fly
+/ted_anim jet
+/ted_anim fly
+/ted_anim idle
+/ted_anim fly
+/ted_anim left_fly
+/ted_anim fly_left
+/ted_anim fly_right
+/ted_anim flames
+/ted_anim photon
+/ted_anim flames
+/ted_anim photon
+/ted_anim orb
+/ted_anim photon
+/ted_anim orb
+/ted_anim photon

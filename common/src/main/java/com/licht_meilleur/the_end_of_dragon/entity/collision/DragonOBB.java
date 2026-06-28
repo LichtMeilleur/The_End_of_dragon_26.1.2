@@ -194,4 +194,20 @@ public final class DragonOBB {
     private static double dot(Vec3 a, Vec3 b) {
         return a.x * b.x + a.y * b.y + a.z * b.z;
     }
+
+    public Vec3 axisX() {
+        return this.axisX;
+    }
+
+    public Vec3 axisY() {
+        return this.axisY;
+    }
+
+    public Vec3 axisZ() {
+        return this.axisZ;
+    }
+
+    public Vec3 center() {
+        return this.center;
+    }
 }

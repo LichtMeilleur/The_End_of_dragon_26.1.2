@@ -40,7 +40,11 @@ public class TedVfxRenderer<R extends EntityRenderState & GeoRenderState>
         float l = length != null ? length : 1.0F;
 
         snapshots.ifPresent("root", root -> {
-            if (type == TedVfxType.TED_LASER_BEAM || type == TedVfxType.TED_JET) {
+            if (type == TedVfxType.TED_LASER_BEAM) {
+                root.setScaleX(l); // まずX方向に伸ばす
+                root.setScaleY(s);
+                root.setScaleZ(s);
+            } else if (type == TedVfxType.TED_JET) {
                 root.setScaleX(s);
                 root.setScaleY(s);
                 root.setScaleZ(l);

@@ -17,11 +17,11 @@ import net.minecraft.world.level.Level;
 public abstract class TheEndOfDragonEntity extends Monster implements GeoEntity {
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
-    public static final String ANIM_ORB_OF_ANNIHILATION = "animation.model.orb_of_annihilation_6tick_start_24tick_fire";
+    public static final String ANIM_ORB_OF_ANNIHILATION = "animation.model.orb_of_annihilation_6tick_start_66tick_fire";
     public static final String ANIM_ROAR_OF_OBLITERATION = "animation.model.roar_of_obliteration_3tick_start";
     public static final String ANIM_FLAMES_OF_RAGNAROK = "animation.model.flames_of_ragnarok";
     public static final String ANIM_LIGHT_OF_DESTRUCTION = "animation.model.light_of_destruction_24tick_start";
-    public static final String ANIM_PHOTON_BLASTER = "animation.model.photon_blaster_6tick_start";
+    public static final String ANIM_PHOTON_BLASTER = "animation.model.photon_blaster_31tick_start";
     public static final String ANIM_BLASTER_TACKLE = "animation.model.blaster_tackle_12tick_start";
     public static final String ANIM_FLY_START = "animation.model.fly_start_12tick_start";
     public static final String ANIM_FLY = "animation.model.fly";

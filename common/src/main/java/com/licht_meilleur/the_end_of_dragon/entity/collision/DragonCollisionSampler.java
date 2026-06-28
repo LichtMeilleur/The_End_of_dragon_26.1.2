@@ -483,7 +483,7 @@ public final class DragonCollisionSampler {
         final Map<String, BoneAnim> bones = new HashMap<>();
     }
 
-    private static final class BoneAnim {
+    public static final class BoneAnim {
         Track position = Track.zero();
         Track rotation = Track.zero();
     }
@@ -869,4 +869,6 @@ public final class DragonCollisionSampler {
 
         return new AABB(minX, minY, minZ, maxX, maxY, maxZ);
     }
+
+
 }
