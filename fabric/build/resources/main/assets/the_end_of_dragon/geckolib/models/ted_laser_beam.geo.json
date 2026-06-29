@@ -6,7 +6,7 @@
 				"identifier": "geometry.unknown",
 				"texture_width": 64,
 				"texture_height": 64,
-				"visible_bounds_width": 2,
+				"visible_bounds_width": 3,
 				"visible_bounds_height": 2.5,
 				"visible_bounds_offset": [0, 0.75, 0]
 			},
@@ -16,8 +16,24 @@
 					"pivot": [0, 7, 0]
 				},
 				{
-					"name": "small_laser",
+					"name": "parent_root",
 					"parent": "root",
+					"pivot": [0, 7, 0]
+				},
+				{
+					"name": "local_root",
+					"parent": "parent_root",
+					"pivot": [0, 7, 0],
+					"rotation": [90, 0, 0]
+				},
+				{
+					"name": "effect_root",
+					"parent": "local_root",
+					"pivot": [0, 7, 0]
+				},
+				{
+					"name": "small_laser",
+					"parent": "effect_root",
 					"pivot": [0, 7, 0],
 					"cubes": [
 						{
@@ -36,7 +52,7 @@
 				},
 				{
 					"name": "laser",
-					"parent": "root",
+					"parent": "effect_root",
 					"pivot": [0, 7, 0],
 					"cubes": [
 						{
@@ -55,7 +71,7 @@
 				},
 				{
 					"name": "ring",
-					"parent": "root",
+					"parent": "effect_root",
 					"pivot": [0, 7, 0],
 					"cubes": [
 						{

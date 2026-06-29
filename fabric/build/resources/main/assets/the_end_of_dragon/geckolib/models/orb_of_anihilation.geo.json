@@ -16,8 +16,23 @@
 					"pivot": [0, 0, 0]
 				},
 				{
-					"name": "core",
+					"name": "parent_root",
 					"parent": "root",
+					"pivot": [0, 0, 0]
+				},
+				{
+					"name": "local_root",
+					"parent": "parent_root",
+					"pivot": [0, 0, 0]
+				},
+				{
+					"name": "effect_root",
+					"parent": "local_root",
+					"pivot": [0, 0, 0]
+				},
+				{
+					"name": "core",
+					"parent": "effect_root",
 					"pivot": [0, 7, 0],
 					"cubes": [
 						{
@@ -36,7 +51,7 @@
 				},
 				{
 					"name": "outside1",
-					"parent": "root",
+					"parent": "effect_root",
 					"pivot": [0, 7, 0],
 					"cubes": [
 						{
@@ -55,7 +70,7 @@
 				},
 				{
 					"name": "outeside2",
-					"parent": "root",
+					"parent": "effect_root",
 					"pivot": [0, 7, 0],
 					"cubes": [
 						{
@@ -74,7 +89,7 @@
 				},
 				{
 					"name": "outside3",
-					"parent": "root",
+					"parent": "effect_root",
 					"pivot": [0, 7, 0],
 					"cubes": [
 						{
@@ -93,7 +108,7 @@
 				},
 				{
 					"name": "lighting1",
-					"parent": "root",
+					"parent": "effect_root",
 					"pivot": [-1, 7, 1],
 					"cubes": [
 						{
@@ -156,7 +171,7 @@
 				},
 				{
 					"name": "lighting2",
-					"parent": "root",
+					"parent": "effect_root",
 					"pivot": [-2, 8, 0],
 					"cubes": [
 						{
@@ -219,7 +234,7 @@
 				},
 				{
 					"name": "lighting3",
-					"parent": "root",
+					"parent": "effect_root",
 					"pivot": [0, 9, 1],
 					"cubes": [
 						{

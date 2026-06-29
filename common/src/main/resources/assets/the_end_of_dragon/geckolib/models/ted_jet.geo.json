@@ -13,7 +13,23 @@
 			"bones": [
 				{
 					"name": "root",
-					"pivot": [0, 0, 0],
+					"pivot": [0, 6, 0]
+				},
+				{
+					"name": "parent_root",
+					"parent": "root",
+					"pivot": [0, 6, 0]
+				},
+				{
+					"name": "loacl_root",
+					"parent": "parent_root",
+					"pivot": [0, 6, 0],
+					"rotation": [90, 0, 0]
+				},
+				{
+					"name": "effect_root",
+					"parent": "loacl_root",
+					"pivot": [0, 6, 0],
 					"cubes": [
 						{
 							"origin": [-1, 4, -1],
@@ -31,8 +47,8 @@
 				},
 				{
 					"name": "fire",
-					"parent": "root",
-					"pivot": [0, 6, -6],
+					"parent": "effect_root",
+					"pivot": [0, 6, 0],
 					"cubes": [
 						{
 							"origin": [-6, 0, -6],

@@ -16,8 +16,23 @@
 					"pivot": [0, 0, 0]
 				},
 				{
-					"name": "light",
+					"name": "parent_root",
 					"parent": "root",
+					"pivot": [0, 0, 0]
+				},
+				{
+					"name": "local_root",
+					"parent": "parent_root",
+					"pivot": [0, 0, 0]
+				},
+				{
+					"name": "effect_root",
+					"parent": "local_root",
+					"pivot": [0, 0, 0]
+				},
+				{
+					"name": "light",
+					"parent": "effect_root",
 					"pivot": [0, 1, 0],
 					"cubes": [
 						{

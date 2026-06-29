@@ -4,8 +4,7 @@ import com.licht_meilleur.the_end_of_dragon.entity.collision.DragonCollisionBox;
 import com.licht_meilleur.the_end_of_dragon.entity.collision.DragonCollisionPart;
 import com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonLocatorSampler;
 import com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonLocators;
-import com.licht_meilleur.the_end_of_dragon.entity.vfx.TedVfxSpawner;
-import com.licht_meilleur.the_end_of_dragon.entity.vfx.TedVfxType;
+import com.licht_meilleur.the_end_of_dragon.entity.vfx.*;
 import com.licht_meilleur.the_end_of_dragon.registry.ModEntities;
 import com.licht_meilleur.the_end_of_dragon.world.EndPortalSealHandler;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -13,6 +12,7 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -26,6 +26,11 @@ public class TheEndOfDragonCoreEntity extends Monster {
 
     private int displayEntityId = -1;
     private int collisionEntityId = -1;
+
+    private int frontLeftLaserVfxId = -1;
+    private int frontRightLaserVfxId = -1;
+    private int backLeftLaserVfxId = -1;
+    private int backRightLaserVfxId = -1;
 
     public TheEndOfDragonCoreEntity(EntityType<? extends Monster> type, Level level) {
         super(type, level);
@@ -192,35 +197,7 @@ public class TheEndOfDragonCoreEntity extends Monster {
                 .add(Attributes.KNOCKBACK_RESISTANCE, 1.0D);
     }
 
-    private void debugDrawLaserRay(
-            ServerLevel serverLevel,
-            DragonCollisionPart part,
-            double rightOffset,
-            double upOffset,
-            double forwardOffset,
-            double maxLength
-    ) {
-        DragonCollisionBox box = getCollisionPartBox(part);
-        if (box == null || box.obb() == null) {
-            return;
-        }
 
-        Vec3 center = box.obb().center();
-
-        Vec3 posForward = box.obb().axisZ().normalize().scale(-1.0D);
-        Vec3 up = box.obb().axisY().normalize();
-        Vec3 right = box.obb().axisX().normalize();
-
-        Vec3 start = center
-                .add(right.scale(rightOffset))
-                .add(up.scale(upOffset))
-                .add(posForward.scale(forwardOffset));
-
-        // ここを変えて方向テスト
-        Vec3 dir = box.obb().axisY().normalize().scale(-1.0D);
-
-        drawDebugLine(serverLevel, start, start.add(dir.scale(maxLength)));
-    }
 
     private void drawDebugLine(ServerLevel serverLevel, Vec3 start, Vec3 end) {
         int count = 80;
@@ -253,6 +230,7 @@ public class TheEndOfDragonCoreEntity extends Monster {
                 this,
                 com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonLocators.FRONT_LEFT_JET
         );
+        /*
         //レイキャスト確認
         DragonCollisionBox box = getCollisionPartBox(DragonCollisionPart.FRONT_LEFT_HAND);
         if (box != null && box.obb() != null) {
@@ -264,6 +242,21 @@ public class TheEndOfDragonCoreEntity extends Monster {
                     64.0D
             );
         }
+
+         */
+        // DEBUG: idleでも常時レーザー表示
+        if (this.tickCount % 2 == 0) {
+            updateAttachedVfx(
+                    serverLevel,
+                    TedVfxSpecs.FRONT_LEFT_LASER,
+                    true
+            );
+            updateAttachedVfx(serverLevel, TedVfxSpecs.FRONT_RIGHT_LASER, true);
+            updateAttachedVfx(serverLevel, TedVfxSpecs.BACK_LEFT_LASER, true);
+            updateAttachedVfx(serverLevel, TedVfxSpecs.BACK_RIGHT_LASER, true);
+        }
+
+
 
         int age = this.getDragonStateAgeTicks();
 
@@ -284,23 +277,21 @@ public class TheEndOfDragonCoreEntity extends Monster {
             }
 
             case PHOTON_BLASTER -> {
-                if (age == 1) {
-                    spawnLaserFromMouth(serverLevel, 0.0D, -0.1D, 2.2D, 64.0D);
+                boolean active = age >= 1 && age <= 36;
 
-                    spawnLaserFromPart(serverLevel, DragonCollisionPart.FRONT_LEFT_HAND,  0.0D, 2.0D, -0.0D, 64.0D);
-                    spawnLaserFromPart(serverLevel, DragonCollisionPart.FRONT_RIGHT_HAND, 0.0D, 2.0D, -0.0D, 64.0D);
-                    spawnLaserFromPart(serverLevel, DragonCollisionPart.BACK_LEFT_HAND,   0.0D, 2.0D, -0.8D, 64.0D);
-                    spawnLaserFromPart(serverLevel, DragonCollisionPart.BACK_RIGHT_HAND,  0.0D, 2.0D, -0.0D, 64.0D);
-                }
+                updateAttachedVfx(serverLevel, TedVfxSpecs.FRONT_LEFT_LASER, active);
+                updateAttachedVfx(serverLevel, TedVfxSpecs.FRONT_RIGHT_LASER, active);
+                updateAttachedVfx(serverLevel, TedVfxSpecs.BACK_LEFT_LASER, active);
+                updateAttachedVfx(serverLevel, TedVfxSpecs.BACK_RIGHT_LASER, active);
             }
 
             case FLAMES_OF_RAGNAROK -> {
-                if (age == 1) {
-                    spawnLaserFromPart(serverLevel, DragonCollisionPart.FRONT_LEFT_HAND,  0.0D, 2.0D, -0.0D, 64.0D);
-                    spawnLaserFromPart(serverLevel, DragonCollisionPart.FRONT_RIGHT_HAND, 0.0D, 2.0D, -0.0D, 64.0D);
-                    spawnLaserFromPart(serverLevel, DragonCollisionPart.BACK_LEFT_HAND,   0.0D, 2.0D, -0.8D, 64.0D);
-                    spawnLaserFromPart(serverLevel, DragonCollisionPart.BACK_RIGHT_HAND,  0.0D, 2.0D, -0.0D, 64.0D);
-                }
+                boolean active = age >= 1 && age <= 80;
+
+                updateAttachedVfx(serverLevel, TedVfxSpecs.FRONT_LEFT_LASER, active);
+                updateAttachedVfx(serverLevel, TedVfxSpecs.FRONT_RIGHT_LASER, active);
+                updateAttachedVfx(serverLevel, TedVfxSpecs.BACK_LEFT_LASER, active);
+                updateAttachedVfx(serverLevel, TedVfxSpecs.BACK_RIGHT_LASER, active);
             }
 
             case LIGHT_OF_DESTRUCTION -> {
@@ -374,92 +365,141 @@ public class TheEndOfDragonCoreEntity extends Monster {
             }
 
             default -> {
+                //hideAllLaserVfx(serverLevel);
             }
         }
     }
 
+    private org.joml.Quaternionf quaternionFromBasis(Vec3 right, Vec3 up, Vec3 forward) {
+        Vec3 f = forward.normalize();
 
-    private void spawnLaserFromPart(
-            ServerLevel serverLevel,
-            DragonCollisionPart part,
-            double rightOffset,
-            double upOffset,
-            double forwardOffset,
-            double maxLength
-    ) {
-        DragonCollisionBox box = getCollisionPartBox(part);
-        if (box == null || box.obb() == null) {
-            return;
+        // レーザーモデルは -Z 方向へ伸びる想定
+        Vec3 back = f.scale(-1.0D).normalize();
+
+        Vec3 u = up.normalize();
+        Vec3 r = u.cross(back).normalize();
+        u = back.cross(r).normalize();
+
+        float m00 = (float) r.x;
+        float m01 = (float) u.x;
+        float m02 = (float) back.x;
+
+        float m10 = (float) r.y;
+        float m11 = (float) u.y;
+        float m12 = (float) back.y;
+
+        float m20 = (float) r.z;
+        float m21 = (float) u.z;
+        float m22 = (float) back.z;
+
+        float trace = m00 + m11 + m22;
+
+        float x, y, z, w;
+
+        if (trace > 0.0F) {
+            float s = (float) Math.sqrt(trace + 1.0F) * 2.0F;
+            w = 0.25F * s;
+            x = (m21 - m12) / s;
+            y = (m02 - m20) / s;
+            z = (m10 - m01) / s;
+        } else if (m00 > m11 && m00 > m22) {
+            float s = (float) Math.sqrt(1.0F + m00 - m11 - m22) * 2.0F;
+            w = (m21 - m12) / s;
+            x = 0.25F * s;
+            y = (m01 + m10) / s;
+            z = (m02 + m20) / s;
+        } else if (m11 > m22) {
+            float s = (float) Math.sqrt(1.0F + m11 - m00 - m22) * 2.0F;
+            w = (m02 - m20) / s;
+            x = (m01 + m10) / s;
+            y = 0.25F * s;
+            z = (m12 + m21) / s;
+        } else {
+            float s = (float) Math.sqrt(1.0F + m22 - m00 - m11) * 2.0F;
+            w = (m10 - m01) / s;
+            x = (m02 + m20) / s;
+            y = (m12 + m21) / s;
+            z = 0.25F * s;
         }
 
-        Vec3 center = box.obb().center();
-
-        Vec3 posForward = box.obb().axisZ().normalize().scale(-1.0D);
-        Vec3 renderForward = this.getViewVector(1.0F).normalize();
-        Vec3 up = box.obb().axisY().normalize();
-        Vec3 right = box.obb().axisX().normalize();
-
-        Vec3 start = center
-                .add(right.scale(rightOffset))
-                .add(up.scale(upOffset))
-                .add(posForward.scale(forwardOffset));
-
-        double length = raycastLaserLength(serverLevel, start, renderForward, maxLength);
-
-        float yaw = (float) Math.toDegrees(Math.atan2(-renderForward.x, renderForward.z));
-        float pitch = (float) -Math.toDegrees(Math.asin(renderForward.y));
-
-        TedVfxSpawner.spawnAt(
-                serverLevel,
-                start,
-                yaw,
-                pitch,
-                TedVfxType.TED_LASER_BEAM,
-                1.5F,
-                (float) length,
-                20
-        );
+        return new org.joml.Quaternionf(x, y, z, w).normalize();
     }
 
-    private void spawnLaserFromMouth(
-            ServerLevel serverLevel,
-            double rightOffset,
-            double upOffset,
-            double forwardOffset,
-            double maxLength
+    private Vec3 offsetFromObb(
+            DragonCollisionBox box,
+            Vec3 base,
+            double x,
+            double y,
+            double z
     ) {
-        DragonCollisionBox box = getCollisionPartBox(DragonCollisionPart.HEAD);
-        if (box == null || box.obb() == null) {
-            return;
+        return base
+                .add(box.obb().axisX().normalize().scale(x))
+                .add(box.obb().axisY().normalize().scale(y))
+                .add(box.obb().axisZ().normalize().scale(z));
+    }
+
+    private void hideAllLaserVfx(ServerLevel serverLevel) {
+        updateLaserAttachedToHand(serverLevel, DragonCollisionPart.FRONT_LEFT_HAND, false, 0, 0, 0, 1);
+        updateLaserAttachedToHand(serverLevel, DragonCollisionPart.FRONT_RIGHT_HAND, false, 0, 0, 0, 1);
+        updateLaserAttachedToHand(serverLevel, DragonCollisionPart.BACK_LEFT_HAND, false, 0, 0, 0, 1);
+        updateLaserAttachedToHand(serverLevel, DragonCollisionPart.BACK_RIGHT_HAND, false, 0, 0, 0, 1);
+    }
+
+    private TedVfxEntity getOrCreateLaserVfx(
+            ServerLevel serverLevel,
+            int currentId
+    ) {
+        if (currentId != -1) {
+            Entity entity = this.level().getEntity(currentId);
+            if (entity instanceof TedVfxEntity vfx && vfx.isAlive()) {
+                return vfx;
+            }
         }
 
-        Vec3 center = box.obb().center();
+        TedVfxEntity vfx = ModEntities.TED_VFX.create(serverLevel, EntitySpawnReason.EVENT);
+        if (vfx == null) {
+            return null;
+        }
 
-        Vec3 forward = getFrontLeftLaserForward(box);
-        Vec3 up = new Vec3(0.0D, 1.0D, 0.0D);
-        Vec3 right = up.cross(forward).normalize();
+        vfx.setup(TedVfxType.TED_LASER_BEAM, 1.5F, 0.0F, 999999);
+        vfx.snapTo(this.getX(), this.getY(), this.getZ(), 0.0F, 0.0F);
 
-        Vec3 start = center
-                .add(right.scale(rightOffset))
-                .add(up.scale(upOffset))
-                .add(forward.scale(forwardOffset));
+        vfx.setBasis(new Vec3(0, 0, 1), new Vec3(0, 1, 0));
 
-        double length = raycastLaserLength(serverLevel, start, forward, maxLength);
-
-        float yaw = (float) Math.toDegrees(Math.atan2(-forward.x, forward.z));
-        float pitch = (float) -Math.toDegrees(Math.asin(forward.y));
-
-        TedVfxSpawner.spawnAt(
-                serverLevel,
-                start,
-                yaw,
-                pitch,
-                TedVfxType.TED_LASER_BEAM,
-                1.5F,
-                (float) length,
-                20
-        );
+        serverLevel.addFreshEntity(vfx);
+        return vfx;
     }
+
+    private TedVfxEntity getLaserVfxForPart(ServerLevel serverLevel, DragonCollisionPart part) {
+        TedVfxEntity vfx;
+
+        switch (part) {
+            case FRONT_LEFT_HAND -> {
+                vfx = getOrCreateLaserVfx(serverLevel, frontLeftLaserVfxId);
+                if (vfx != null) frontLeftLaserVfxId = vfx.getId();
+                return vfx;
+            }
+            case FRONT_RIGHT_HAND -> {
+                vfx = getOrCreateLaserVfx(serverLevel, frontRightLaserVfxId);
+                if (vfx != null) frontRightLaserVfxId = vfx.getId();
+                return vfx;
+            }
+            case BACK_LEFT_HAND -> {
+                vfx = getOrCreateLaserVfx(serverLevel, backLeftLaserVfxId);
+                if (vfx != null) backLeftLaserVfxId = vfx.getId();
+                return vfx;
+            }
+            case BACK_RIGHT_HAND -> {
+                vfx = getOrCreateLaserVfx(serverLevel, backRightLaserVfxId);
+                if (vfx != null) backRightLaserVfxId = vfx.getId();
+                return vfx;
+            }
+            default -> {
+                return null;
+            }
+        }
+    }
+
 
     private Vec3 endpointAlongAxis(DragonCollisionBox box, Vec3 axis, boolean maxSide) {
         Vec3 dir = axis.normalize();
@@ -493,50 +533,11 @@ public class TheEndOfDragonCoreEntity extends Monster {
 
 
 
-    private void debugDrawRayFromHandTip(
-            ServerLevel serverLevel,
-            DragonCollisionPart part,
-            Vec3 axis,
-            boolean reverse,
-            double maxLength
-    ) {
-        DragonCollisionBox box = getCollisionPartBox(part);
-        if (box == null || box.obb() == null) return;
 
-        Vec3 root = endpointAlongAxis(box, axis, reverse);
-        Vec3 tip = endpointAlongAxis(box, axis, !reverse);
 
-        Vec3 dir = tip.subtract(root);
-        if (dir.lengthSqr() < 1.0E-6D) return;
 
-        Vec3 forward = getFrontLeftLaserForward(box);
 
-        drawDebugLine(serverLevel, tip, tip.add(forward.scale(maxLength)));
-    }
 
-    private Vec3 getFrontLeftLaserForward(DragonCollisionBox box) {
-        return box.obb().axisY().normalize();
-    }
-
-    private Vec3 rotateDirectionYawPitch(Vec3 dir, double yawDeg, double pitchDeg) {
-        Vec3 forward = dir.normalize();
-        Vec3 worldUp = new Vec3(0.0D, 1.0D, 0.0D);
-        Vec3 right = worldUp.cross(forward).normalize();
-
-        if (right.lengthSqr() < 1.0E-6D) {
-            right = new Vec3(1.0D, 0.0D, 0.0D);
-        }
-
-        // yaw: 水平方向に少し振る
-        double yaw = Math.toRadians(yawDeg);
-        Vec3 yawed = forward.scale(Math.cos(yaw)).add(right.scale(Math.sin(yaw))).normalize();
-
-        // pitch: 上下に少し振る
-        double pitch = Math.toRadians(pitchDeg);
-        Vec3 pitched = yawed.scale(Math.cos(pitch)).add(worldUp.scale(Math.sin(pitch))).normalize();
-
-        return pitched;
-    }
 
     private double raycastLaserLength(
             ServerLevel serverLevel,
@@ -616,46 +617,9 @@ public class TheEndOfDragonCoreEntity extends Monster {
         );
     }
 
-    private Vec3 getCollisionPartCenter(com.licht_meilleur.the_end_of_dragon.entity.collision.DragonCollisionPart part) {
-        TheEndOfDragonCollisionEntity collision =
-                this.getChild(this.collisionEntityId, TheEndOfDragonCollisionEntity.class);
 
-        if (collision == null) {
-            return this.position();
-        }
 
-        for (var box : collision.getCollisionBoxes()) {
-            if (box.part() == part) {
-                var aabb = box.box();
 
-                return new Vec3(
-                        (aabb.minX + aabb.maxX) * 0.5D,
-                        (aabb.minY + aabb.maxY) * 0.5D,
-                        (aabb.minZ + aabb.maxZ) * 0.5D
-                );
-            }
-        }
-
-        return this.position();
-    }
-
-    private Vec3 offsetFromPart(
-            com.licht_meilleur.the_end_of_dragon.entity.collision.DragonCollisionPart part,
-            double rightOffset,
-            double upOffset,
-            double forwardOffset
-    ) {
-        Vec3 center = getCollisionPartCenter(part);
-
-        Vec3 forward = this.getViewVector(1.0F).normalize();
-        Vec3 up = new Vec3(0.0D, 1.0D, 0.0D);
-        Vec3 right = up.cross(forward).normalize();
-
-        return center
-                .add(right.scale(rightOffset))
-                .add(up.scale(upOffset))
-                .add(forward.scale(forwardOffset));
-    }
 
     private DragonCollisionBox getCollisionPartBox(DragonCollisionPart part) {
         TheEndOfDragonCollisionEntity collision =
@@ -704,6 +668,99 @@ public class TheEndOfDragonCoreEntity extends Monster {
             }
             default -> {
             }
+        }
+    }
+    private void updateLaserAttachedToHand(
+            ServerLevel serverLevel,
+            DragonCollisionPart part,
+            boolean active,
+            double offsetX,
+            double offsetY,
+            double offsetZ,
+            double maxLength
+    ) {
+        DragonCollisionBox box = getCollisionPartBox(part);
+        if (box == null || box.obb() == null) {
+            return;
+        }
+
+        TedVfxEntity vfx = getLaserVfxForPart(serverLevel, part);
+        if (vfx == null) {
+            return;
+        }
+
+        if (!active) {
+            vfx.updateVfx(0.0F, 0.0F);
+            return;
+        }
+
+        Vec3 axisX = box.obb().axisX().normalize();
+        Vec3 axisY = box.obb().axisY().normalize();
+        Vec3 axisZ = box.obb().axisZ().normalize();
+
+        Vec3 forward = axisY;
+        Vec3 up = axisZ;
+
+        Vec3 start = box.obb().center()
+                .add(axisX.scale(offsetX))
+                .add(axisY.scale(offsetY))
+                .add(axisZ.scale(offsetZ));
+
+        double length = raycastLaserLength(serverLevel, start, forward, maxLength);
+
+        org.joml.Quaternionf q = quaternionFromBasis(axisX, up, forward);
+
+        vfx.updateVfx(1.5F, (float) length);
+        vfx.setVfxRotationQuat(q);
+        vfx.snapTo(start.x, start.y, start.z, 0.0F, 0.0F);
+    }
+
+
+    private void updateAttachedVfx(
+            ServerLevel serverLevel,
+            TedVfxSpec spec,
+            boolean active
+    ) {
+        DragonCollisionBox box = getCollisionPartBox(spec.part());
+        if (box == null || box.obb() == null) {
+            return;
+        }
+
+        TedVfxEntity vfx = getLaserVfxForPart(serverLevel, spec.part());
+        if (vfx == null) {
+            return;
+        }
+
+        if (!active) {
+            vfx.updateVfx(0.0F, 0.0F);
+            return;
+        }
+
+        Vec3 axisX = box.obb().axisX().normalize();
+        Vec3 axisY = box.obb().axisY().normalize();
+        Vec3 axisZ = box.obb().axisZ().normalize();
+
+        Vec3 pos = box.obb().center()
+                .add(axisX.scale(spec.offsetX()))
+                .add(axisY.scale(spec.offsetY()))
+                .add(axisZ.scale(spec.offsetZ()));
+
+// レイキャスト方向。ここが炎パーティクルと同じ方向になる
+        Vec3 rayDir = axisY.normalize();
+
+        float length = spec.length();
+
+        if (spec.type() == TedVfxType.TED_LASER_BEAM) {
+            length = (float) raycastLaserLength(serverLevel, pos, rayDir, spec.length());
+        }
+
+        vfx.updateVfx(spec.scale(), length);
+        vfx.snapTo(pos.x, pos.y, pos.z, 0.0F, 0.0F);
+
+// 親回転は腕OBBではなく、レイキャスト方向をY軸として作る
+        if (spec.mode() == TedVfxAttachMode.PART_BASIS) {
+            Vec3 upForRoll = axisZ;
+            vfx.setBasis(rayDir, upForRoll);
         }
     }
 }

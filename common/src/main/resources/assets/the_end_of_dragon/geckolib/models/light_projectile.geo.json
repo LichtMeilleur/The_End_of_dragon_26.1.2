@@ -16,8 +16,23 @@
 					"pivot": [0, 0, 0]
 				},
 				{
-					"name": "front_light",
+					"name": "parent_root",
 					"parent": "root",
+					"pivot": [0, 0, 0]
+				},
+				{
+					"name": "local_root",
+					"parent": "parent_root",
+					"pivot": [0, 0, 0]
+				},
+				{
+					"name": "effect_root",
+					"parent": "local_root",
+					"pivot": [0, 0, 0]
+				},
+				{
+					"name": "front_light",
+					"parent": "effect_root",
 					"pivot": [0, 8, 0],
 					"cubes": [
 						{
@@ -36,7 +51,7 @@
 				},
 				{
 					"name": "front_light2",
-					"parent": "root",
+					"parent": "effect_root",
 					"pivot": [0, 8, 0],
 					"cubes": [
 						{
@@ -55,7 +70,7 @@
 				},
 				{
 					"name": "fire",
-					"parent": "root",
+					"parent": "effect_root",
 					"pivot": [0, 8, 0],
 					"cubes": [
 						{
@@ -74,7 +89,7 @@
 				},
 				{
 					"name": "fire2",
-					"parent": "root",
+					"parent": "effect_root",
 					"pivot": [0, 8, 0],
 					"cubes": [
 						{
@@ -93,7 +108,7 @@
 				},
 				{
 					"name": "fire3",
-					"parent": "root",
+					"parent": "effect_root",
 					"pivot": [0, 8, 0],
 					"cubes": [
 						{
@@ -112,7 +127,7 @@
 				},
 				{
 					"name": "front_light3",
-					"parent": "root",
+					"parent": "effect_root",
 					"pivot": [0, 8, 0],
 					"cubes": [
 						{
@@ -133,7 +148,7 @@
 				},
 				{
 					"name": "front_light4",
-					"parent": "root",
+					"parent": "effect_root",
 					"pivot": [0, 8, 0],
 					"cubes": [
 						{

@@ -432,11 +432,11 @@ public final class DragonCollisionSampler {
             case LANDING -> "animation.model.landing";
             case SUPER_LANDING -> "animation.model.super_landing";
 
-            case ORB_OF_ANNIHILATION -> "animation.model.orb_of_annihilation_6tick_start_24tick_fire";
+            case ORB_OF_ANNIHILATION -> "animation.model.orb_of_annihilation_6tick_start_66tick_fire";
             case ROAR_OF_OBLITERATION -> "animation.model.roar_of_obliteration_3tick_start";
             case FLAMES_OF_RAGNAROK -> "animation.model.flames_of_ragnarok";
             case LIGHT_OF_DESTRUCTION -> "animation.model.light_of_destruction_24tick_start";
-            case PHOTON_BLASTER -> "animation.model.photon_blaster_6tick_start";
+            case PHOTON_BLASTER -> "animation.model.photon_blaster_31tick_start";
             case BLASTER_TACKLE -> "animation.model.blaster_tackle_12tick_start";
 
             default -> "animation.model.idle";
