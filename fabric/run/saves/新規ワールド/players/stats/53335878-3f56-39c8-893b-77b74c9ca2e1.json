@@ -1,12 +1,26 @@
 {
   "stats": {
+    "minecraft:used": {
+      "minecraft:golden_apple": 11
+    },
+    "minecraft:killed": {
+      "minecraft:slime": 3
+    },
     "minecraft:custom": {
-      "minecraft:time_since_rest": 318,
-      "minecraft:total_world_time": 404,
-      "minecraft:leave_game": 1,
-      "minecraft:fly_one_cm": 381,
-      "minecraft:play_time": 318,
-      "minecraft:time_since_death": 318
+      "minecraft:time_since_rest": 4155,
+      "minecraft:walk_one_cm": 17868,
+      "minecraft:leave_game": 2,
+      "minecraft:mob_kills": 3,
+      "minecraft:damage_taken": 600,
+      "minecraft:play_time": 4155,
+      "minecraft:damage_dealt": 120,
+      "minecraft:damage_absorbed": 160,
+      "minecraft:jump": 2,
+      "minecraft:time_since_death": 4155,
+      "minecraft:total_world_time": 4259,
+      "minecraft:fly_one_cm": 6353,
+      "minecraft:crouch_one_cm": 73,
+      "minecraft:sneak_time": 8
     }
   },
   "DataVersion": 4790

@@ -1,50 +1,50 @@
-/ted_debug yaw 270
-/ted_debug yaw 360
-/ted_debug yaw 0
-/ted_debug yaw 90
-/ted_debug yaw 270
-/ted_debug yaw 0
 /ted_anim fly
-/ted_debug tp_here
-/ted_debug vfx light_projectile
-/ted_debug vfx orb
-/ted_anim orb
-/ted spawn
-/ted_anim orb
-/ted_anim roar
-/ted_anim idle
-/ted_anim fly
+/ted_anim photon
+/ted_anim flames
+/ted_anim photon
+/ted_anim flames
+/ted_anim photon
+/ted_anim flames
+/ted_anim photon
+/ted_anim flames
 /ted_anim photon
 /ted_anim light
-/ted_anim flames
+/ted_anim photon
 /ted_anim fly_shot
+/ted_anim super_landing
+/ted_anim tackle
+/ted_anim landing
+/ted_anim photon
+/ted_anim flames
+/ted_anim photon
+/ted_anim flames
+/ted_anim orb
+/ted spawn
+/ted_debug tp_here
 /ted_anim orb
 /ted_anim idle
+/ted spawn
+/ted_debug tp_here
+/ted_debug yaw 270
 /ted_anim orb
 /ted_anim fly
-/ted_anim flames
+/ted_debug tp_here
 /ted_anim fly
-/ted_anim flames
-/ted_anim photon
-/ted_anim fly
-/ted_anim flames
-/ted_anim fly
+/ted_debug tp_here
 /ted_anim orb
-/ted_anim fly
-/ted_anim flames
-/ted_anim fly
-/ted_anim jet
-/ted_anim fly
-/ted_anim idle
-/ted_anim fly
-/ted_anim left_fly
-/ted_anim fly_left
-/ted_anim fly_right
-/ted_anim flames
-/ted_anim photon
-/ted_anim flames
-/ted_anim photon
-/ted_anim orb
-/ted_anim photon
-/ted_anim orb
-/ted_anim photon
+/ted_anim fly_shot
+/gamemode survival
+/ted_anim fly_shot
+/gamemode creative
+/ted_anim fly_shot
+/gamemode survival
+/ted_anim fly_shot
+/ted_anim fly_shto
+/ted_anim fly_shot
+/gamemode creative
+/ted_anim fly_shot
+/ted_anim light
+/ted test_unbreakable_gear
+/ted_anim roar
+/ted test_unbreakable_gear
+/ted_anim roar

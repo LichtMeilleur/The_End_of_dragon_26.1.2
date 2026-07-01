@@ -11,10 +11,16 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.AABB;
 
 public final class TEDDebugCommands {
@@ -73,6 +79,22 @@ public final class TEDDebugCommands {
                                 .executes(context -> {
                                     var player = context.getSource().getPlayerOrException();
                                     player.getInventory().add(new ItemStack(ModItems.TED_DEBUG_BOW));
+                                    return 1;
+                                })
+                        )
+
+                        .then(Commands.literal("test_unbreakable_gear")
+                                .executes(ctx -> {
+                                    ServerPlayer player = ctx.getSource().getPlayerOrException();
+
+                                    giveRoarTestItems(player);
+                                    giveUnbreakableGear(player);
+
+                                    ctx.getSource().sendSuccess(
+                                            () -> Component.literal("Granted unbreakable test gear."),
+                                            false
+                                    );
+
                                     return 1;
                                 })
                         )
@@ -292,6 +314,7 @@ public final class TEDDebugCommands {
                                         })
                                 )
                         )
+
         );
 
 
@@ -300,4 +323,48 @@ public final class TEDDebugCommands {
 
     private TEDDebugCommands() {
     }
+
+    private static void giveUnbreakableGear(ServerPlayer player) {
+        player.level().getServer().getCommands().performPrefixedCommand(
+                player.createCommandSourceStack(),
+                "item replace entity @s armor.head with minecraft:netherite_helmet[unbreakable={show_in_tooltip:false}]"
+        );
+        player.level().getServer().getCommands().performPrefixedCommand(
+                player.createCommandSourceStack(),
+                "item replace entity @s armor.chest with minecraft:netherite_chestplate[unbreakable={show_in_tooltip:false}]"
+        );
+        player.level().getServer().getCommands().performPrefixedCommand(
+                player.createCommandSourceStack(),
+                "item replace entity @s armor.legs with minecraft:netherite_leggings[unbreakable={show_in_tooltip:false}]"
+        );
+        player.level().getServer().getCommands().performPrefixedCommand(
+                player.createCommandSourceStack(),
+                "item replace entity @s armor.feet with minecraft:netherite_boots[unbreakable={show_in_tooltip:false}]"
+        );
+
+
+
+
+
+
+    }
+    private static void giveRoarTestItems(ServerPlayer player) {
+        var server = player.level().getServer();
+
+        server.getCommands().performPrefixedCommand(
+                player.createCommandSourceStack(),
+                "give @s minecraft:stick 1"
+        );
+
+        server.getCommands().performPrefixedCommand(
+                player.createCommandSourceStack(),
+                "give @s minecraft:netherite_sword[unbreakable={show_in_tooltip:false}] 1"
+        );
+
+        server.getCommands().performPrefixedCommand(
+                player.createCommandSourceStack(),
+                "give @s minecraft:iron_sword[max_damage=2000,damage=0] 1"
+        );
+    }
+
 }

@@ -39,8 +39,9 @@ public final class DragonCollisionSampler {
 
         String animationName = animationName(entity.getDragonState());
         AnimationSpec animation = ANIMATIONS.get(animationName);
-
+        /*
         if (entity.tickCount % 40 == 0) {
+
             System.out.println(
                     "[TED COLLISION] state=" + entity.getDragonState()
                             + " animationName=" + animationName
@@ -48,7 +49,11 @@ public final class DragonCollisionSampler {
                             + " cubes=" + CUBES.size()
                             + " animations=" + ANIMATIONS.size()
             );
+
+
         }
+
+         */
 
         if (animation == null || CUBES.isEmpty()) {
             return List.of();
@@ -84,10 +89,12 @@ public final class DragonCollisionSampler {
 
 
             if (entity.tickCount % 2 == 0 && cube.boneName.equals(DEBUG_BONE)) {
+                //判定確認　左前手
                 // アニメ移動・回転後の「箱そのもの」をパーティクルで表示
-                debugDrawAnimatedCube(serverLevel, entity, cube, pos, rot);
+                //debugDrawAnimatedCube(serverLevel, entity, cube, pos, rot);
 
                 // アニメ移動後のpivotも表示
+                /*
                 Vec3 pivotWorld = transformCubePoint(
                         entity,
                         cube,
@@ -95,6 +102,8 @@ public final class DragonCollisionSampler {
                         pos,
                         rot
                 );
+
+
 
                 serverLevel.sendParticles(
                         net.minecraft.core.particles.ParticleTypes.FLAME,
@@ -107,6 +116,8 @@ public final class DragonCollisionSampler {
                         0.03D,
                         0.0D
                 );
+                 */
+
             }
 
             Vec3[] points = buildAnimatedCubePoints(entity, cube, pos, rot);
@@ -422,22 +433,22 @@ public final class DragonCollisionSampler {
         return switch (state) {
             case WALK -> "animation.model.walk";
 
-            case FLY_START -> "animation.model.fly_start_12tick_start";
+            case FLY_START -> "animation.model.fly_start_10tick_start";
             case FLY -> "animation.model.fly";
             case FLY_LEFT -> "animation.model.fly_left";
             case FLY_RIGHT -> "animation.model.fly_right";
-            case FLY_SHOT -> "animation.model.fly_shot_6tick_start";
+            case FLY_SHOT -> "animation.model.fly_shot_5tick_start";
 
             case FALL -> "animation.model.fall";
             case LANDING -> "animation.model.landing";
             case SUPER_LANDING -> "animation.model.super_landing";
 
-            case ORB_OF_ANNIHILATION -> "animation.model.orb_of_annihilation_6tick_start_66tick_fire";
-            case ROAR_OF_OBLITERATION -> "animation.model.roar_of_obliteration_3tick_start";
+            case ORB_OF_ANNIHILATION -> "animation.model.orb_of_annihilation_6tick_start_55tick_fire";
+            case ROAR_OF_OBLITERATION -> "animation.model.roar_of_obliteration_10tick_start";
             case FLAMES_OF_RAGNAROK -> "animation.model.flames_of_ragnarok";
-            case LIGHT_OF_DESTRUCTION -> "animation.model.light_of_destruction_24tick_start";
-            case PHOTON_BLASTER -> "animation.model.photon_blaster_31tick_start";
-            case BLASTER_TACKLE -> "animation.model.blaster_tackle_12tick_start";
+            case LIGHT_OF_DESTRUCTION -> "animation.model.light_of_destruction_20tick_start";
+            case PHOTON_BLASTER -> "animation.model.photon_blaster_27tick_start";
+            case BLASTER_TACKLE -> "animation.model.blaster_tackle_9tick_start";
 
             default -> "animation.model.idle";
         };

@@ -1,11 +1,57 @@
 {
   "stats": {
+    "minecraft:killed": {
+      "minecraft:slime": 1
+    },
+    "minecraft:dropped": {
+      "minecraft:slime_ball": 1
+    },
+    "minecraft:used": {
+      "minecraft:minecart": 1,
+      "minecraft:golden_apple": 22,
+      "minecraft:redstone_torch": 8,
+      "minecraft:powered_rail": 59,
+      "minecraft:oak_wood": 1,
+      "minecraft:dirt": 15,
+      "minecraft:rail": 15
+    },
+    "minecraft:picked_up": {
+      "minecraft:oak_wood": 2,
+      "minecraft:skeleton_spawn_egg": 4,
+      "minecraft:ender_pearl": 48,
+      "minecraft:dirt": 15,
+      "minecraft:string": 6,
+      "minecraft:slime_ball": 4,
+      "minecraft:birch_wood": 3,
+      "minecraft:enderman_spawn_egg": 4,
+      "minecraft:golden_apple": 679,
+      "minecraft:rotten_flesh": 7
+    },
+    "minecraft:killed_by": {
+      "minecraft:skeleton": 1,
+      "minecraft:creeper": 1,
+      "minecraft:zombie": 1
+    },
     "minecraft:custom": {
-      "minecraft:time_since_rest": 390,
-      "minecraft:total_world_time": 409,
-      "minecraft:leave_game": 1,
-      "minecraft:play_time": 390,
-      "minecraft:time_since_death": 390
+      "minecraft:minecart_one_cm": 90279,
+      "minecraft:time_since_rest": 5683,
+      "minecraft:walk_one_cm": 40711,
+      "minecraft:leave_game": 3,
+      "minecraft:mob_kills": 1,
+      "minecraft:damage_taken": 2286,
+      "minecraft:damage_dealt": 50,
+      "minecraft:play_time": 11331,
+      "minecraft:damage_absorbed": 620,
+      "minecraft:jump": 38,
+      "minecraft:time_since_death": 5640,
+      "minecraft:drop": 1,
+      "minecraft:sprint_one_cm": 29699,
+      "minecraft:sleep_in_bed": 1,
+      "minecraft:total_world_time": 11376,
+      "minecraft:fly_one_cm": 15591,
+      "minecraft:crouch_one_cm": 111,
+      "minecraft:sneak_time": 34,
+      "minecraft:deaths": 4
     }
   },
   "DataVersion": 4790

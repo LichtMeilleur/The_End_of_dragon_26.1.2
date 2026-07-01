@@ -1,0 +1,20 @@
+{
+  "stats": {
+    "minecraft:picked_up": {
+      "minecraft:oak_log": 1,
+      "minecraft:white_terracotta": 2
+    },
+    "minecraft:custom": {
+      "minecraft:minecart_one_cm": 41472,
+      "minecraft:time_since_rest": 2680,
+      "minecraft:walk_one_cm": 741,
+      "minecraft:total_world_time": 2709,
+      "minecraft:leave_game": 2,
+      "minecraft:fly_one_cm": 22650,
+      "minecraft:play_time": 2680,
+      "minecraft:jump": 1,
+      "minecraft:time_since_death": 2680
+    }
+  },
+  "DataVersion": 4790
+}

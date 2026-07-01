@@ -1,0 +1,20 @@
+{
+  "stats": {
+    "minecraft:used": {
+      "minecraft:diamond_helmet": 1,
+      "minecraft:diamond_leggings": 1,
+      "minecraft:diamond_boots": 1,
+      "minecraft:diamond_chestplate": 1
+    },
+    "minecraft:custom": {
+      "minecraft:time_since_rest": 3722,
+      "minecraft:walk_one_cm": 1942,
+      "minecraft:total_world_time": 3722,
+      "minecraft:leave_game": 1,
+      "minecraft:fly_one_cm": 1013,
+      "minecraft:play_time": 3722,
+      "minecraft:time_since_death": 3722
+    }
+  },
+  "DataVersion": 4790
+}

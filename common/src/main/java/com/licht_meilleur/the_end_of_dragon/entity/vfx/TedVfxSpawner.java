@@ -25,18 +25,7 @@ public final class TedVfxSpawner {
         }
 
         vfx.setup(type, scale, length, maxAge);
-
-
-// レーザーはRenderer側で向きを決める
-        /*
-        if (type == TedVfxType.TED_LASER_BEAM) {
-            vfx.snapTo(pos.x, pos.y, pos.z, 0.0F, 0.0F);
-        } else {
-            vfx.snapTo(pos.x, pos.y, pos.z, yaw, pitch);
-        }
-
-         */
-
+        vfx.snapTo(pos.x, pos.y, pos.z, yaw, pitch);
         level.addFreshEntity(vfx);
     }
 

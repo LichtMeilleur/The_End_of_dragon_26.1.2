@@ -51,7 +51,7 @@ public class TheEndOfDragonCollisionEntity extends TheEndOfDragonEntity {
         }
 
         if (!this.level().isClientSide()) {
-            this.debugDrawCollisionBoxes();
+            //this.debugDrawCollisionBoxes();
             this.pushPlayersOutOfCollisionBoxes();
         }
     }
@@ -146,6 +146,7 @@ public class TheEndOfDragonCollisionEntity extends TheEndOfDragonEntity {
         }
 
         for (var collisionBox : boxes) {
+            //判定表示
             drawAabb(serverLevel, collisionBox.box());
         }
     }

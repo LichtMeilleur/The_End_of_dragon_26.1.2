@@ -130,13 +130,15 @@ public final class DragonLocatorSampler {
             loadAnimations();
 
             loaded = true;
-
+            /*
             System.out.println("[TED LOCATOR] bones=" + BONES.size()
                     + " locators=" + LOCATORS.size()
                     + " animations=" + ANIMATIONS.size());
+
+             */
         } catch (Throwable t) {
             loaded = true;
-            System.err.println("[TED LOCATOR] failed to load");
+            //System.err.println("[TED LOCATOR] failed to load");
             t.printStackTrace();
         }
     }
@@ -230,7 +232,7 @@ public final class DragonLocatorSampler {
         return switch (state) {
             case WALK -> "animation.model.walk";
 
-            case FLY_START -> "animation.model.fly_start_12tick_start";
+            case FLY_START -> "animation.model.fly_start_10tick_start";
             case FLY -> "animation.model.fly";
             case FLY_LEFT -> "animation.model.fly_left";
             case FLY_RIGHT -> "animation.model.fly_right";
@@ -240,12 +242,12 @@ public final class DragonLocatorSampler {
             case LANDING -> "animation.model.landing";
             case SUPER_LANDING -> "animation.model.super_landing";
 
-            case ORB_OF_ANNIHILATION -> "animation.model.orb_of_annihilation_6tick_start_66tick_fire";
-            case ROAR_OF_OBLITERATION -> "animation.model.roar_of_obliteration_3tick_start";
+            case ORB_OF_ANNIHILATION -> "animation.model.orb_of_annihilation_6tick_start_55tick_fire";
+            case ROAR_OF_OBLITERATION -> "animation.model.roar_of_obliteration_10tick_start";
             case FLAMES_OF_RAGNAROK -> "animation.model.flames_of_ragnarok";
-            case LIGHT_OF_DESTRUCTION -> "animation.model.light_of_destruction_24tick_start";
-            case PHOTON_BLASTER -> "animation.model.photon_blaster_31tick_start";
-            case BLASTER_TACKLE -> "animation.model.blaster_tackle_12tick_start";
+            case LIGHT_OF_DESTRUCTION -> "animation.model.light_of_destruction_20tick_start";
+            case PHOTON_BLASTER -> "animation.model.photon_blaster_27tick_start";
+            case BLASTER_TACKLE -> "animation.model.blaster_tackle_9tick_start";
 
             default -> "animation.model.idle";
         };
@@ -276,12 +278,14 @@ public final class DragonLocatorSampler {
         InputStream stream = DragonLocatorSampler.class
                 .getClassLoader()
                 .getResourceAsStream("assets/the_end_of_dragon/" + path);
-
+/*
         if (stream == null) {
             System.err.println("[TED LOCATOR] asset not found: assets/the_end_of_dragon/" + path);
             return null;
         }
 
+
+ */
         return new InputStreamReader(stream, StandardCharsets.UTF_8);
     }
 
@@ -422,7 +426,7 @@ public final class DragonLocatorSampler {
         );
 
         if (dragon.tickCount % 20 == 0) {
-            System.out.println("[TED LOCATOR DEBUG] " + locatorName + " world=" + pos);
+            //System.out.println("[TED LOCATOR DEBUG] " + locatorName + " world=" + pos);
         }
     }
 

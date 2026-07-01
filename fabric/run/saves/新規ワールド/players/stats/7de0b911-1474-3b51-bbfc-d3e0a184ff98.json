@@ -1,13 +1,27 @@
 {
   "stats": {
+    "minecraft:picked_up": {
+      "minecraft:ender_pearl": 12,
+      "minecraft:arrow": 7,
+      "minecraft:bone": 5,
+      "minecraft:rotten_flesh": 3
+    },
+    "minecraft:used": {
+      "minecraft:oak_wood": 20,
+      "minecraft:birch_wood": 5,
+      "minecraft:enderman_spawn_egg": 56
+    },
     "minecraft:custom": {
-      "minecraft:time_since_rest": 145,
-      "minecraft:total_world_time": 162,
+      "minecraft:time_since_rest": 2026,
+      "minecraft:walk_one_cm": 860,
+      "minecraft:total_world_time": 2043,
       "minecraft:leave_game": 1,
-      "minecraft:fly_one_cm": 466,
-      "minecraft:sneak_time": 19,
-      "minecraft:play_time": 145,
-      "minecraft:time_since_death": 145
+      "minecraft:fly_one_cm": 21961,
+      "minecraft:crouch_one_cm": 74,
+      "minecraft:sneak_time": 80,
+      "minecraft:play_time": 2026,
+      "minecraft:jump": 4,
+      "minecraft:time_since_death": 2026
     }
   },
   "DataVersion": 4790

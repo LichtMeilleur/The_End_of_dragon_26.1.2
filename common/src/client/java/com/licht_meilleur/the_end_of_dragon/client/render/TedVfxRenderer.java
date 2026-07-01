@@ -7,14 +7,53 @@ import com.geckolib.renderer.base.RenderPassInfo;
 import com.licht_meilleur.the_end_of_dragon.client.model.TedVfxModel;
 import com.licht_meilleur.the_end_of_dragon.entity.vfx.TedVfxEntity;
 import com.licht_meilleur.the_end_of_dragon.entity.vfx.TedVfxType;
+
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.renderer.MultiBufferSource;
+
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public class TedVfxRenderer<R extends EntityRenderState & GeoRenderState>
         extends GeoEntityRenderer<TedVfxEntity, R> {
+
+    private static int debugRenderLogCounter = 0;
+
+    @Override
+    public void adjustRenderPose(RenderPassInfo<R> renderPassInfo) {
+        super.adjustRenderPose(renderPassInfo);
+
+        TedVfxType type = renderPassInfo.renderState()
+                .getGeckolibData(TedVfxRenderTickets.VFX_TYPE);
+
+        if (type != TedVfxType.TED_LASER_BEAM && type != TedVfxType.TED_JET) {
+            return;
+        }
+
+        Vec3 forward = renderPassInfo.renderState()
+                .getGeckolibData(TedVfxRenderTickets.VFX_FORWARD);
+
+        Vec3 up = renderPassInfo.renderState()
+                .getGeckolibData(TedVfxRenderTickets.VFX_UP);
+
+        Quaternionf q = rotationFromBasis(forward, up);
+
+        renderPassInfo.poseStack().mulPose(q);
+    }
+
+    @Override
+    public RenderType getRenderType(
+            R renderState,
+            Identifier texture
+    ) {
+        return RenderTypes.entityTranslucent(texture);
+    }
 
     public TedVfxRenderer(EntityRendererProvider.Context ctx) {
         super(ctx, new TedVfxModel());
@@ -47,10 +86,12 @@ public class TedVfxRenderer<R extends EntityRenderState & GeoRenderState>
 
         float scale = scaleData != null ? scaleData : 1.0F;
         float length = lengthData != null ? lengthData : 1.0F;
-
+/*
         Vec3 forward = renderPassInfo.renderState().getGeckolibData(TedVfxRenderTickets.VFX_FORWARD);
         Vec3 up = renderPassInfo.renderState().getGeckolibData(TedVfxRenderTickets.VFX_UP);
 
+
+ */
         TedVfxType finalType = type;
 
         // 1. root = 全体スケールだけ
@@ -63,26 +104,18 @@ public class TedVfxRenderer<R extends EntityRenderState & GeoRenderState>
             root.setRotZ(0.0F);
         });
 
-        // 2. parent_root = 親OBB回転継承じゃなくてレイキャスト継承に変更
         snapshots.ifPresent("parent_root", parent -> {
-            if (finalType == TedVfxType.TED_LASER_BEAM || finalType == TedVfxType.TED_JET) {
-                Vec3 rayDir = renderPassInfo.renderState().getGeckolibData(TedVfxRenderTickets.VFX_FORWARD);
-
-                Quaternionf q = rotationFromRayDir(rayDir);
-                Vector3f euler = q.getEulerAnglesXYZ(new Vector3f());
-
-                parent.setRotX(euler.x);
-                parent.setRotY(euler.y);
-                parent.setRotZ(euler.z);
-            } else {
-                parent.setRotX(0.0F);
-                parent.setRotY(0.0F);
-                parent.setRotZ(0.0F);
-            }
+            parent.setRotX(0.0F);
+            parent.setRotY(0.0F);
+            parent.setRotZ(0.0F);
         });
 
         // 3. local_root = Blockbench側でY向き化しているので、基本コードでは触らない
         snapshots.ifPresent("local_root", local -> {
+            local.setRotX(0.0F);
+            local.setRotY(0.0F);
+            local.setRotZ(0.0F);
+
             local.setScaleX(1.0F);
             local.setScaleY(1.0F);
             local.setScaleZ(1.0F);
@@ -90,14 +123,14 @@ public class TedVfxRenderer<R extends EntityRenderState & GeoRenderState>
 
         // 4. effect_root = エフェクト固有補正
         snapshots.ifPresent("effect_root", effect -> {
+            effect.setRotX(0.0F);
+            effect.setRotY(0.0F);
+            effect.setRotZ(0.0F);
+
             if (finalType == TedVfxType.TED_LASER_BEAM) {
-                effect.setScaleX(1.0F);     // 鏡写し補正
-                effect.setScaleY(length);    // レーザー長
-                effect.setScaleZ(1.0F);
-            } else if (finalType == TedVfxType.TED_JET) {
                 effect.setScaleX(1.0F);
                 effect.setScaleY(1.0F);
-                effect.setScaleZ(1.0F);
+                effect.setScaleZ(length);
             } else {
                 effect.setScaleX(1.0F);
                 effect.setScaleY(1.0F);
@@ -105,6 +138,9 @@ public class TedVfxRenderer<R extends EntityRenderState & GeoRenderState>
             }
         });
     }
+
+
+
 
     /**
      * PART_BASIS用。
@@ -128,18 +164,22 @@ public class TedVfxRenderer<R extends EntityRenderState & GeoRenderState>
         return super.shouldRender(entity, frustum, camX, camY, camZ);
     }
 
-    private static Quaternionf rotationFromBasis(Vec3 forwardRaw, Vec3 upRaw) {
-        Vec3 forward = safeNormalize(forwardRaw, new Vec3(0, 1, 0));
-        Vec3 up = safeNormalize(upRaw, new Vec3(0, 0, 1));
 
+
+    private static Quaternionf rotationFromBasis(Vec3 forwardRaw, Vec3 upRaw) {
+        Vec3 forward = safeNormalize(forwardRaw, new Vec3(0, 0, 1));
+        Vec3 up = safeNormalize(upRaw, new Vec3(0, 1, 0));
+
+        // モデルの +Z を BeamHitbox direction に向ける
         Quaternionf q = new Quaternionf().rotationTo(
-                0.0F, 1.0F, 0.0F,
+                0.0F, 0.0F, -1.0F,
                 (float) forward.x,
                 (float) forward.y,
                 (float) forward.z
         );
 
-        Vector3f modelUp = new Vector3f(0.0F, 0.0F, 1.0F);
+        // +Zをforwardに使ったので、roll確認用のモデル上方向は +Y
+        Vector3f modelUp = new Vector3f(0.0F, 1.0F, 0.0F);
         q.transform(modelUp);
 
         Vec3 currentUp = new Vec3(modelUp.x, modelUp.y, modelUp.z);
@@ -156,27 +196,17 @@ public class TedVfxRenderer<R extends EntityRenderState & GeoRenderState>
         double angle = Math.acos(dot);
         double sign = Math.signum(forward.dot(currentUp.cross(targetUp)));
 
-        q.rotateAxis(
+        Quaternionf roll = new Quaternionf().rotateAxis(
                 (float) (angle * sign),
                 (float) forward.x,
                 (float) forward.y,
                 (float) forward.z
         );
 
-        return q;
+        return roll.mul(q).normalize();
     }
 
-    private static Quaternionf rotationFromRayDir(Vec3 rayDirRaw) {
-        Vec3 rayDir = safeNormalize(rayDirRaw, new Vec3(0, 1, 0));
 
-        // モデルの +Y を rayDir に向ける
-        return new Quaternionf().rotationTo(
-                0.0F, 1.0F, 0.0F,
-                (float) rayDir.x,
-                (float) rayDir.y,
-                (float) rayDir.z
-        );
-    }
 
     private static Vec3 safeNormalize(Vec3 v, Vec3 fallback) {
         if (v == null || v.lengthSqr() < 1.0E-6D) {

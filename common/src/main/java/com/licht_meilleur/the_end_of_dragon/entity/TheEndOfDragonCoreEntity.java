@@ -3,21 +3,30 @@ package com.licht_meilleur.the_end_of_dragon.entity;
 import com.licht_meilleur.the_end_of_dragon.entity.collision.DragonCollisionBox;
 import com.licht_meilleur.the_end_of_dragon.entity.collision.DragonCollisionPart;
 import com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonLocatorSampler;
-import com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonLocators;
+import com.licht_meilleur.the_end_of_dragon.entity.hitbox.TedBeamHitbox;
+import com.licht_meilleur.the_end_of_dragon.entity.projectile.TedProjectileSpec;
+import com.licht_meilleur.the_end_of_dragon.entity.projectile.TedProjectileSpecs;
 import com.licht_meilleur.the_end_of_dragon.entity.vfx.*;
 import com.licht_meilleur.the_end_of_dragon.registry.ModEntities;
 import com.licht_meilleur.the_end_of_dragon.world.EndPortalSealHandler;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LightBlock;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 public class TheEndOfDragonCoreEntity extends Monster {
@@ -31,6 +40,29 @@ public class TheEndOfDragonCoreEntity extends Monster {
     private int frontRightLaserVfxId = -1;
     private int backLeftLaserVfxId = -1;
     private int backRightLaserVfxId = -1;
+
+
+
+    // Photon Blaster
+    private static final int PHOTON_CHARGE_START = 1;
+    private static final int PHOTON_FIRE_START = 27;
+    private static final int PHOTON_FIRE_END = 70;
+
+    // Flames of Ragnarok
+    private static final int FLAMES_FIRE_START = 1;
+    private static final int FLAMES_FIRE_END = 120;
+
+    //Orb of Annihilation
+    private static final int ORB_CHARGE_START = 6;
+    private static final int ORB_FIRE_TICK = 55;
+
+    //Fly Shot
+    private static final int FLY_SHOT_FIRE_TICK = 5;
+
+
+    private static boolean between(int age, int start, int end) {
+        return age >= start && age <= end;
+    }
 
     public TheEndOfDragonCoreEntity(EntityType<? extends Monster> type, Level level) {
         super(type, level);
@@ -244,7 +276,13 @@ public class TheEndOfDragonCoreEntity extends Monster {
         }
 
          */
+
+        //頭の判定確認
+        //debugDrawHeadCollision(serverLevel);
+
+
         // DEBUG: idleでも常時レーザー表示
+        /*
         if (this.tickCount % 2 == 0) {
             updateAttachedVfx(
                     serverLevel,
@@ -256,112 +294,64 @@ public class TheEndOfDragonCoreEntity extends Monster {
             updateAttachedVfx(serverLevel, TedVfxSpecs.BACK_RIGHT_LASER, true);
         }
 
+         */
+
 
 
         int age = this.getDragonStateAgeTicks();
 
         switch (this.getDragonState()) {
             case ORB_OF_ANNIHILATION -> {
-                if (age == 1) {
-                    com.licht_meilleur.the_end_of_dragon.entity.vfx.TedVfxSpawner.spawnForwardFromLocator(
-                            serverLevel,
-                            this,
-                            com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonLocators.CHEST_CRYSTAL,
-                            3.0D,
-                            com.licht_meilleur.the_end_of_dragon.entity.vfx.TedVfxType.ORB_OF_ANIHILATION,
-                            1.5F,
-                            1.0F,
-                            80
-                    );
+                if (between(age, ORB_CHARGE_START, ORB_FIRE_TICK - 1)) {
+                    updateOrbCharge(serverLevel, age);
+                }
+
+                if (age == ORB_FIRE_TICK) {
+                    fireOrbOfAnnihilation(serverLevel);
                 }
             }
 
             case PHOTON_BLASTER -> {
-                boolean active = age >= 1 && age <= 36;
+                boolean firing = between(age, PHOTON_FIRE_START, PHOTON_FIRE_END);
 
-                updateAttachedVfx(serverLevel, TedVfxSpecs.FRONT_LEFT_LASER, active);
-                updateAttachedVfx(serverLevel, TedVfxSpecs.FRONT_RIGHT_LASER, active);
-                updateAttachedVfx(serverLevel, TedVfxSpecs.BACK_LEFT_LASER, active);
-                updateAttachedVfx(serverLevel, TedVfxSpecs.BACK_RIGHT_LASER, active);
+                if (firing) {
+                    updatePhotonLasers(serverLevel);
+                }
             }
 
             case FLAMES_OF_RAGNAROK -> {
-                boolean active = age >= 1 && age <= 80;
+                boolean firing = between(age, FLAMES_FIRE_START, FLAMES_FIRE_END);
 
-                updateAttachedVfx(serverLevel, TedVfxSpecs.FRONT_LEFT_LASER, active);
-                updateAttachedVfx(serverLevel, TedVfxSpecs.FRONT_RIGHT_LASER, active);
-                updateAttachedVfx(serverLevel, TedVfxSpecs.BACK_LEFT_LASER, active);
-                updateAttachedVfx(serverLevel, TedVfxSpecs.BACK_RIGHT_LASER, active);
+                updateAttachedVfx(serverLevel, TedVfxSpecs.FRONT_LEFT_LASER, firing);
+                updateAttachedVfx(serverLevel, TedVfxSpecs.FRONT_RIGHT_LASER, firing);
+                updateAttachedVfx(serverLevel, TedVfxSpecs.BACK_LEFT_LASER, firing);
+                updateAttachedVfx(serverLevel, TedVfxSpecs.BACK_RIGHT_LASER, firing);
             }
 
             case LIGHT_OF_DESTRUCTION -> {
-                if (age == 1) {
-                    com.licht_meilleur.the_end_of_dragon.entity.vfx.TedVfxSpawner.spawnAtLocator(
-                            serverLevel,
-                            this,
-                            com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonLocators.CHEST_CRYSTAL,
-                            com.licht_meilleur.the_end_of_dragon.entity.vfx.TedVfxType.LIGHT_OF_DESTRUCTION,
-                            2.0F,
-                            1.0F,
-                            60
-                    );
+                if (age >= 20 && age <= 30) {
+                    updateLightOfDestruction(serverLevel, age);
                 }
             }
 
             case FLY_SHOT -> {
-                // ジェットは攻撃中ずっと短寿命VFXを出し続ける
-                if (age % 2 == 0) {
-                    spawnJet(serverLevel, DragonCollisionPart.FRONT_LEFT_HAND, 0.0D, 2.0D, -0.0D);
-                    spawnJet(serverLevel, DragonCollisionPart.FRONT_RIGHT_HAND, 0.0D, 2.0D, -0.0D);
-                    spawnJet(serverLevel, DragonCollisionPart.BACK_LEFT_HAND, 0.0D, 2.0D, -0.8D);
-                    spawnJet(serverLevel, DragonCollisionPart.BACK_RIGHT_HAND, 0.0D, 2.0D, -0.0D);
-                }
+                updateFlightJets(serverLevel);
 
-
-
-                if (age % 12 == 1) {
-                    com.licht_meilleur.the_end_of_dragon.entity.vfx.TedVfxSpawner.spawnForwardFromLocator(
-                            serverLevel,
-                            this,
-                            com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonLocators.MOUTH,
-                            2.0D,
-                            com.licht_meilleur.the_end_of_dragon.entity.vfx.TedVfxType.LIGHT_PROJECTILE,
-                            1.0F,
-                            1.0F,
-                            80
-                    );
+                if (age == FLY_SHOT_FIRE_TICK) {
+                    fireLightProjectile(serverLevel);
                 }
             }
 
-            case FLY -> {
-                // ジェットは攻撃中ずっと短寿命VFXを出し続ける
-                if (age % 2 == 0) {
-                    spawnJet(serverLevel, DragonCollisionPart.FRONT_LEFT_HAND, 0.0D, 2.0D, -0.0D);
-                    spawnJet(serverLevel, DragonCollisionPart.FRONT_RIGHT_HAND, 0.0D, 2.0D, -0.0D);
-                    spawnJet(serverLevel, DragonCollisionPart.BACK_LEFT_HAND, 0.0D, 2.0D, -0.8D);
-                    spawnJet(serverLevel, DragonCollisionPart.BACK_RIGHT_HAND, 0.0D, 2.0D, -0.0D);
-                }
-
+            case FLY, FLY_LEFT, FLY_RIGHT -> {
+                updateFlightJets(serverLevel);
             }
-            case FLY_LEFT -> {
-                // ジェットは攻撃中ずっと短寿命VFXを出し続ける
-                if (age % 2 == 0) {
-                    spawnJet(serverLevel, DragonCollisionPart.FRONT_LEFT_HAND, 0.0D, 2.0D, -0.0D);
-                    spawnJet(serverLevel, DragonCollisionPart.FRONT_RIGHT_HAND, 0.0D, 2.0D, -0.0D);
-                    spawnJet(serverLevel, DragonCollisionPart.BACK_LEFT_HAND, 0.0D, 2.0D, -0.8D);
-                    spawnJet(serverLevel, DragonCollisionPart.BACK_RIGHT_HAND, -1.0D, 2.0D, -0.0D);
+
+            case ROAR_OF_OBLITERATION -> {
+                if (age == 10) {
+                    applyRoarOfObliteration(serverLevel);
                 }
 
-            }
-            case FLY_RIGHT -> {
-                // ジェットは攻撃中ずっと短寿命VFXを出し続ける
-                if (age % 2 == 0) {
-                    spawnJet(serverLevel, DragonCollisionPart.FRONT_LEFT_HAND, 0.0D, 2.0D, -0.0D);
-                    spawnJet(serverLevel, DragonCollisionPart.FRONT_RIGHT_HAND, 0.0D, 2.0D, -0.0D);
-                    spawnJet(serverLevel, DragonCollisionPart.BACK_LEFT_HAND, 0.0D, 2.0D, -0.8D);
-                    spawnJet(serverLevel, DragonCollisionPart.BACK_RIGHT_HAND, 0.0D, 2.0D, -0.0D);
-                }
-
+                spawnRoarParticles(serverLevel, age);
             }
 
             default -> {
@@ -369,6 +359,507 @@ public class TheEndOfDragonCoreEntity extends Monster {
             }
         }
     }
+
+    private void applyRoarOfObliteration(ServerLevel level) {
+        double radius = 48.0D;
+
+        AABB area = this.getBoundingBox().inflate(radius);
+
+        var entities = level.getEntitiesOfClass(
+                LivingEntity.class,
+                area,
+                entity -> entity.isAlive()
+                        && entity != this
+                        && !(entity instanceof TheEndOfDragonCoreEntity)
+                        && !(entity instanceof TheEndOfDragonEntity)
+        );
+
+        for (LivingEntity entity : entities) {
+            damageEquipmentByRoar(level, entity, 40);
+
+            Vec3 away = entity.position().subtract(this.position());
+            if (away.lengthSqr() > 1.0E-6D) {
+                away = away.normalize();
+                entity.push(away.x * 1.6D, 0.35D, away.z * 1.6D);
+                entity.hurtMarked = true;
+            }
+
+            entity.hurtServer(
+                    level,
+                    level.damageSources().mobAttack(this),
+                    6.0F
+            );
+        }
+    }
+
+    private void damageEquipmentByRoar(ServerLevel level, LivingEntity entity, int amount) {
+        for (EquipmentSlot slot : EquipmentSlot.values()) {
+            ItemStack stack = entity.getItemBySlot(slot);
+
+            if (stack.isEmpty()) {
+                continue;
+            }
+
+            if (!stack.isDamageableItem()) {
+                // 耐久値がないものは即時破壊
+                entity.setItemSlot(slot, ItemStack.EMPTY);
+                continue;
+            }
+
+            // 高耐久装備は即破壊
+            if (stack.getMaxDamage() >= 1000) {
+                entity.setItemSlot(slot, ItemStack.EMPTY);
+                continue;
+            }
+
+
+            int nextDamage = stack.getDamageValue() + amount;
+
+            if (nextDamage >= stack.getMaxDamage()) {
+                entity.setItemSlot(slot, ItemStack.EMPTY);
+            } else {
+                stack.setDamageValue(nextDamage);
+            }
+        }
+        for (ItemStack stack : com.licht_meilleur.the_end_of_dragon.compat.TedAccessories.getAccessories(entity)) {
+            damageAccessoryStackByRoar(stack, amount);
+        }
+    }
+
+    private void damageAccessoryStackByRoar(ItemStack stack, int amount) {
+        if (stack.isEmpty()) {
+            return;
+        }
+
+        if (!stack.isDamageableItem()) {
+            stack.shrink(1);
+            return;
+        }
+
+        if (stack.getMaxDamage() >= 1000) {
+            stack.shrink(1);
+            return;
+        }
+
+        int nextDamage = stack.getDamageValue() + amount;
+
+        if (nextDamage >= stack.getMaxDamage()) {
+            stack.shrink(1);
+        } else {
+            stack.setDamageValue(nextDamage);
+        }
+    }
+
+    private void spawnRoarParticles(ServerLevel level, int age) {
+        if (age < 1 || age > 30) return;
+
+        Vec3 center = this.position().add(0.0D, 4.0D, 0.0D);
+
+        level.sendParticles(
+                ParticleTypes.SONIC_BOOM,
+                center.x, center.y, center.z,
+                1,
+                0.0D, 0.0D, 0.0D,
+                0.0D
+        );
+
+        level.sendParticles(
+                ParticleTypes.END_ROD,
+                center.x, center.y, center.z,
+                20,
+                age * 0.2D, age * 0.1D, age * 0.2D,
+                0.03D
+        );
+    }
+
+    private void updateLightOfDestruction(ServerLevel serverLevel, int age) {
+        Vec3 center = getChestCrystalCenter();
+        if (center == null) {
+            return;
+        }
+
+        // 20～30tickを0～1へ
+        float t = (age - 20) / 10.0F;
+        t = Math.min(1.0F, Math.max(0.0F, t));
+
+        float scale = 2.0F + t * 4000.0F;
+
+        TedVfxSpawner.spawnAt(
+                serverLevel,
+                center,
+                this.getYRot(),
+                this.getXRot(),
+                TedVfxType.LIGHT_OF_DESTRUCTION,
+                scale,
+                1.0F,
+                2
+        );
+
+        serverLevel.sendParticles(
+                ParticleTypes.END_ROD,
+                center.x,
+                center.y,
+                center.z,
+                20,
+                1.0D + scale * 0.25D,
+                1.0D + scale * 0.25D,
+                1.0D + scale * 0.25D,
+                0.02D
+        );
+
+        // 最大まで広がった瞬間
+        if (age == 30) {
+            clearBuffsByLight(serverLevel, center, scale * 2.5D);
+
+
+        }
+    }
+
+    private Vec3 getChestCrystalCenter() {
+        DragonCollisionBox box = getCollisionPartBox(DragonCollisionPart.CHEST_CRYSTAL);
+        if (box == null || box.obb() == null) {
+            return null;
+        }
+
+        return box.obb().center();
+    }
+
+    private void clearBuffsByLight(ServerLevel level, Vec3 center, double radius) {
+        AABB area = new AABB(center, center).inflate(radius);
+
+        var entities = level.getEntitiesOfClass(
+                LivingEntity.class,
+                area,
+                entity -> entity.isAlive()
+                        && entity != this
+                        && !(entity instanceof TheEndOfDragonCoreEntity)
+                        && !(entity instanceof TheEndOfDragonEntity)
+        );
+
+        for (LivingEntity entity : entities) {
+            entity.removeAllEffects();
+
+            level.sendParticles(
+                    ParticleTypes.END_ROD,
+                    entity.getX(),
+                    entity.getY() + entity.getBbHeight() * 0.5D,
+                    entity.getZ(),
+                    20,
+                    0.5D, 0.8D, 0.5D,
+                    0.08D
+            );
+        }
+    }
+
+    private void fireLightProjectile(ServerLevel serverLevel) {
+        DragonCollisionBox head = getCollisionPartBox(DragonCollisionPart.HEAD);
+        if (head == null || head.obb() == null) {
+            return;
+        }
+
+        Vec3 axisY = head.obb().axisY().normalize();
+
+        // 頭の少し前から発射
+        Vec3 start = head.obb().center()
+                .add(axisY.scale(2.5D));
+
+        Vec3 shotDir = axisY;
+
+        net.minecraft.world.entity.player.Player target =
+                serverLevel.getNearestPlayer(this, 128.0D);
+
+        if (target != null) {
+            Vec3 toTarget = target.getEyePosition().subtract(start).normalize();
+
+            double dot = axisY.dot(toTarget);
+            double maxAngleCos = Math.cos(Math.toRadians(60.0D));
+
+            if (dot > maxAngleCos) {
+                shotDir = axisY.lerp(toTarget, 0.75D).normalize();
+            }
+        }
+
+        spawnProjectile(
+                serverLevel,
+                TedProjectileSpecs.LIGHT_PROJECTILE,
+                start,
+                shotDir
+        );
+    }
+
+    private void updateJetBeam(
+            ServerLevel serverLevel,
+            DragonCollisionPart part,
+            double offsetX,
+            double offsetY,
+            double offsetZ
+    ) {
+        DragonCollisionBox box = getCollisionPartBox(part);
+        if (box == null || box.obb() == null) {
+            return;
+        }
+
+        Vec3 axisX = box.obb().axisX().normalize();
+        Vec3 axisY = box.obb().axisY().normalize();
+        Vec3 axisZ = box.obb().axisZ().normalize();
+
+        Vec3 start = box.obb().center()
+                .add(axisX.scale(offsetX))
+                .add(axisY.scale(offsetY))
+                .add(axisZ.scale(offsetZ));
+
+        Vec3 direction = axisY.normalize();
+
+        TedBeamHitbox beam = new TedBeamHitbox(
+                start,
+                direction,
+                5.0D,
+                1.2D
+        );
+
+        beam.spawnJetParticles(serverLevel);
+    }
+
+    private void updateOrbCharge(ServerLevel serverLevel, int age) {
+        float t = Math.min(1.0F, age / 55.0F);
+        float scale = 0.3F + t * 8F;
+
+        Vec3 pos = orbChargePos();
+
+        TedVfxSpawner.spawnAt(
+                serverLevel,
+                pos,
+                this.getYRot(),
+                this.getXRot(),
+                TedVfxType.ORB_OF_ANIHILATION,
+                scale,
+                1.0F,
+                2
+        );
+    }
+
+    private Vec3 orbChargePos() {
+        Vec3 forward = DragonLocatorSampler.forward(this).normalize();
+
+        return this.position()
+                .add(0.0D, 5.0D, 0.0D)
+                .add(forward.scale(6.0D));
+    }
+
+    private void fireOrbOfAnnihilation(ServerLevel serverLevel) {
+        Vec3 start = orbChargePos();
+        Vec3 direction = DragonLocatorSampler.forward(this).normalize();
+
+        spawnProjectile(
+                serverLevel,
+                TedProjectileSpecs.ORB_OF_ANNIHILATION,
+                start,
+                direction
+        );
+    }
+
+    private void spawnProjectile(
+            ServerLevel serverLevel,
+            TedProjectileSpec spec,
+            Vec3 start,
+            Vec3 direction
+    ) {
+        TedVfxEntity projectile = ModEntities.TED_VFX.create(serverLevel, EntitySpawnReason.EVENT);
+        if (projectile == null) {
+            return;
+        }
+
+        projectile.setup(spec);
+        projectile.setProjectileOwner(this);
+
+        Vec3 dir = direction.normalize();
+
+        float yaw = (float) Math.toDegrees(Math.atan2(-dir.x, dir.z));
+        float pitch = (float) -Math.toDegrees(Math.asin(dir.y));
+
+        projectile.snapTo(
+                start.x,
+                start.y,
+                start.z,
+                yaw,
+                pitch
+        );
+
+        projectile.setDeltaMovement(dir.scale(spec.speed()));
+
+
+        serverLevel.addFreshEntity(projectile);
+    }
+
+    private void updatePhotonLasers(ServerLevel serverLevel) {
+        updateHandLaserBeam(serverLevel, DragonCollisionPart.FRONT_LEFT_HAND, 0.0D, 0.0D, 0.0D);
+        updateHandLaserBeam(serverLevel, DragonCollisionPart.FRONT_RIGHT_HAND, 0.0D, 0.0D, 0.0D);
+        updateHandLaserBeam(serverLevel, DragonCollisionPart.BACK_LEFT_HAND, 0.0D, 0.0D, 0.0D);
+        updateHandLaserBeam(serverLevel, DragonCollisionPart.BACK_RIGHT_HAND, 0.0D, 0.0D, 0.0D);
+
+        updateHeadLaserBeam(serverLevel, true);
+    }
+
+    private void updateHandLaserBeam(
+            ServerLevel serverLevel,
+            DragonCollisionPart part,
+            double offsetX,
+            double offsetY,
+            double offsetZ
+    ) {
+        DragonCollisionBox box = getCollisionPartBox(part);
+        if (box == null || box.obb() == null) {
+            return;
+        }
+
+        Vec3 axisX = box.obb().axisX().normalize();
+        Vec3 axisY = box.obb().axisY().normalize();
+        Vec3 axisZ = box.obb().axisZ().normalize();
+
+        Vec3 start = box.obb().center()
+                .add(axisX.scale(offsetX))
+                .add(axisY.scale(offsetY))
+                .add(axisZ.scale(offsetZ));
+
+        Vec3 direction = axisY.normalize();
+
+        double length = raycastLaserLength(
+                serverLevel,
+                start,
+                direction,
+                64.0D
+        );
+
+        TedBeamHitbox beam = new TedBeamHitbox(
+                start,
+                direction,
+                length,
+                1.5D
+        );
+
+        beam.spawnLaserParticles(serverLevel);
+
+        beam.damageEntities(
+                serverLevel,
+                this,
+                8.0F,
+                entity -> entity != this
+        );
+    }
+
+    private void updateFlightJets(ServerLevel serverLevel) {
+        updateJetBeam(serverLevel, DragonCollisionPart.FRONT_LEFT_HAND, 0.0D, 2.0D, 0.0D);
+        updateJetBeam(serverLevel, DragonCollisionPart.FRONT_RIGHT_HAND, 0.0D, 2.0D, 0.0D);
+        updateJetBeam(serverLevel, DragonCollisionPart.BACK_LEFT_HAND, 0.0D, 2.0D, 0.0D);
+        updateJetBeam(serverLevel, DragonCollisionPart.BACK_RIGHT_HAND, 0.0D, 2.0D, 0.0D);
+    }
+
+    private void updateHeadLaserBeam(
+            ServerLevel serverLevel,
+            boolean active
+    ) {
+        if (!active) {
+            return;
+        }
+
+        DragonCollisionBox box = getCollisionPartBox(DragonCollisionPart.HEAD);
+        if (box == null || box.obb() == null) {
+            return;
+        }
+
+        Vec3 axisX = box.obb().axisX().normalize();
+        Vec3 axisY = box.obb().axisY().normalize();
+        Vec3 axisZ = box.obb().axisZ().normalize();
+
+        // まずは手レーザーと同じく axisY を正方向として使う
+        Vec3 direction = axisY;
+
+        // 頭の中心から少し前へ出す
+        Vec3 start = box.obb().center()
+                .add(direction.scale(0.8D));
+
+        double maxLength = 64.0D;
+
+        double length = raycastLaserLength(
+                serverLevel,
+                start,
+                direction,
+                maxLength
+        );
+
+        TedBeamHitbox beam = new TedBeamHitbox(
+                start,
+                direction,
+                length,
+                1.0D
+        );
+
+        beam.spawnLaserParticles(serverLevel);
+
+        beam.damageEntities(
+                serverLevel,
+                this,
+                8.0F,
+                entity -> entity != this
+        );
+    }
+
+
+    private void debugDrawHeadCollision(ServerLevel level) {
+        DragonCollisionBox box = getCollisionPartBox(DragonCollisionPart.HEAD);
+        if (box == null || box.points() == null || box.points().length < 8) {
+            return;
+        }
+
+        Vec3[] p = box.points();
+
+        // 8頂点
+        for (Vec3 v : p) {
+            level.sendParticles(
+                    net.minecraft.core.particles.ParticleTypes.FLAME,
+                    v.x, v.y, v.z,
+                    4,
+                    0.03D, 0.03D, 0.03D,
+                    0.0D
+            );
+        }
+
+        // 面と辺
+        debugLine(level, p[0], p[1]);
+        debugLine(level, p[1], p[2]);
+        debugLine(level, p[2], p[3]);
+        debugLine(level, p[3], p[0]);
+
+        debugLine(level, p[4], p[5]);
+        debugLine(level, p[5], p[6]);
+        debugLine(level, p[6], p[7]);
+        debugLine(level, p[7], p[4]);
+
+        debugLine(level, p[0], p[4]);
+        debugLine(level, p[1], p[5]);
+        debugLine(level, p[2], p[6]);
+        debugLine(level, p[3], p[7]);
+    }
+
+    private void debugLine(ServerLevel level, Vec3 a, Vec3 b) {
+        int count = 24;
+
+        for (int i = 0; i <= count; i++) {
+            double t = i / (double) count;
+            Vec3 p = a.lerp(b, t);
+
+            level.sendParticles(
+                    net.minecraft.core.particles.ParticleTypes.END_ROD,
+                    p.x, p.y, p.z,
+                    1,
+                    0.0D, 0.0D, 0.0D,
+                    0.0D
+            );
+        }
+    }
+
+
+
 
     private org.joml.Quaternionf quaternionFromBasis(Vec3 right, Vec3 up, Vec3 forward) {
         Vec3 f = forward.normalize();
@@ -578,44 +1069,7 @@ public class TheEndOfDragonCoreEntity extends Monster {
         return Math.max(1.0D, Math.min(maxLength, length));
     }
 
-    private void spawnJet(
-            ServerLevel serverLevel,
-            DragonCollisionPart part,
-            double rightOffset,
-            double upOffset,
-            double forwardOffset
-    ) {
-        DragonCollisionBox box = getCollisionPartBox(part);
-        if (box == null || box.obb() == null) {
-            return;
-        }
 
-        Vec3 center = box.obb().center();
-
-        Vec3 posForward = box.obb().axisZ().normalize().scale(-1.0D);
-        Vec3 renderForward = box.obb().axisY().normalize().scale(-1.0D);
-        Vec3 up = box.obb().axisY().normalize();
-        Vec3 right = box.obb().axisX().normalize();
-
-        Vec3 pos = center
-                .add(right.scale(rightOffset))
-                .add(up.scale(upOffset))
-                .add(posForward.scale(forwardOffset));
-
-        float yaw = (float) Math.toDegrees(Math.atan2(-renderForward.x, renderForward.z));
-        float pitch = (float) -Math.toDegrees(Math.asin(renderForward.y));
-
-        TedVfxSpawner.spawnAt(
-                serverLevel,
-                pos,
-                yaw,
-                pitch,
-                TedVfxType.TED_JET,
-                1.0F,
-                5.0F,
-                20
-        );
-    }
 
 
 
@@ -646,25 +1100,25 @@ public class TheEndOfDragonCoreEntity extends Monster {
 
         switch (this.getDragonState()) {
             case ORB_OF_ANNIHILATION -> {
-                if (age > 78) this.setDragonState(DragonState.IDLE);
+                if (age > 65) this.setDragonState(DragonState.IDLE);
             }
             case ROAR_OF_OBLITERATION -> {
-                if (age > 48) this.setDragonState(DragonState.IDLE);
+                if (age > 40) this.setDragonState(DragonState.IDLE);
             }
             case FLAMES_OF_RAGNAROK -> {
                 if (age > 120) this.setDragonState(DragonState.IDLE);
             }
             case LIGHT_OF_DESTRUCTION -> {
-                if (age > 36) this.setDragonState(DragonState.IDLE);
+                if (age > 30) this.setDragonState(DragonState.IDLE);
             }
             case PHOTON_BLASTER -> {
-                if (age > 84) this.setDragonState(DragonState.IDLE);
+                if (age > 70) this.setDragonState(DragonState.IDLE);
             }
             case BLASTER_TACKLE -> {
-                if (age > 24) this.setDragonState(DragonState.IDLE);
+                if (age > 20) this.setDragonState(DragonState.IDLE);
             }
             case FLY_SHOT -> {
-                if (age > 12) this.setDragonState(DragonState.FLY);
+                if (age > 10) this.setDragonState(DragonState.FLY);
             }
             default -> {
             }
@@ -727,12 +1181,11 @@ public class TheEndOfDragonCoreEntity extends Monster {
         }
 
         TedVfxEntity vfx = getLaserVfxForPart(serverLevel, spec.part());
-        if (vfx == null) {
-            return;
-        }
 
         if (!active) {
-            vfx.updateVfx(0.0F, 0.0F);
+            if (vfx != null) {
+                vfx.updateVfx(0.0F, 0.0F);
+            }
             return;
         }
 
@@ -740,27 +1193,64 @@ public class TheEndOfDragonCoreEntity extends Monster {
         Vec3 axisY = box.obb().axisY().normalize();
         Vec3 axisZ = box.obb().axisZ().normalize();
 
-        Vec3 pos = box.obb().center()
+        Vec3 start = box.obb().center()
                 .add(axisX.scale(spec.offsetX()))
                 .add(axisY.scale(spec.offsetY()))
                 .add(axisZ.scale(spec.offsetZ()));
 
-// レイキャスト方向。ここが炎パーティクルと同じ方向になる
         Vec3 rayDir = axisY.normalize();
 
         float length = spec.length();
 
         if (spec.type() == TedVfxType.TED_LASER_BEAM) {
-            length = (float) raycastLaserLength(serverLevel, pos, rayDir, spec.length());
+            length = (float) raycastLaserLength(
+                    serverLevel,
+                    start,
+                    rayDir,
+                    spec.length()
+            );
         }
 
-        vfx.updateVfx(spec.scale(), length);
-        vfx.snapTo(pos.x, pos.y, pos.z, 0.0F, 0.0F);
+        TedBeamHitbox beam = new TedBeamHitbox(
+                start,
+                rayDir,
+                length,
+                spec.radius()
+        );
 
-// 親回転は腕OBBではなく、レイキャスト方向をY軸として作る
-        if (spec.mode() == TedVfxAttachMode.PART_BASIS) {
-            Vec3 upForRoll = axisZ;
-            vfx.setBasis(rayDir, upForRoll);
+        beam.damageEntities(
+                serverLevel,
+                this,
+                spec.damage(),
+                entity -> entity != this
+        );
+
+        switch (spec.type()) {
+            case TED_LASER_BEAM ->{
+                System.out.println("LASER");
+                    beam.spawnLaserParticles(serverLevel);
+            }
+            case TED_JET -> {
+                beam.spawnJetParticles(serverLevel);
+                placeTemporaryLight(serverLevel, start);
+            }
+        }
+
+        if (vfx != null) {
+            vfx.updateVfx(0.0F, 0.0F);
         }
     }
+
+    private void placeTemporaryLight(ServerLevel level, Vec3 pos) {
+        BlockPos blockPos = BlockPos.containing(pos);
+
+        level.setBlock(
+                blockPos,
+                Blocks.LIGHT.defaultBlockState()
+                        .setValue(LightBlock.LEVEL, 15),
+                3
+        );
+    }
+
+
 }

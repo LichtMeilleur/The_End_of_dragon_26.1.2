@@ -13,31 +13,30 @@
 			"bones": [
 				{
 					"name": "root",
-					"pivot": [0, 7, 0]
+					"pivot": [0, 0, 0]
 				},
 				{
 					"name": "parent_root",
 					"parent": "root",
-					"pivot": [0, 7, 0]
+					"pivot": [0, 8, 0]
 				},
 				{
 					"name": "local_root",
 					"parent": "parent_root",
-					"pivot": [0, 7, 0],
-					"rotation": [90, 0, 0]
+					"pivot": [0, 8, 0]
 				},
 				{
 					"name": "effect_root",
 					"parent": "local_root",
-					"pivot": [0, 7, 0]
+					"pivot": [0, 8, 0]
 				},
 				{
 					"name": "small_laser",
 					"parent": "effect_root",
-					"pivot": [0, 7, 0],
+					"pivot": [0, 8, -1],
 					"cubes": [
 						{
-							"origin": [-3, 4, -3],
+							"origin": [-3, 5, -4],
 							"size": [6, 6, 6],
 							"uv": {
 								"north": {"uv": [6, 38], "uv_size": [6, 6]},
@@ -53,10 +52,10 @@
 				{
 					"name": "laser",
 					"parent": "effect_root",
-					"pivot": [0, 7, 0],
+					"pivot": [0, 8, -1],
 					"cubes": [
 						{
-							"origin": [-7, 0, -7],
+							"origin": [-7, 1, -8],
 							"size": [14, 14, 14],
 							"uv": {
 								"north": {"uv": [34, 54], "uv_size": [10, 10]},
@@ -72,10 +71,10 @@
 				{
 					"name": "ring",
 					"parent": "effect_root",
-					"pivot": [0, 7, 0],
+					"pivot": [0, 8, 0],
 					"cubes": [
 						{
-							"origin": [-8, -1, -8],
+							"origin": [-8, 0, -8],
 							"size": [16, 16, 16],
 							"uv": {
 								"north": {"uv": [16, 16], "uv_size": [16, 16]},
