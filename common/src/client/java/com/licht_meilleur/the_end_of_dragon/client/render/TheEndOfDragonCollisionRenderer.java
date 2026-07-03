@@ -23,5 +23,19 @@ public class TheEndOfDragonCollisionRenderer<R extends LivingEntityRenderState &
         return RenderTypes.entityTranslucent(texture);
     }
 
+    @Override
+    protected void applyRotations(
+            com.geckolib.renderer.base.RenderPassInfo<R> renderPassInfo,
+            com.mojang.blaze3d.vertex.PoseStack poseStack,
+            float nativeScale
+    ) {
+        super.applyRotations(renderPassInfo, poseStack, nativeScale);
+
+        R state = renderPassInfo.renderState();
+
+        poseStack.mulPose(
+                com.mojang.math.Axis.XP.rotationDegrees(state.xRot)
+        );
+    }
 
 }

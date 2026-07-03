@@ -35,6 +35,14 @@ public enum TedVfxType {
             "textures/entity/light_of_destruction.png",
             "light_projectile",
             "animation.model.attack"
+    ),
+
+    ROAR_OF_OBLITERATION(
+        "roar_of_obliteration",
+                "light_projectile", // ダミー。Geo描画しないので使わない
+                "textures/vfx/roar_of_obliteration.png",
+                "light_projectile", // ダミー
+                "animation.model.attack" // ダミー
     );
 
 

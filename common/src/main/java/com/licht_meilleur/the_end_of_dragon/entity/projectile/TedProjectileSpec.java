@@ -8,7 +8,7 @@ public record TedProjectileSpec(
         double speed,
         int maxAge,
         double hitRadius,
-        float damage,
+
         boolean destroyBlocks,
         double destroyRadius,
         boolean createExplosion,

@@ -7,6 +7,7 @@ import com.geckolib.animation.AnimationController;
 import com.geckolib.animation.RawAnimation;
 import com.geckolib.animation.object.PlayState;
 import com.geckolib.util.GeckoLibUtil;
+import com.licht_meilleur.the_end_of_dragon.config.TedConfig;
 import com.licht_meilleur.the_end_of_dragon.entity.projectile.TedProjectileSpec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -154,7 +155,7 @@ public class TedVfxEntity extends Entity implements GeoEntity {
         );
 
         this.hitRadius = spec.hitRadius();
-        this.damage = spec.damage();
+        this.damage = damageForProjectile(spec.type());
         this.destroyBlocks = spec.destroyBlocks();
         this.destroyRadius = spec.destroyRadius();
         this.createExplosion = spec.createExplosion();
@@ -617,6 +618,20 @@ public class TedVfxEntity extends Entity implements GeoEntity {
         return true;
     }
 
+    private static float damageForProjectile(TedVfxType type) {
+        float multiplier = (float) TedConfig.values.damageMultiplier;
+
+        return switch (type) {
+            case ORB_OF_ANIHILATION ->
+                    TedConfig.values.orbDamage * multiplier;
+
+            case LIGHT_PROJECTILE ->
+                    TedConfig.values.lightProjectileDamage * multiplier;
+
+            default ->
+                    1.0F * multiplier;
+        };
+    }
 
 
 

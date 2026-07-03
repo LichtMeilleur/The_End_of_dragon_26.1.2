@@ -11,42 +11,10 @@ public final class EndPortalSealHandler {
     private static final int SEARCH_MIN_Y = 0;
     private static final int SEARCH_MAX_Y = 128;
 
-    public static void seal(ServerLevel level) {
-        BlockPos center = findPortalCenter(level);
-        if (center == null) {
-            return;
-        }
-
-        for (BlockPos pos : BlockPos.betweenClosed(
-                center.offset(-2, 1, -2),
-                center.offset(2, 1, 2)
-        )) {
-            if (level.getBlockState(pos).is(Blocks.END_PORTAL)) {
-                level.setBlock(pos, Blocks.BEDROCK.defaultBlockState(), 3);
-            }
-        }
-    }
-
-    public static void unseal(ServerLevel level) {
-        BlockPos center = findPortalCenter(level);
-        if (center == null) {
-            return;
-        }
-
-        for (BlockPos pos : BlockPos.betweenClosed(
-                center.offset(-2, 1, -2),
-                center.offset(2, 1, 2)
-        )) {
-            if (level.getBlockState(pos).is(Blocks.BEDROCK)) {
-                level.setBlock(pos, Blocks.END_PORTAL.defaultBlockState(), 3);
-            }
-        }
-    }
-
-    private static BlockPos findPortalCenter(ServerLevel level) {
+    public static BlockPos findPortalCenter(ServerLevel level) {
         for (int y = SEARCH_MIN_Y; y <= SEARCH_MAX_Y; y++) {
             BlockPos pos = new BlockPos(CENTER_X, y, CENTER_Z);
-            if (level.getBlockState(pos).is(Blocks.END_PORTAL)) {
+            if (isPortalStructureBlock(level, pos)) {
                 return pos;
             }
         }
@@ -55,14 +23,84 @@ public final class EndPortalSealHandler {
             for (int x = -SEARCH_RADIUS; x <= SEARCH_RADIUS; x++) {
                 for (int z = -SEARCH_RADIUS; z <= SEARCH_RADIUS; z++) {
                     BlockPos pos = new BlockPos(x, y, z);
-                    if (level.getBlockState(pos).is(Blocks.END_PORTAL)) {
+                    if (isPortalStructureBlock(level, pos)) {
                         return pos;
                     }
                 }
             }
         }
 
-        return null;
+        return new BlockPos(0, 64, 0);
+    }
+
+    private static boolean isPortalStructureBlock(ServerLevel level, BlockPos pos) {
+        var state = level.getBlockState(pos);
+        return state.is(Blocks.END_PORTAL)
+                || state.is(Blocks.END_PORTAL_FRAME)
+                || state.is(Blocks.BEDROCK);
+    }
+
+    public static void sealPortal(ServerLevel level) {
+        BlockPos center = findPortalCenter(level);
+        if (center == null) return;
+
+        // ポータル本体と中央柱周辺を消す/封印する
+        for (BlockPos pos : BlockPos.betweenClosed(
+                center.offset(-3, -2, -3),
+                center.offset(3, 4, 3)
+        )) {
+            var state = level.getBlockState(pos);
+
+            if (state.is(Blocks.END_PORTAL)
+                    || state.is(Blocks.END_PORTAL_FRAME)
+                    || state.is(Blocks.BEDROCK)) {
+                level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+            }
+        }
+    }
+
+    public static void restorePortal(ServerLevel level) {
+        BlockPos center = new BlockPos(0, 64, 0);
+
+        // 足場
+        for (BlockPos pos : BlockPos.betweenClosed(
+                center.offset(-2, -1, -2),
+                center.offset(2, -1, 2)
+        )) {
+            level.setBlock(pos, Blocks.BEDROCK.defaultBlockState(), 3);
+        }
+
+        // ポータル面
+        for (BlockPos pos : BlockPos.betweenClosed(
+                center.offset(-1, 0, -1),
+                center.offset(1, 0, 1)
+        )) {
+            level.setBlock(pos, Blocks.END_PORTAL.defaultBlockState(), 3);
+        }
+
+        // 中央柱
+        for (int y = 1; y <= 4; y++) {
+            level.setBlock(center.above(y), Blocks.BEDROCK.defaultBlockState(), 3);
+        }
+    }
+
+    public static void coverPortalArea(ServerLevel level) {
+        BlockPos center = new BlockPos(0, 64, 0);
+
+        for (BlockPos pos : BlockPos.betweenClosed(
+                center.offset(-3, -1, -3),
+                center.offset(3, 3, 3)
+        )) {
+            var state = level.getBlockState(pos);
+
+            if (state.is(Blocks.BEDROCK)) continue;
+            if (state.is(Blocks.AIR)
+                    || state.is(Blocks.END_PORTAL)
+                    || state.is(Blocks.END_PORTAL_FRAME)
+                    || state.canBeReplaced()) {
+                level.setBlock(pos, Blocks.BEDROCK.defaultBlockState(), 3);
+            }
+        }
     }
 
     private EndPortalSealHandler() {

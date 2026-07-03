@@ -17,7 +17,6 @@ public final class TedVfxSpecs {
                 2.5F,
                 64.0F,
                 0.75F,
-                10.0F,
                 999999
         );
     }
@@ -31,7 +30,6 @@ public final class TedVfxSpecs {
                 1.5F,
                 5.0F,
                 1.0F,
-                3.0F,
                 20
         );
     }

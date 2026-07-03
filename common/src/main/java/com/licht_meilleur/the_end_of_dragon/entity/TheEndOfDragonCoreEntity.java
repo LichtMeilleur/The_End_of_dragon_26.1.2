@@ -1,5 +1,6 @@
 package com.licht_meilleur.the_end_of_dragon.entity;
 
+import com.licht_meilleur.the_end_of_dragon.config.TedConfig;
 import com.licht_meilleur.the_end_of_dragon.entity.collision.DragonCollisionBox;
 import com.licht_meilleur.the_end_of_dragon.entity.collision.DragonCollisionPart;
 import com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonLocatorSampler;
@@ -60,6 +61,11 @@ public class TheEndOfDragonCoreEntity extends Monster {
     private static final int FLY_SHOT_FIRE_TICK = 5;
 
 
+
+    private Vec3 introFlyTarget = null;
+    private Vec3 introPortalAboveTarget = null;
+
+
     private static boolean between(int age, int start, int end) {
         return age >= start && age <= end;
     }
@@ -82,6 +88,24 @@ public class TheEndOfDragonCoreEntity extends Monster {
         this.yHeadRotO = yaw;
     }
 
+    private float visualPitch = 0.0F;
+
+    public void setVisualRotation(float yaw, float pitch) {
+        this.setYRot(yaw);
+        this.setYBodyRot(yaw);
+        this.setYHeadRot(yaw);
+
+        this.yRotO = yaw;
+        this.yBodyRotO = yaw;
+        this.yHeadRotO = yaw;
+
+        this.visualPitch = pitch;
+    }
+
+    public float getVisualPitch() {
+        return this.visualPitch;
+    }
+
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
@@ -91,12 +115,14 @@ public class TheEndOfDragonCoreEntity extends Monster {
     private int stateStartTick = 0;
 
     public void setDragonState(DragonState state) {
-        if (this.getDragonState() == state) {
-            return;
-        }
+        if (this.getDragonState() == state) return;
 
         this.entityData.set(DATA_STATE, state.ordinal());
         this.stateStartTick = this.tickCount;
+
+        if (state == DragonState.SUPER_LANDING) {
+            this.superLandingImpacted = false;
+        }
     }
 
     public int getDragonStateAgeTicks() {
@@ -120,13 +146,16 @@ public class TheEndOfDragonCoreEntity extends Monster {
         this.noPhysics = true;
         this.setNoGravity(true);
 
-
-
-        if (!this.level().isClientSide()) {
-            this.tickChildren();
-            this.tickAttackVfx();
-            this.tickAttackStateTimeout();
+        if (this.level().isClientSide()) {
+            return;
         }
+
+        ServerLevel serverLevel = (ServerLevel) this.level();
+
+        this.tickChildren();
+        this.tickAttackVfx();
+        this.tickBodyBlockBreak(serverLevel);
+        this.tickAttackStateTimeout();
     }
 
     private void tickChildren() {
@@ -210,7 +239,7 @@ public class TheEndOfDragonCoreEntity extends Monster {
         super.die(damageSource);
 
         if (!this.level().isClientSide() && this.level() instanceof ServerLevel serverLevel) {
-            EndPortalSealHandler.unseal(serverLevel);
+            EndPortalSealHandler.restorePortal(serverLevel);
         }
     }
 
@@ -221,7 +250,10 @@ public class TheEndOfDragonCoreEntity extends Monster {
 
     public static AttributeSupplier.Builder createAttributes() {
         return Monster.createMonsterAttributes()
-                .add(Attributes.MAX_HEALTH, 600.0D)
+                .add(
+                        Attributes.MAX_HEALTH,
+                        600.0D * TedConfig.values.healthMultiplier
+                )
                 .add(Attributes.ATTACK_DAMAGE, 20.0D)
                 .add(Attributes.ARMOR, 20.0D)
                 .add(Attributes.FOLLOW_RANGE, 128.0D)
@@ -252,16 +284,167 @@ public class TheEndOfDragonCoreEntity extends Monster {
         }
     }
 
+    private void tickBodyBlockBreak(ServerLevel level) {
+        if (!shouldBodyBreakBlocks()) {
+            return;
+        }
+
+        TheEndOfDragonCollisionEntity collision =
+                this.getChild(this.collisionEntityId, TheEndOfDragonCollisionEntity.class);
+
+        if (collision == null) {
+            return;
+        }
+
+        for (DragonCollisionBox box : collision.getCollisionBoxes()) {
+            if (!canBodyPartBreakBlocks(box.part())) {
+                continue;
+            }
+
+            if (box.points() == null || box.points().length == 0) {
+                continue;
+            }
+
+            breakBlocksInBodyBox(level, box);
+        }
+    }
+    private boolean shouldBodyBreakBlocks() {
+        return this.isAlive() && TedConfig.values.enableBlockBreak;
+    }
+
+    private boolean canBodyPartBreakBlocks(DragonCollisionPart part) {
+        return switch (part) {
+            case LEFT_LEG,
+                 RIGHT_LEG,
+                 TAIL_ROOT,
+                 TAIL_TIP -> false;
+
+            case UNKNOWN -> false;
+
+            default -> true;
+        };
+    }
+
+    private void breakBlocksInBodyBox(ServerLevel level, DragonCollisionBox box) {
+        AABB area = aabbFromPoints(box.points()).inflate(0.35D);
+
+        int minX = (int) Math.floor(area.minX);
+        int minY = (int) Math.floor(area.minY);
+        int minZ = (int) Math.floor(area.minZ);
+        int maxX = (int) Math.ceil(area.maxX);
+        int maxY = (int) Math.ceil(area.maxY);
+        int maxZ = (int) Math.ceil(area.maxZ);
+
+        int groundLimitY = this.blockPosition().getY();
+
+        for (int x = minX; x <= maxX; x++) {
+            for (int y = minY; y <= maxY; y++) {
+                for (int z = minZ; z <= maxZ; z++) {
+                    if (y <= groundLimitY) {
+                        continue;
+                    }
+
+                    BlockPos pos = new BlockPos(x, y, z);
+                    var state = level.getBlockState(pos);
+
+                    if (state.isAir()) continue;
+                    if (!canBodyDestroyBlock(level, pos, state)) continue;
+
+                    level.destroyBlock(pos, false, this);
+                }
+            }
+        }
+    }
+
+    private static AABB aabbFromPoints(Vec3[] points) {
+        double minX = Double.MAX_VALUE;
+        double minY = Double.MAX_VALUE;
+        double minZ = Double.MAX_VALUE;
+        double maxX = -Double.MAX_VALUE;
+        double maxY = -Double.MAX_VALUE;
+        double maxZ = -Double.MAX_VALUE;
+
+        for (Vec3 p : points) {
+            minX = Math.min(minX, p.x);
+            minY = Math.min(minY, p.y);
+            minZ = Math.min(minZ, p.z);
+            maxX = Math.max(maxX, p.x);
+            maxY = Math.max(maxY, p.y);
+            maxZ = Math.max(maxZ, p.z);
+        }
+
+        return new AABB(minX, minY, minZ, maxX, maxY, maxZ);
+    }
+
+    private boolean canBodyDestroyBlock(ServerLevel level, BlockPos pos, net.minecraft.world.level.block.state.BlockState state) {
+        if (state.getDestroySpeed(level, pos) < 0.0F) {
+            return false;
+        }
+
+        var block = state.getBlock();
+
+        if (block == Blocks.BEDROCK) return false;
+        if (block == Blocks.END_PORTAL) return false;
+        if (block == Blocks.END_PORTAL_FRAME) return false;
+        if (block == Blocks.BARRIER) return false;
+        if (block == Blocks.COMMAND_BLOCK) return false;
+        if (block == Blocks.CHAIN_COMMAND_BLOCK) return false;
+        if (block == Blocks.REPEATING_COMMAND_BLOCK) return false;
+        if (block == Blocks.STRUCTURE_BLOCK) return false;
+        if (block == Blocks.JIGSAW) return false;
+
+        return true;
+    }
+
+    private void tickAttackStateTimeout() {
+        int age = this.getDragonStateAgeTicks();
+
+        switch (this.getDragonState()) {
+            case ORB_OF_ANNIHILATION -> {
+                if (age > 65) this.setDragonState(DragonState.IDLE);
+            }
+            case ROAR_OF_OBLITERATION -> {
+                if (age > 40) this.setDragonState(DragonState.IDLE);
+            }
+            case FLAMES_OF_RAGNAROK -> {
+                if (age > 120) this.setDragonState(DragonState.IDLE);
+            }
+            case LIGHT_OF_DESTRUCTION -> {
+                if (age > 30) this.setDragonState(DragonState.IDLE);
+            }
+            case PHOTON_BLASTER -> {
+                if (age > 70) this.setDragonState(DragonState.IDLE);
+            }
+            case BLASTER_TACKLE -> {
+                if (age > 20) this.setDragonState(DragonState.IDLE);
+            }
+            case FLY_SHOT -> {
+                if (age > 10) this.setDragonState(DragonState.FLY);
+            }
+            case SUPER_LANDING -> {
+                if (age > 20) this.setDragonState(DragonState.IDLE);
+            }
+
+            default -> {
+            }
+        }
+    }
+
+
     private void tickAttackVfx() {
         if (!(this.level() instanceof net.minecraft.server.level.ServerLevel serverLevel)) {
             return;
         }
+
+        /*
 
         com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonLocatorSampler.debugDrawLocator(
                 serverLevel,
                 this,
                 com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonLocators.FRONT_LEFT_JET
         );
+
+         */
         /*
         //レイキャスト確認
         DragonCollisionBox box = getCollisionPartBox(DragonCollisionPart.FRONT_LEFT_HAND);
@@ -347,17 +530,447 @@ public class TheEndOfDragonCoreEntity extends Monster {
             }
 
             case ROAR_OF_OBLITERATION -> {
+                if (age == 1) {
+                    spawnRoarOfObliterationVfx(serverLevel);
+                }
+
                 if (age == 10) {
                     applyRoarOfObliteration(serverLevel);
                 }
 
-                spawnRoarParticles(serverLevel, age);
+                // spawnRoarParticles(serverLevel, age);
             }
+
+            case BLASTER_TACKLE -> {
+                if (between(age, 7, 8)) {
+                    updateFlightJets(serverLevel);
+                }
+
+                if (age >= 9) {
+                    updateBlasterTackleMove(serverLevel, age);
+                }
+            }
+
+
+            case INTRO_RISE -> {
+                updateIntroRise(serverLevel, age);
+            }
+
+            case INTRO_WAIT_PORTAL -> {
+                updateIntroWaitPortal(serverLevel, age);
+            }
+
+            case INTRO_FLY_TO_PORTAL -> {
+                updateIntroFlyToPortal(serverLevel);
+            }
+
+            case INTRO_DIVE_TO_PORTAL -> {
+                updateIntroDiveToPortal(serverLevel);
+            }
+
+            case SUPER_LANDING -> {
+                updateSuperLanding(serverLevel);
+            }
+
+
 
             default -> {
                 //hideAllLaserVfx(serverLevel);
             }
         }
+    }
+
+
+    private void moveByVector(ServerLevel level, Vec3 move) {
+        if (move.lengthSqr() < 1.0E-6D) {
+            return;
+        }
+
+        this.setPos(
+                this.getX() + move.x,
+                this.getY() + move.y,
+                this.getZ() + move.z
+        );
+
+        faceMovementDirection(move);
+
+        this.setDeltaMovement(Vec3.ZERO);
+        this.hurtMarked = true;
+
+        syncChildrenNow();
+    }
+
+    private void faceMovementDirection(Vec3 dir) {
+        if (dir.lengthSqr() < 1.0E-6D) return;
+
+        Vec3 n = dir.normalize();
+
+        float yaw = (float) Math.toDegrees(Math.atan2(-n.x, n.z));
+
+        double horizontal = Math.sqrt(n.x * n.x + n.z * n.z);
+        float pitch = (float) -Math.toDegrees(Math.atan2(n.y, horizontal));
+
+        this.setVisualRotation(yaw, pitch);
+    }
+
+
+
+
+    private void updateIntroWaitPortal(ServerLevel level, int age) {
+        EndPortalSealHandler.coverPortalArea(level);
+
+        updateFlightJets(level);
+
+
+
+        // 約5秒待つ。バニラのポータル生成待ち
+        if (age >= 100) {
+            this.setDragonState(DragonState.INTRO_FLY_TO_PORTAL);
+        }
+    }
+
+    private void updateIntroRise(ServerLevel level, int age) {
+        moveByVector(level, new Vec3(0.0D, 3.5D, 0.0D));
+        updateFlightJets(level);
+
+        if (age >= 18) {
+            this.setDragonState(DragonState.INTRO_WAIT_PORTAL);
+        }
+    }
+
+    private void updateIntroFlyToPortal(ServerLevel level) {
+        if (this.introPortalAboveTarget == null) {
+            this.setDragonState(DragonState.FLY);
+            return;
+        }
+
+        Vec3 current = this.position();
+
+        Vec3 target = new Vec3(
+                this.introPortalAboveTarget.x,
+                current.y,
+                this.introPortalAboveTarget.z
+        );
+
+        Vec3 toTarget = target.subtract(current);
+        double dist = toTarget.length();
+
+        if (dist < 4.0D) {
+            this.snapTo(
+                    target.x,
+                    target.y,
+                    target.z,
+                    this.getYRot(),
+                    this.getXRot()
+            );
+
+            syncChildrenNow();
+            this.setDragonState(DragonState.INTRO_DIVE_TO_PORTAL);
+            return;
+        }
+
+        Vec3 dir = toTarget.normalize();
+        Vec3 move = dir.scale(Math.min(5.5D, dist));
+
+
+
+        moveByVector(level, move);
+        updateFlightJets(level);
+
+
+
+        syncChildrenNow();
+        updateFlightJets(level);
+
+
+    }
+
+
+    private void updateIntroDiveToPortal(ServerLevel level) {
+        Vec3 move = new Vec3(0.0D, -5.0D, 0.0D);
+
+        if (this.introPortalAboveTarget != null) {
+            this.setPos(
+                    this.introPortalAboveTarget.x,
+                    this.getY(),
+                    this.introPortalAboveTarget.z
+            );
+        }
+
+        moveByVector(level, move);
+
+        level.sendParticles(
+                ParticleTypes.SMOKE,
+                this.getX(),
+                this.getY() + 3.0D,
+                this.getZ(),
+                20,
+                1.5D, 0.8D, 1.5D,
+                0.08D
+        );
+
+        if (isNearGroundForSuperLanding(level)) {
+            this.setDragonState(DragonState.SUPER_LANDING);
+        }
+    }
+
+    public void startIntroSequence(Vec3 portalAboveTarget) {
+        this.introPortalAboveTarget = portalAboveTarget;
+        this.setDragonState(DragonState.INTRO_RISE);
+    }
+
+
+    private void syncChildrenNow() {
+        TheEndOfDragonDisplayEntity display =
+                this.getChild(this.displayEntityId, TheEndOfDragonDisplayEntity.class);
+
+        TheEndOfDragonCollisionEntity collision =
+                this.getChild(this.collisionEntityId, TheEndOfDragonCollisionEntity.class);
+
+        if (display != null) display.syncFromCore(this);
+        if (collision != null) collision.syncFromCore(this);
+    }
+
+
+    private boolean superLandingImpacted = false;
+
+
+
+    private void updateSuperLanding(ServerLevel level) {
+        if (!superLandingImpacted) {
+            moveByVector(level, new Vec3(0.0D, -5.0D, 0.0D));
+
+            if (isNearGroundForSuperLanding(level)) {
+                applySuperLandingImpact(level);
+                superLandingImpacted = true;
+            }
+        }
+    }
+
+    private boolean isNearGroundForSuperLanding(ServerLevel level) {
+        BlockPos base = this.blockPosition();
+
+        for (int y = 0; y <= 5; y++) {
+            BlockPos pos = base.below(y);
+
+            if (!level.getBlockState(pos).isAir()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
+
+    private void applySuperLandingImpact(ServerLevel level) {
+        Vec3 center = this.position();
+        BlockPos base = BlockPos.containing(center);
+
+
+        int radius = 9;
+
+
+
+        if (TedConfig.values.enableBlockBreak) {
+            for (int x = -radius; x <= radius; x++) {
+                for (int y = -3; y <= 0; y++) {
+                    for (int z = -radius; z <= radius; z++) {
+                        double dist = Math.sqrt(x * x + z * z);
+                        if (dist > radius) continue;
+
+                        BlockPos pos = base.offset(x, y, z);
+                        var state = level.getBlockState(pos);
+
+                        if (state.isAir()) continue;
+                        if (!canSuperLandingDestroyBlock(level, pos, state)) continue;
+
+                        if (state.is(Blocks.BEDROCK)
+                                || state.is(Blocks.END_PORTAL)
+                                || state.is(Blocks.END_PORTAL_FRAME)) {
+                            level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+                        } else {
+                            level.destroyBlock(pos, false, this);
+                        }
+                    }
+                }
+            }
+        }
+
+// ダメージはブロック破壊ループの外で1回だけ
+        float damage = TedConfig.values.superLandingDamage
+                * (float) TedConfig.values.damageMultiplier;
+
+        AABB area = new AABB(center, center).inflate(14.0D);
+
+        var entities = level.getEntitiesOfClass(
+                LivingEntity.class,
+                area,
+                entity -> entity.isAlive()
+                        && !(entity instanceof TheEndOfDragonCoreEntity)
+                        && !(entity instanceof TheEndOfDragonEntity)
+        );
+
+        for (LivingEntity entity : entities) {
+            entity.hurtServer(
+                    level,
+                    level.damageSources().mobAttack(this),
+                    damage
+            );
+
+            Vec3 knock = entity.position().subtract(center);
+            if (knock.lengthSqr() > 1.0E-6D) {
+                knock = knock.normalize();
+                entity.push(knock.x * 2.8D, 0.8D, knock.z * 2.8D);
+                entity.hurtMarked = true;
+            }
+        }
+
+
+        spawnSuperLandingSmoke(level, center);
+
+
+        EndPortalSealHandler.sealPortal(level);
+
+    }
+
+
+
+    private boolean canSuperLandingDestroyBlock(
+            ServerLevel level,
+            BlockPos pos,
+            net.minecraft.world.level.block.state.BlockState state
+    ) {
+        var block = state.getBlock();
+
+        if (block == Blocks.BARRIER) return false;
+        if (block == Blocks.COMMAND_BLOCK) return false;
+        if (block == Blocks.CHAIN_COMMAND_BLOCK) return false;
+        if (block == Blocks.REPEATING_COMMAND_BLOCK) return false;
+        if (block == Blocks.STRUCTURE_BLOCK) return false;
+        if (block == Blocks.JIGSAW) return false;
+
+        // SUPER_LANDINGでは BEDROCK / END_PORTAL / END_PORTAL_FRAME も壊す
+        return true;
+    }
+
+    private void spawnSuperLandingSmoke(ServerLevel level, Vec3 center) {
+        level.sendParticles(
+                ParticleTypes.EXPLOSION,
+                center.x,
+                center.y + 0.5D,
+                center.z,
+                8,
+                3.0D,
+                1.0D,
+                3.0D,
+                0.0D
+        );
+
+        level.sendParticles(
+                ParticleTypes.LARGE_SMOKE,
+                center.x,
+                center.y + 0.8D,
+                center.z,
+                120,
+                7.0D,
+                1.5D,
+                7.0D,
+                0.10D
+        );
+
+        level.sendParticles(
+                ParticleTypes.CAMPFIRE_COSY_SMOKE,
+                center.x,
+                center.y + 0.5D,
+                center.z,
+                60,
+                6.0D,
+                0.8D,
+                6.0D,
+                0.04D
+        );
+    }
+
+    private void updateBlasterTackleMove(ServerLevel level, int age) {
+
+        Vec3 forward = DragonLocatorSampler.forward(this).normalize();
+
+        // 9tick目だけ少し加速
+        double speed = age == 9 ? 3.2D : 2.4D;
+
+        Vec3 motion = forward.scale(speed);
+
+        moveByVector(level, motion);
+
+        applyBlasterTackleDamage(level);
+    }
+
+    private void applyBlasterTackleDamage(ServerLevel level) {
+        TheEndOfDragonCollisionEntity collision =
+                this.getChild(this.collisionEntityId, TheEndOfDragonCollisionEntity.class);
+
+        if (collision == null) {
+            return;
+        }
+
+        for (DragonCollisionBox box : collision.getCollisionBoxes()) {
+            if (box.points() == null || box.points().length == 0) {
+                continue;
+            }
+
+            AABB area = aabbFromPoints(box.points()).inflate(0.8D);
+
+            var entities = level.getEntitiesOfClass(
+                    LivingEntity.class,
+                    area,
+                    entity -> entity.isAlive()
+                            && !(entity instanceof TheEndOfDragonCoreEntity)
+                            && !(entity instanceof TheEndOfDragonEntity)
+                            && !(entity instanceof TheEndOfDragonDisplayEntity)
+                            && !(entity instanceof TheEndOfDragonCollisionEntity)
+            );
+
+            for (LivingEntity entity : entities) {
+                entity.hurtServer(
+                        level,
+                        level.damageSources().mobAttack(this),
+                        TedConfig.values.blasterTackleDamage
+                                * (float) TedConfig.values.damageMultiplier
+                );
+
+                Vec3 knock = entity.position().subtract(this.position());
+
+                if (knock.lengthSqr() > 1.0E-6D) {
+                    knock = knock.normalize();
+                    entity.push(knock.x * 2.4D, 0.6D, knock.z * 2.4D);
+                    entity.hurtMarked = true;
+                }
+            }
+        }
+    }
+
+    private void spawnRoarOfObliterationVfx(ServerLevel serverLevel) {
+        DragonCollisionBox head = getCollisionPartBox(DragonCollisionPart.HEAD);
+
+        Vec3 pos;
+
+        if (head != null && head.obb() != null) {
+            pos = head.obb().center();
+        } else {
+            pos = this.position().add(0.0D, 4.0D, 0.0D);
+        }
+
+        TedVfxSpawner.spawnAt(
+                serverLevel,
+                pos,
+                0.0F,
+                0.0F,
+                TedVfxType.ROAR_OF_OBLITERATION,
+                1.0F,
+                1.0F,
+                44
+        );
     }
 
     private void applyRoarOfObliteration(ServerLevel level) {
@@ -375,7 +988,14 @@ public class TheEndOfDragonCoreEntity extends Monster {
         );
 
         for (LivingEntity entity : entities) {
-            damageEquipmentByRoar(level, entity, 40);
+            if (TedConfig.values.enableEquipmentBreak) {
+                int equipmentDamage = (int) (
+                        TedConfig.values.roarEquipmentDamage
+                                * TedConfig.values.damageMultiplier
+                );
+
+                damageEquipmentByRoar(level, entity, equipmentDamage);
+            }
 
             Vec3 away = entity.position().subtract(this.position());
             if (away.lengthSqr() > 1.0E-6D) {
@@ -384,10 +1004,13 @@ public class TheEndOfDragonCoreEntity extends Monster {
                 entity.hurtMarked = true;
             }
 
+            float damage = TedConfig.values.roarDamage
+                    * (float) TedConfig.values.damageMultiplier;
+
             entity.hurtServer(
                     level,
                     level.damageSources().mobAttack(this),
-                    6.0F
+                    damage
             );
         }
     }
@@ -450,27 +1073,7 @@ public class TheEndOfDragonCoreEntity extends Monster {
         }
     }
 
-    private void spawnRoarParticles(ServerLevel level, int age) {
-        if (age < 1 || age > 30) return;
 
-        Vec3 center = this.position().add(0.0D, 4.0D, 0.0D);
-
-        level.sendParticles(
-                ParticleTypes.SONIC_BOOM,
-                center.x, center.y, center.z,
-                1,
-                0.0D, 0.0D, 0.0D,
-                0.0D
-        );
-
-        level.sendParticles(
-                ParticleTypes.END_ROD,
-                center.x, center.y, center.z,
-                20,
-                age * 0.2D, age * 0.1D, age * 0.2D,
-                0.03D
-        );
-    }
 
     private void updateLightOfDestruction(ServerLevel serverLevel, int age) {
         Vec3 center = getChestCrystalCenter();
@@ -1095,35 +1698,7 @@ public class TheEndOfDragonCoreEntity extends Monster {
 
 
 
-    private void tickAttackStateTimeout() {
-        int age = this.getDragonStateAgeTicks();
 
-        switch (this.getDragonState()) {
-            case ORB_OF_ANNIHILATION -> {
-                if (age > 65) this.setDragonState(DragonState.IDLE);
-            }
-            case ROAR_OF_OBLITERATION -> {
-                if (age > 40) this.setDragonState(DragonState.IDLE);
-            }
-            case FLAMES_OF_RAGNAROK -> {
-                if (age > 120) this.setDragonState(DragonState.IDLE);
-            }
-            case LIGHT_OF_DESTRUCTION -> {
-                if (age > 30) this.setDragonState(DragonState.IDLE);
-            }
-            case PHOTON_BLASTER -> {
-                if (age > 70) this.setDragonState(DragonState.IDLE);
-            }
-            case BLASTER_TACKLE -> {
-                if (age > 20) this.setDragonState(DragonState.IDLE);
-            }
-            case FLY_SHOT -> {
-                if (age > 10) this.setDragonState(DragonState.FLY);
-            }
-            default -> {
-            }
-        }
-    }
     private void updateLaserAttachedToHand(
             ServerLevel serverLevel,
             DragonCollisionPart part,
@@ -1221,7 +1796,7 @@ public class TheEndOfDragonCoreEntity extends Monster {
         beam.damageEntities(
                 serverLevel,
                 this,
-                spec.damage(),
+                TedConfig.values.laserDamage * (float) TedConfig.values.damageMultiplier,
                 entity -> entity != this
         );
 

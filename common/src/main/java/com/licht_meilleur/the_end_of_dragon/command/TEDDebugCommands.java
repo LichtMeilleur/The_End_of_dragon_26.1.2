@@ -8,6 +8,7 @@ import com.licht_meilleur.the_end_of_dragon.registry.ModEntities;
 import com.licht_meilleur.the_end_of_dragon.registry.ModItems;
 import com.licht_meilleur.the_end_of_dragon.world.EndDragonSpawnHandler;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -312,6 +313,43 @@ public final class TEDDebugCommands {
 
                                             return 1;
                                         })
+                                )
+                        )
+                        .then(Commands.literal("rotate")
+                                .then(Commands.argument("yaw", FloatArgumentType.floatArg())
+                                        .then(Commands.argument("pitch", FloatArgumentType.floatArg())
+                                                .executes(ctx -> {
+                                                    ServerPlayer player = ctx.getSource().getPlayerOrException();
+                                                    ServerLevel level = (ServerLevel) player.level();
+
+                                                    float yaw = FloatArgumentType.getFloat(ctx, "yaw");
+                                                    float pitch = FloatArgumentType.getFloat(ctx, "pitch");
+
+                                                    TheEndOfDragonCoreEntity dragon =
+                                                            level.getEntitiesOfClass(
+                                                                    TheEndOfDragonCoreEntity.class,
+                                                                    player.getBoundingBox().inflate(128.0D)
+                                                            ).stream().findFirst().orElse(null);
+
+                                                    if (dragon == null) {
+                                                        ctx.getSource().sendFailure(Component.literal("No The End Of Dragon nearby"));
+                                                        return 0;
+                                                    }
+
+                                                    dragon.setVisualRotation(yaw, pitch);
+
+                                                    System.out.println("===== TED ROTATE =====");
+                                                    System.out.println("YRot      = " + dragon.getYRot());
+                                                    System.out.println("Pitch     = " + dragon.getVisualPitch());
+                                                    System.out.println("======================");
+
+                                                    System.out.println(
+                                                            "[TED rotate] core=" + dragon.getId()
+                                                                    + " visualPitch=" + dragon.getVisualPitch()
+                                                    );
+                                                    return 1;
+                                                })
+                                        )
                                 )
                         )
 

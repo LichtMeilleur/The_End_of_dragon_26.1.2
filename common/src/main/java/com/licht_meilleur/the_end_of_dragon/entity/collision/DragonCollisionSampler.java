@@ -37,13 +37,13 @@ public final class DragonCollisionSampler {
 
         load(serverLevel);
 
-        String animationName = animationName(entity.getDragonState());
+        String animationName = animationName(entity.getAnimationStateForCollision());
         AnimationSpec animation = ANIMATIONS.get(animationName);
         /*
         if (entity.tickCount % 40 == 0) {
 
             System.out.println(
-                    "[TED COLLISION] state=" + entity.getDragonState()
+                    "[TED COLLISION] state=" + entity.getAnimationStateForCollision()
                             + " animationName=" + animationName
                             + " animationFound=" + (animation != null)
                             + " cubes=" + CUBES.size()
@@ -59,7 +59,10 @@ public final class DragonCollisionSampler {
             return List.of();
         }
 
-        double time = entity.getDragonStateAgeTicks() / 20.0D;
+
+
+        double time =
+                entity.getAnimationAgeTicks() / 20.0D;
         if (animation.loop && animation.length > 0.0D) {
             time = time % animation.length;
         }

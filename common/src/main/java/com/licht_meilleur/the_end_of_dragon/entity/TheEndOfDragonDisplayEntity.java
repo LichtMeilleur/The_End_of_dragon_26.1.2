@@ -5,31 +5,23 @@ import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.level.Level;
 
 public class TheEndOfDragonDisplayEntity extends TheEndOfDragonEntity {
+    private DragonState renderState = DragonState.IDLE;
+
+
     public TheEndOfDragonDisplayEntity(EntityType<? extends Monster> type, Level level) {
         super(type, level);
     }
 
     @Override
-    public void tick() {
-        super.tick();
-        syncRotationFromParent();
+    public void syncFromCore(TheEndOfDragonCoreEntity core) {
+        super.syncFromCore(core);
+        this.renderState = core.getDragonState();
+
+        System.out.println("pitch = " + this.getXRot());
     }
 
-    private void syncRotationFromParent() {
-        if (!(this.getVehicle() instanceof TheEndOfDragonCoreEntity parent)) {
-            return;
-        }
-
-        float yaw = parent.getYRot();
-
-        this.setYRot(yaw);
-        this.setYBodyRot(yaw);
-        this.setYHeadRot(yaw);
-
-        this.yRotO = parent.yRotO;
-        this.yBodyRotO = parent.yBodyRotO;
-        this.yHeadRotO = parent.yHeadRotO;
+    @Override
+    protected DragonState getAnimationState() {
+        return this.renderState;
     }
-
-
 }

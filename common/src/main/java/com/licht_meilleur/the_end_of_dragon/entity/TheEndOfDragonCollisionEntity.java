@@ -16,8 +16,35 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TheEndOfDragonCollisionEntity extends TheEndOfDragonEntity {
+
+
     public TheEndOfDragonCollisionEntity(EntityType<? extends Monster> type, Level level) {
         super(type, level);
+    }
+
+    private DragonState renderState = DragonState.IDLE;
+    private int animationAgeTicks = 0;
+
+
+
+    @Override
+    public void syncFromCore(TheEndOfDragonCoreEntity core) {
+        super.syncFromCore(core);
+        this.renderState = core.getDragonState();
+        this.animationAgeTicks = core.getDragonStateAgeTicks();
+    }
+
+    @Override
+    protected DragonState getAnimationState() {
+        return this.renderState;
+    }
+
+    public DragonState getAnimationStateForCollision() {
+        return this.renderState;
+    }
+
+    public int getAnimationAgeTicks() {
+        return this.animationAgeTicks;
     }
 
 
@@ -25,7 +52,7 @@ public class TheEndOfDragonCollisionEntity extends TheEndOfDragonEntity {
     public void tick() {
         super.tick();
 
-        syncRotationFromParent();
+
 
         if (!this.level().isClientSide()) {
             for (DragonCollisionBox collisionBox : this.getCollisionBoxes()) {
@@ -56,20 +83,31 @@ public class TheEndOfDragonCollisionEntity extends TheEndOfDragonEntity {
         }
     }
 
+
+
     private void syncRotationFromParent() {
         if (!(this.getVehicle() instanceof TheEndOfDragonCoreEntity parent)) {
             return;
         }
 
         float yaw = parent.getYRot();
+        float pitch = parent.getXRot();
 
         this.setYRot(yaw);
         this.setYBodyRot(yaw);
         this.setYHeadRot(yaw);
+        this.setXRot(pitch);
 
         this.yRotO = parent.yRotO;
         this.yBodyRotO = parent.yBodyRotO;
         this.yHeadRotO = parent.yHeadRotO;
+        this.xRotO = parent.xRotO;
+
+        if (this.tickCount % 20 == 0) {
+            System.out.println("[TED CHILD ROT] " + this.getClass().getSimpleName()
+                    + " yaw=" + this.getYRot()
+                    + " pitch=" + this.getXRot());
+        }
     }
 
     public List<DragonCollisionBox> getCollisionBoxes() {
@@ -199,5 +237,7 @@ public class TheEndOfDragonCollisionEntity extends TheEndOfDragonEntity {
             );
         }
     }
+
+
 
 }

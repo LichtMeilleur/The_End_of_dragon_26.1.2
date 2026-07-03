@@ -12,7 +12,6 @@ public record TedVfxSpec(
         float scale,
         float length,
         float radius,
-        float damage,
         int maxAge
 ) {
 }

@@ -4,11 +4,9 @@ import com.geckolib.animatable.GeoEntity;
 import com.geckolib.animatable.instance.AnimatableInstanceCache;
 import com.geckolib.animatable.manager.AnimatableManager;
 import com.geckolib.animation.AnimationController;
-import com.geckolib.animation.object.PlayState;
 import com.geckolib.animation.RawAnimation;
+import com.geckolib.animation.object.PlayState;
 import com.geckolib.util.GeckoLibUtil;
-import net.minecraft.network.syncher.EntityDataAccessor;
-import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.monster.Monster;
@@ -34,11 +32,6 @@ public abstract class TheEndOfDragonEntity extends Monster implements GeoEntity 
     public static final String ANIM_WALK = "animation.model.walk";
     public static final String ANIM_SUPER_LANDING = "animation.model.super_landing";
 
-    private int dragonStateAgeTicks;
-
-    protected static final EntityDataAccessor<Integer> DATA_STATE =
-            SynchedEntityData.defineId(TheEndOfDragonEntity.class, EntityDataSerializers.INT);
-
     protected TheEndOfDragonEntity(EntityType<? extends Monster> type, Level level) {
         super(type, level);
         this.noPhysics = true;
@@ -49,50 +42,31 @@ public abstract class TheEndOfDragonEntity extends Monster implements GeoEntity 
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
-        builder.define(DATA_STATE, DragonState.IDLE.ordinal());
+    }
+
+    protected DragonState getAnimationState() {
+        return DragonState.IDLE;
+    }
+
+    public DragonState getAnimationStateForCollision() {
+        return getAnimationState();
     }
 
     public void syncFromCore(TheEndOfDragonCoreEntity core) {
+        this.setPos(core.getX(), core.getY(), core.getZ());
+
         float yaw = core.getYRot();
-        float pitch = core.getXRot();
+        float pitch = core.getVisualPitch();
 
-        this.snapTo(
-                core.getX(),
-                core.getY(),
-                core.getZ(),
-                yaw,
-                pitch
-        );
-
+        this.setYRot(yaw);
         this.setYBodyRot(yaw);
         this.setYHeadRot(yaw);
+        this.setXRot(pitch);
 
         this.yRotO = core.yRotO;
-        this.xRotO = core.xRotO;
         this.yBodyRotO = core.yBodyRotO;
         this.yHeadRotO = core.yHeadRotO;
-
-        this.dragonStateAgeTicks = core.getDragonStateAgeTicks();
-        this.setDragonState(core.getDragonState());
-    }
-
-    public void setDragonState(DragonState state) {
-        this.entityData.set(DATA_STATE, state.ordinal());
-    }
-
-    public DragonState getDragonState() {
-        int id = this.entityData.get(DATA_STATE);
-        DragonState[] values = DragonState.values();
-
-        if (id < 0 || id >= values.length) {
-            return DragonState.IDLE;
-        }
-
-        return values[id];
-    }
-
-    public int getDragonStateAgeTicks() {
-        return this.dragonStateAgeTicks;
+        this.xRotO = pitch;
     }
 
     @Override
@@ -104,17 +78,16 @@ public abstract class TheEndOfDragonEntity extends Monster implements GeoEntity 
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>(
-                "main_controller",
-                0,
-                state -> {
-                    DragonState current = this.getDragonState();
-
-
-                    state.setAnimation(this.animationForState(current));
-                    return PlayState.CONTINUE;
-                }
-        ));
+        controllers.add(
+                new AnimationController<>(
+                        "controller",
+                        0,
+                        state -> {
+                            state.controller().setAnimation(animationForState(getAnimationState()));
+                            return PlayState.CONTINUE;
+                        }
+                )
+        );
     }
 
     private RawAnimation animationForState(DragonState state) {
@@ -138,6 +111,11 @@ public abstract class TheEndOfDragonEntity extends Monster implements GeoEntity 
             case PHOTON_BLASTER -> RawAnimation.begin().thenPlay(ANIM_PHOTON_BLASTER);
             case BLASTER_TACKLE -> RawAnimation.begin().thenPlay(ANIM_BLASTER_TACKLE);
 
+            case INTRO_RISE,
+                 INTRO_WAIT_PORTAL,
+                 INTRO_FLY_TO_PORTAL,
+                 INTRO_DIVE_TO_PORTAL -> RawAnimation.begin().thenLoop(ANIM_FLY);
+
             default -> RawAnimation.begin().thenLoop(ANIM_IDLE);
         };
     }
@@ -156,7 +134,4 @@ public abstract class TheEndOfDragonEntity extends Monster implements GeoEntity 
     public boolean isPushable() {
         return false;
     }
-
-
-
 }

@@ -98,6 +98,9 @@ dependencies {
     implementation "curse.maven:geckolib-388172:7913641"
     localRuntime "curse.maven:geckolib-388172:7913641"
 
+    compileOnly files("libs/curios-neoforge-15.0.0-beta.2+26.1.2.jar")
+    localRuntime files("libs/curios-neoforge-15.0.0-beta.2+26.1.2.jar")
+
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {

@@ -1,0 +1,14 @@
+{
+  "healthMultiplier": 1.0,
+  "damageMultiplier": 1.0,
+  "roarDamage": 6.0,
+  "roarEquipmentDamage": 40,
+  "blasterTackleDamage": 18.0,
+  "superLandingDamage": 18.0,
+  "laserDamage": 10.0,
+  "lightProjectileDamage": 16.0,
+  "orbDamage": 9999.0,
+  "enableBlockBreak": true,
+  "enableEquipmentBreak": true,
+  "blockBreakEnabled": true
+}

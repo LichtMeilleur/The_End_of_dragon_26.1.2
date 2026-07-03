@@ -4,19 +4,25 @@ import com.geckolib.renderer.GeoEntityRenderer;
 import com.geckolib.renderer.base.BoneSnapshots;
 import com.geckolib.renderer.base.GeoRenderState;
 import com.geckolib.renderer.base.RenderPassInfo;
+import com.licht_meilleur.the_end_of_dragon.TheEndOfDragon;
 import com.licht_meilleur.the_end_of_dragon.client.model.TedVfxModel;
 import com.licht_meilleur.the_end_of_dragon.entity.vfx.TedVfxEntity;
 import com.licht_meilleur.the_end_of_dragon.entity.vfx.TedVfxType;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.renderer.MultiBufferSource;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 
+
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -70,6 +76,7 @@ public class TedVfxRenderer<R extends EntityRenderState & GeoRenderState>
         renderState.addGeckolibData(TedVfxRenderTickets.VFX_FORWARD, animatable.getForward());
         renderState.addGeckolibData(TedVfxRenderTickets.VFX_UP, animatable.getUp());
         //renderState.addGeckolibData(TedVfxRenderTickets.VFX_DIRECTION, animatable.getVfxDirection());
+        renderState.addGeckolibData(TedVfxRenderTickets.VFX_AGE, animatable.tickCount);
     }
 
     @Override
@@ -214,5 +221,107 @@ public class TedVfxRenderer<R extends EntityRenderState & GeoRenderState>
         }
         return v.normalize();
     }
+
+    private static final Identifier ROAR_TEXTURE =
+            TheEndOfDragon.id("textures/vfx/roar_of_obliteration.png");
+
+    private static final RenderType ROAR_RENDER_TYPE =
+            RenderTypes.entityTranslucentCullItemTarget(ROAR_TEXTURE);
+
+    private static final int ROAR_LIFE = 34;
+
+    private static final int[] ROAR_DELAYS = {0, 3, 6};
+    private static final float[] ROAR_MAX_SIZE = {54.0F, 66.0F, 78.0F};
+    private static final float[] ROAR_ROTATIONS = {0.0F, 18.0F, -13.0F};
+
+
+
+    private void renderRoarOfObliteration(
+            R renderState,
+            PoseStack poseStack,
+            SubmitNodeCollector submitNodeCollector,
+            CameraRenderState camera
+    ) {
+        int age = (int) renderState.ageInTicks;
+
+        for (int i = 0; i < ROAR_DELAYS.length; i++) {
+            int localAge = age - ROAR_DELAYS[i];
+            if (localAge < 0 || localAge > ROAR_LIFE) continue;
+
+            float t = localAge / (float) ROAR_LIFE;
+            float eased = easeOutExpo(t);
+
+            float size = ROAR_MAX_SIZE[i] * eased;
+
+            float fadeIn = Math.min(1.0F, localAge / 4.0F);
+            float fadeOut = 1.0F - t;
+            float alpha = fadeIn * fadeOut;
+
+            float rotation = ROAR_ROTATIONS[i] + age * 1.2F;
+
+            poseStack.pushPose();
+            poseStack.mulPose(camera.orientation);
+            poseStack.mulPose(new Quaternionf().rotateZ((float) Math.toRadians(rotation)));
+            poseStack.scale(size, size, size);
+
+            int a = (int) (alpha * 220.0F);
+
+            submitNodeCollector.submitCustomGeometry(
+                    poseStack,
+                    ROAR_RENDER_TYPE,
+                    (pose, buffer) -> {
+                        roarVertex(buffer, pose, -0.5F, -0.5F, 0.0F, 1.0F, a);
+                        roarVertex(buffer, pose,  0.5F, -0.5F, 1.0F, 1.0F, a);
+                        roarVertex(buffer, pose,  0.5F,  0.5F, 1.0F, 0.0F, a);
+                        roarVertex(buffer, pose, -0.5F,  0.5F, 0.0F, 0.0F, a);
+                    }
+            );
+
+            poseStack.popPose();
+        }
+    }
+
+    private static void roarVertex(
+            VertexConsumer buffer,
+            PoseStack.Pose pose,
+            float x,
+            float y,
+            float u,
+            float v,
+            int alpha
+    ) {
+        buffer.addVertex(pose, x, y, 0.0F)
+                .setColor(255, 255, 255, alpha)
+                .setUv(u, v)
+                .setOverlay(OverlayTexture.NO_OVERLAY)
+                .setLight(15728880)
+                .setNormal(pose, 0.0F, 1.0F, 0.0F);
+    }
+
+
+
+    private static float easeOutExpo(float t) {
+        if (t >= 1.0F) return 1.0F;
+        return 1.0F - (float) Math.pow(2.0D, -10.0D * t);
+    }
+
+    @Override
+    public void submit(
+            R renderState,
+            PoseStack poseStack,
+            SubmitNodeCollector submitNodeCollector,
+            CameraRenderState camera
+    ) {
+        TedVfxType type = renderState.getGeckolibData(TedVfxRenderTickets.VFX_TYPE);
+
+        if (type == TedVfxType.ROAR_OF_OBLITERATION) {
+            renderRoarOfObliteration(renderState, poseStack, submitNodeCollector, camera);
+            return;
+        }
+
+        super.submit(renderState, poseStack, submitNodeCollector, camera);
+    }
+
+
 
 }

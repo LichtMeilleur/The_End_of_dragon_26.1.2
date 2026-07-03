@@ -11,7 +11,6 @@ public final class TedProjectileSpecs {
                     1.2D,      // speed
                     160,       // maxAge
                     6.0D,      // hitRadius
-                    9999.0F,   // damage
                     true,      // destroyBlocks
                     5.5D,       // destroyRadius
                     false,      // createExplosion
@@ -26,7 +25,6 @@ public final class TedProjectileSpecs {
                     4.0D,
                     80,
                     1.2D,
-                    16.0F,
                     true,
                     1.5D,
                     true,

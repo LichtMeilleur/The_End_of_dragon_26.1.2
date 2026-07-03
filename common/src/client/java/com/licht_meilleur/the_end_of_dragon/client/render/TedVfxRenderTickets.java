@@ -1,5 +1,6 @@
 package com.licht_meilleur.the_end_of_dragon.client.render;
 
+import com.geckolib.constant.DataTickets;
 import com.geckolib.constant.dataticket.DataTicket;
 import com.licht_meilleur.the_end_of_dragon.entity.vfx.TedVfxType;
 import net.minecraft.world.phys.Vec3;
@@ -25,6 +26,9 @@ public final class TedVfxRenderTickets {
 
     public static final DataTicket<org.joml.Quaternionf> VFX_ROTATION =
             DataTicket.create("ted_vfx_rotation", org.joml.Quaternionf.class);
+
+    public static final DataTicket<Integer> VFX_AGE =
+            DataTickets.create("vfx_age", Integer.class);
 
     private TedVfxRenderTickets() {
     }
