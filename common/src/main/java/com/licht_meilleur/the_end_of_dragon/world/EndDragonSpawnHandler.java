@@ -1,6 +1,7 @@
 package com.licht_meilleur.the_end_of_dragon.world;
 
 import com.licht_meilleur.the_end_of_dragon.registry.ModEntities;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
@@ -45,13 +46,7 @@ public final class EndDragonSpawnHandler {
                 return;
             }
 
-            var portalCenter = EndPortalSealHandler.findPortalCenter(level);
-
-            Vec3 portalAbove = new Vec3(
-                    portalCenter.getX() + 0.5D,
-                    portalCenter.getY() + 170.0D,
-                    portalCenter.getZ() + 0.5D
-            );
+            BlockPos portalCenter = EndPortalSealHandler.findPortalCenter(level);
 
             boss.snapTo(pos.x, pos.y + 2.0D, pos.z, 0.0F, 0.0F);
             boss.setHealth(boss.getMaxHealth());
@@ -59,7 +54,7 @@ public final class EndDragonSpawnHandler {
 
             level.addFreshEntity(boss);
 
-            boss.startIntroSequence(portalAbove);
+            boss.startIntroSequence(portalCenter);
         } catch (Throwable t) {
             t.printStackTrace();
             throw t;

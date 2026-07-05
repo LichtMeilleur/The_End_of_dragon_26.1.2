@@ -12,7 +12,7 @@ public enum DragonState {
 
     FALL,
     LANDING,
-
+    SUPER_LANDING,
 
     ORB_OF_ANNIHILATION,
     ROAR_OF_OBLITERATION,
@@ -22,10 +22,12 @@ public enum DragonState {
     BLASTER_TACKLE,
 
 
+
+
     INTRO_RISE,
     INTRO_WAIT_PORTAL,
     INTRO_FLY_TO_PORTAL,
     INTRO_DIVE_TO_PORTAL,
-    SUPER_LANDING,
+    INTRO_SUPER_LANDING,
 
 }

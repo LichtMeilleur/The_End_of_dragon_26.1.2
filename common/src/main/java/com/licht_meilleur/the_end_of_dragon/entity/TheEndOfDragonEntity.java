@@ -7,6 +7,8 @@ import com.geckolib.animation.AnimationController;
 import com.geckolib.animation.RawAnimation;
 import com.geckolib.animation.object.PlayState;
 import com.geckolib.util.GeckoLibUtil;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.monster.Monster;
@@ -39,9 +41,21 @@ public abstract class TheEndOfDragonEntity extends Monster implements GeoEntity 
         this.setPersistenceRequired();
     }
 
+    private double prevSyncX;
+    private double prevSyncY;
+    private double prevSyncZ;
+    private boolean hasPrevSyncPos = false;
+
+    private float flightPitch = 0.0F;
+
+    private static final EntityDataAccessor<Integer> DATA_RENDER_STATE =
+            SynchedEntityData.defineId(TheEndOfDragonEntity.class, EntityDataSerializers.INT);
+
+
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
+        builder.define(DATA_RENDER_STATE, DragonState.IDLE.ordinal());
     }
 
     protected DragonState getAnimationState() {
@@ -67,13 +81,127 @@ public abstract class TheEndOfDragonEntity extends Monster implements GeoEntity 
         this.yBodyRotO = core.yBodyRotO;
         this.yHeadRotO = core.yHeadRotO;
         this.xRotO = pitch;
+
+
+
+        updateFlightPitchFromMovement();
+
+        this.setXRot(this.flightPitch);
+        this.xRotO = this.flightPitch;
+
+        this.entityData.set(DATA_RENDER_STATE, core.getDragonState().ordinal());
+
+        /*
+        System.out.println(
+                (this.level().isClientSide() ? "[CLIENT]" : "[SERVER]")
+                        + " syncFromCore "
+                        + this.getClass().getSimpleName()
+        );
+
+         */
     }
+    protected DragonState getSyncedRenderState() {
+        int id = this.entityData.get(DATA_RENDER_STATE);
+        DragonState[] values = DragonState.values();
+
+        if (id < 0 || id >= values.length) {
+            return DragonState.IDLE;
+        }
+
+        return values[id];
+    }
+
+    private static boolean isFlyingState(DragonState state) {
+        return switch (state) {
+            case FLY_START,
+                 FLY,
+                 FLY_LEFT,
+                 FLY_RIGHT,
+                 FLY_SHOT,
+                 FLAMES_OF_RAGNAROK,
+                 FALL,
+                 INTRO_RISE,
+                 INTRO_WAIT_PORTAL,
+                 INTRO_FLY_TO_PORTAL,
+                 INTRO_DIVE_TO_PORTAL -> true;
+            default -> false;
+        };
+    }
+
+    private static boolean isGroundState(DragonState state) {
+        return switch (state) {
+            case IDLE,
+                 WALK,
+                 LANDING,
+                 INTRO_SUPER_LANDING,
+                 SUPER_LANDING,
+                 ORB_OF_ANNIHILATION,
+                 ROAR_OF_OBLITERATION,
+                 LIGHT_OF_DESTRUCTION,
+                 PHOTON_BLASTER,
+                 BLASTER_TACKLE -> true;
+            default -> false;
+        };
+    }
+
+    public enum DragonMovementMode {
+        GROUND,
+        FLYING
+    }
+
+
+
+
+    private void updateFlightPitchFromMovement() {
+        if (!hasPrevSyncPos) {
+            this.prevSyncX = this.getX();
+            this.prevSyncY = this.getY();
+            this.prevSyncZ = this.getZ();
+            this.hasPrevSyncPos = true;
+            return;
+        }
+
+        double dx = this.getX() - this.prevSyncX;
+        double dy = this.getY() - this.prevSyncY;
+        double dz = this.getZ() - this.prevSyncZ;
+
+        this.prevSyncX = this.getX();
+        this.prevSyncY = this.getY();
+        this.prevSyncZ = this.getZ();
+
+        DragonState state = getAnimationState();
+
+        if (isGroundState(state)) {
+            this.flightPitch = 0.0F;
+            return;
+        }
+
+        double horizontal = Math.sqrt(dx * dx + dz * dz);
+
+        if (horizontal < 1.0E-5D && Math.abs(dy) < 1.0E-5D) {
+            return;
+        }
+
+        this.flightPitch = (float) Math.toDegrees(Math.atan2(dy, horizontal));
+    }
+
+    public float getFlightPitch() {
+        return this.flightPitch;
+    }
+
 
     @Override
     public void tick() {
         super.tick();
         this.noPhysics = true;
         this.setNoGravity(true);
+
+        if (this.level().isClientSide()) {
+            updateFlightPitchFromMovement();
+
+            this.setXRot(this.flightPitch);
+            this.xRotO = this.flightPitch;
+        }
     }
 
     @Override

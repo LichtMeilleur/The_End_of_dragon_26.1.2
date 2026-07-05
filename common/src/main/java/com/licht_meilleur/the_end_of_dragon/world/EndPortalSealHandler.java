@@ -33,6 +33,38 @@ public final class EndPortalSealHandler {
         return new BlockPos(0, 64, 0);
     }
 
+    public static BlockPos findActualPortalCenter(ServerLevel level, BlockPos hint) {
+        int count = 0;
+        int sumX = 0;
+        int sumY = 0;
+        int sumZ = 0;
+
+        for (int x = -10; x <= 10; x++) {
+            for (int y = -20; y <= 20; y++) {
+                for (int z = -10; z <= 10; z++) {
+                    BlockPos pos = hint.offset(x, y, z);
+
+                    if (level.getBlockState(pos).is(Blocks.END_PORTAL)) {
+                        sumX += pos.getX();
+                        sumY += pos.getY();
+                        sumZ += pos.getZ();
+                        count++;
+                    }
+                }
+            }
+        }
+
+        if (count == 0) {
+            return hint;
+        }
+
+        return new BlockPos(
+                Math.round((float) sumX / count),
+                Math.round((float) sumY / count),
+                Math.round((float) sumZ / count)
+        );
+    }
+
     private static boolean isPortalStructureBlock(ServerLevel level, BlockPos pos) {
         var state = level.getBlockState(pos);
         return state.is(Blocks.END_PORTAL)
@@ -85,11 +117,12 @@ public final class EndPortalSealHandler {
     }
 
     public static void coverPortalArea(ServerLevel level) {
-        BlockPos center = new BlockPos(0, 64, 0);
+        BlockPos center = findPortalCenter(level);
+        center = findActualPortalCenter(level, center);
 
         for (BlockPos pos : BlockPos.betweenClosed(
-                center.offset(-3, -1, -3),
-                center.offset(3, 3, 3)
+                center.offset(-3, -2, -3),
+                center.offset(3, 2, 3)
         )) {
             var state = level.getBlockState(pos);
 

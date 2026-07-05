@@ -33,9 +33,22 @@ public class TheEndOfDragonCollisionRenderer<R extends LivingEntityRenderState &
 
         R state = renderPassInfo.renderState();
 
-        poseStack.mulPose(
-                com.mojang.math.Axis.XP.rotationDegrees(state.xRot)
-        );
+        if (state instanceof net.minecraft.client.renderer.entity.state.LivingEntityRenderState livingState) {
+            poseStack.mulPose(
+                    com.mojang.math.Axis.XP.rotationDegrees(livingState.xRot)
+            );
+        }
+    }
+
+    @Override
+    public void extractRenderState(
+            TheEndOfDragonCollisionEntity entity,
+            R renderState,
+            float partialTick
+    ) {
+        super.extractRenderState(entity, renderState, partialTick);
+        renderState.xRot = entity.getFlightPitch();
+
     }
 
 }

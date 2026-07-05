@@ -17,11 +17,10 @@ public class TheEndOfDragonDisplayEntity extends TheEndOfDragonEntity {
         super.syncFromCore(core);
         this.renderState = core.getDragonState();
 
-        System.out.println("pitch = " + this.getXRot());
     }
 
     @Override
     protected DragonState getAnimationState() {
-        return this.renderState;
+        return getSyncedRenderState();
     }
 }

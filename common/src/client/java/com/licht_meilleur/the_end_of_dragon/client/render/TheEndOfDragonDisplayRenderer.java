@@ -41,15 +41,27 @@ public class TheEndOfDragonDisplayRenderer<R extends LivingEntityRenderState & G
             com.mojang.blaze3d.vertex.PoseStack poseStack,
             float nativeScale
     ) {
-
-        System.out.println(renderPassInfo.renderState().xRot);
-
         super.applyRotations(renderPassInfo, poseStack, nativeScale);
 
         R state = renderPassInfo.renderState();
 
-        poseStack.mulPose(
-                com.mojang.math.Axis.XP.rotationDegrees(state.xRot)
-        );
+        if (state instanceof net.minecraft.client.renderer.entity.state.LivingEntityRenderState livingState) {
+            poseStack.mulPose(
+                    com.mojang.math.Axis.XP.rotationDegrees(livingState.xRot)
+            );
+        }
     }
+
+    @Override
+    public void extractRenderState(
+            TheEndOfDragonDisplayEntity entity,
+            R renderState,
+            float partialTick
+    ) {
+        super.extractRenderState(entity, renderState, partialTick);
+        renderState.xRot = entity.getFlightPitch();
+
+    }
+
+
 }

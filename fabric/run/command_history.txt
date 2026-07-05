@@ -1,28 +1,3 @@
-/ted_debug tp_here
-/ted_anim orb
-/ted_anim fly_shot
-/gamemode survival
-/ted_anim fly_shot
-/gamemode creative
-/ted_anim fly_shot
-/gamemode survival
-/ted_anim fly_shot
-/ted_anim fly_shto
-/ted_anim fly_shot
-/gamemode creative
-/ted_anim fly_shot
-/ted_anim light
-/ted test_unbreakable_gear
-/ted_anim roar
-/ted test_unbreakable_gear
-/ted_anim roar
-/ted_anim tackle
-/ted_debug tp_here
-/ted_anim tackle
-/ted_debug yaw 90
-/ted_anim tackle
-/ted_debug yaw 270
-/ted_anim tackle
 /ted_anim super_landing
 /ted_anim tackle
 /ted_anim roar
@@ -48,3 +23,28 @@
 /ted spawn
 /ted list
 /ted spawn
+/ted_debug rotate 90 90
+/ted spawn
+/ted_anim fly
+/ted_debug tp_here
+/ted spawn
+/ted bow
+/ted_debug tp_here
+/ted_anim super_landing
+/ted bow
+/ted_anim orb
+/ted_anim fly
+/ted_anim orb
+/ted spawn
+/ted bow
+/ted_anim super_landing
+/ted_anim roar
+/ted bow
+/ted_anim super_landing
+/ted test_unbreakable_gear
+/ted_anim roar
+/ted_anim light
+/ted bow
+/ted spawn
+/ted bow
+/ted_anim flames

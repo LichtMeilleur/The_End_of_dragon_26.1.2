@@ -36,7 +36,7 @@ public class TheEndOfDragonCollisionEntity extends TheEndOfDragonEntity {
 
     @Override
     protected DragonState getAnimationState() {
-        return this.renderState;
+        return getSyncedRenderState();
     }
 
     public DragonState getAnimationStateForCollision() {
@@ -46,6 +46,8 @@ public class TheEndOfDragonCollisionEntity extends TheEndOfDragonEntity {
     public int getAnimationAgeTicks() {
         return this.animationAgeTicks;
     }
+
+
 
 
     @Override
