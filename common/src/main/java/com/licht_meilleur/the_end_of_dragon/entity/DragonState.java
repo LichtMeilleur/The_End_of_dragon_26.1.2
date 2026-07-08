@@ -21,7 +21,8 @@ public enum DragonState {
     PHOTON_BLASTER,
     BLASTER_TACKLE,
 
-
+    FLY_ASCEND,
+    FLY_DESCEND,
 
 
     INTRO_RISE,
@@ -29,5 +30,10 @@ public enum DragonState {
     INTRO_FLY_TO_PORTAL,
     INTRO_DIVE_TO_PORTAL,
     INTRO_SUPER_LANDING,
+
+    RAGNAROK_ASCEND,
+    FIGURE_EIGHT,
+    FIGURE_ASCEND,
+    FIGURE_DESCEND,
 
 }

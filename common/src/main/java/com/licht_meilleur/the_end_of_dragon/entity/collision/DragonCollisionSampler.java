@@ -1,12 +1,9 @@
 package com.licht_meilleur.the_end_of_dragon.entity.collision;
 
 import com.google.gson.*;
-import com.licht_meilleur.the_end_of_dragon.TheEndOfDragon;
 import com.licht_meilleur.the_end_of_dragon.entity.DragonState;
 import com.licht_meilleur.the_end_of_dragon.entity.TheEndOfDragonCollisionEntity;
-import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
@@ -452,6 +449,9 @@ public final class DragonCollisionSampler {
             case LIGHT_OF_DESTRUCTION -> "animation.model.light_of_destruction_20tick_start";
             case PHOTON_BLASTER -> "animation.model.photon_blaster_27tick_start";
             case BLASTER_TACKLE -> "animation.model.blaster_tackle_9tick_start";
+
+            case FLY_ASCEND -> "animation.model.fly_ascend";
+            case FLY_DESCEND -> "animation.model.fly_descend";
 
             default -> "animation.model.idle";
         };

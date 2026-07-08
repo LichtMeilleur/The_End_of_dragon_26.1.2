@@ -1,41 +1,3 @@
-/ted_anim super_landing
-/ted_anim tackle
-/ted_anim roar
-/ted_anim super_landing
-/ted bow
-/ted_anim super_landing
-/ted bow
-/give Player647 minecraft:end_portal_frame
-/give Player647 minecraft:porkchop
-/give Player647 minecraft:ender_dragon_spawn_egg
-/ted bow
-/ted_debug rotate 0 -90
-/ted_debug rotate 90 90
-/ted_debug rotate 0 90
-/ted_debug rotate 90 0
-/ted_anim super_landing
-/ted_debug rotate 90 90
-/ted_debug rotate 180 90
-/ted_debug rotate 90 90
-/ted_debug rotate 90 -90
-/ted_debug rotate 90 90
-/ted bow
-/ted spawn
-/ted list
-/ted spawn
-/ted_debug rotate 90 90
-/ted spawn
-/ted_anim fly
-/ted_debug tp_here
-/ted spawn
-/ted bow
-/ted_debug tp_here
-/ted_anim super_landing
-/ted bow
-/ted_anim orb
-/ted_anim fly
-/ted_anim orb
-/ted spawn
 /ted bow
 /ted_anim super_landing
 /ted_anim roar
@@ -48,3 +10,41 @@
 /ted spawn
 /ted bow
 /ted_anim flames
+/gamemode survival
+/gamemode creative
+/ted_anim photon
+/ted spawn
+/ted_anim flames
+/ted_anim super_landing
+/ted_anim super_lamding
+/ted_anim flames
+/ted bow
+/ted_anim super_landing
+/ted_anim flames
+/ted_anim super_landing
+/ted bow
+/ted_air figure
+/ted_air ragnarok
+/ted_air figure
+/ted_air
+/ted_air figure
+/ted_air ragnarok
+/ted_anim roar
+/ted_air ragnarok
+/ted_anim super_landing
+/ted_air figure
+/ted_air ragnarok
+/ted_air figure
+/ted_air ragnarok
+/ted_debug tp_here
+/ted_air figure
+/ted spawn
+/ted_air ragnarok
+/ted_air figure
+/ted bow
+/ted_air figure
+/ted spawn
+/ted_air figure
+/ted bow
+/ted_air ragnarok
+/ted_air figure

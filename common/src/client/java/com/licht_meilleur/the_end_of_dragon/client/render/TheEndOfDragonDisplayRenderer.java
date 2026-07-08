@@ -3,6 +3,7 @@ package com.licht_meilleur.the_end_of_dragon.client.render;
 import com.geckolib.renderer.GeoEntityRenderer;
 import com.geckolib.renderer.base.GeoRenderState;
 import com.licht_meilleur.the_end_of_dragon.client.model.TheEndOfDragonDisplayModel;
+import com.licht_meilleur.the_end_of_dragon.entity.DragonState;
 import com.licht_meilleur.the_end_of_dragon.entity.TheEndOfDragonDisplayEntity;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
@@ -23,6 +24,8 @@ public class TheEndOfDragonDisplayRenderer<R extends LivingEntityRenderState & G
     public TheEndOfDragonDisplayRenderer(EntityRendererProvider.Context ctx) {
         super(ctx, new TheEndOfDragonDisplayModel());
         this.shadowRadius = 4.0F;
+
+
 
 
     }
@@ -52,6 +55,8 @@ public class TheEndOfDragonDisplayRenderer<R extends LivingEntityRenderState & G
         }
     }
 
+
+
     @Override
     public void extractRenderState(
             TheEndOfDragonDisplayEntity entity,
@@ -59,7 +64,24 @@ public class TheEndOfDragonDisplayRenderer<R extends LivingEntityRenderState & G
             float partialTick
     ) {
         super.extractRenderState(entity, renderState, partialTick);
-        renderState.xRot = entity.getFlightPitch();
+
+        DragonState state = entity.getDragonState();
+
+        renderState.xRot = switch (state) {
+            case FLY,
+                 FLY_START,
+                 FLY_SHOT,
+                 RAGNAROK_ASCEND,
+                 FIGURE_ASCEND,
+                 FIGURE_EIGHT,
+                 FIGURE_DESCEND,
+                 INTRO_RISE,
+                 INTRO_FLY_TO_PORTAL,
+                 INTRO_DIVE_TO_PORTAL -> entity.getFlightPitch();
+
+            default -> 0.0F;
+        };
+
 
     }
 

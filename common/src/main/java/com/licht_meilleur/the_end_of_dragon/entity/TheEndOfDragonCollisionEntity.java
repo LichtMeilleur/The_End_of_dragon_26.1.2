@@ -32,6 +32,18 @@ public class TheEndOfDragonCollisionEntity extends TheEndOfDragonEntity {
         super.syncFromCore(core);
         this.renderState = core.getDragonState();
         this.animationAgeTicks = core.getDragonStateAgeTicks();
+        this.dragonState = core.getDragonState();
+
+        this.setXRot(core.getVisualPitch());
+        this.xRotO = core.getVisualPitch();
+
+
+    }
+
+    private float flightPitch = 0.0F;
+
+    public float getFlightPitch() {
+        return this.flightPitch;
     }
 
     @Override
@@ -47,7 +59,11 @@ public class TheEndOfDragonCollisionEntity extends TheEndOfDragonEntity {
         return this.animationAgeTicks;
     }
 
+    private DragonState dragonState = DragonState.IDLE;
 
+    public DragonState getDragonState() {
+        return dragonState;
+    }
 
 
     @Override

@@ -33,6 +33,8 @@ public abstract class TheEndOfDragonEntity extends Monster implements GeoEntity 
     public static final String ANIM_IDLE = "animation.model.idle";
     public static final String ANIM_WALK = "animation.model.walk";
     public static final String ANIM_SUPER_LANDING = "animation.model.super_landing";
+    public static final String ANIM_FLY_ASCEND = "animation.model.fly_ascend";
+    public static final String ANIM_FLY_DESCEND = "animation.model.fly_descend";
 
     protected TheEndOfDragonEntity(EntityType<? extends Monster> type, Level level) {
         super(type, level);
@@ -243,6 +245,12 @@ public abstract class TheEndOfDragonEntity extends Monster implements GeoEntity 
                  INTRO_WAIT_PORTAL,
                  INTRO_FLY_TO_PORTAL,
                  INTRO_DIVE_TO_PORTAL -> RawAnimation.begin().thenLoop(ANIM_FLY);
+            case INTRO_SUPER_LANDING -> RawAnimation.begin().thenPlay(ANIM_SUPER_LANDING);
+
+            case FLY_ASCEND -> RawAnimation.begin().thenLoop(ANIM_FLY_ASCEND);
+            case FLY_DESCEND -> RawAnimation.begin().thenLoop(ANIM_FLY_DESCEND);
+
+            case FIGURE_EIGHT -> RawAnimation.begin().thenLoop(ANIM_FLY);
 
             default -> RawAnimation.begin().thenLoop(ANIM_IDLE);
         };

@@ -24,6 +24,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.AABB;
 
+import java.util.Comparator;
+
 public final class TEDDebugCommands {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(
@@ -353,6 +355,58 @@ public final class TEDDebugCommands {
                                 )
                         )
 
+        );
+        dispatcher.register(
+                Commands.literal("ted_air")
+                        .requires(CommandSourceStack::isPlayer)
+                        .then(Commands.literal("ragnarok")
+                                .executes(ctx -> {
+                                    ServerPlayer player = ctx.getSource().getPlayerOrException();
+                                    ServerLevel level = ctx.getSource().getLevel();
+
+                                    TheEndOfDragonCoreEntity dragon =
+                                            level.getEntitiesOfClass(
+                                                            TheEndOfDragonCoreEntity.class,
+                                                            player.getBoundingBox().inflate(256.0D),
+                                                            e -> e.isAlive()
+                                                    )
+                                                    .stream()
+                                                    .min(Comparator.comparingDouble(player::distanceToSqr))
+                                                    .orElse(null);
+
+                                    if (dragon == null) {
+                                        ctx.getSource().sendFailure(Component.literal("Dragon not found"));
+                                        return 0;
+                                    }
+
+                                    dragon.debugStartRagnarok();
+                                    ctx.getSource().sendSuccess(() -> Component.literal("Start Ragnarok test"), true);
+                                    return 1;
+                                }))
+                        .then(Commands.literal("figure")
+                                .executes(ctx -> {
+                                    ServerPlayer player = ctx.getSource().getPlayerOrException();
+                                    ServerLevel level = ctx.getSource().getLevel();
+
+                                    TheEndOfDragonCoreEntity dragon =
+                                            level.getEntitiesOfClass(
+                                                            TheEndOfDragonCoreEntity.class,
+                                                            player.getBoundingBox().inflate(256.0D),
+                                                            e -> e.isAlive()
+                                                    )
+                                                    .stream()
+                                                    .min(Comparator.comparingDouble(player::distanceToSqr))
+                                                    .orElse(null);
+
+                                    if (dragon == null) {
+                                        ctx.getSource().sendFailure(Component.literal("Dragon not found"));
+                                        return 0;
+                                    }
+
+                                    dragon.debugStartFigureEight();
+                                    ctx.getSource().sendSuccess(() -> Component.literal("Start Figure Eight test"), true);
+                                    return 1;
+                                }))
         );
 
 
