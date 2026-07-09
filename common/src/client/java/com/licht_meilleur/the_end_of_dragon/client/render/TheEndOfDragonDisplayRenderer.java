@@ -65,16 +65,18 @@ public class TheEndOfDragonDisplayRenderer<R extends LivingEntityRenderState & G
     ) {
         super.extractRenderState(entity, renderState, partialTick);
 
+        renderState.addGeckolibData(
+                TedRenderTickets.CRYSTAL_FADE_STAGE,
+                entity.getCrystalFadeStage()
+        );
+
         DragonState state = entity.getDragonState();
 
         renderState.xRot = switch (state) {
             case FLY,
                  FLY_START,
                  FLY_SHOT,
-                 RAGNAROK_ASCEND,
-                 FIGURE_ASCEND,
                  FIGURE_EIGHT,
-                 FIGURE_DESCEND,
                  INTRO_RISE,
                  INTRO_FLY_TO_PORTAL,
                  INTRO_DIVE_TO_PORTAL -> entity.getFlightPitch();

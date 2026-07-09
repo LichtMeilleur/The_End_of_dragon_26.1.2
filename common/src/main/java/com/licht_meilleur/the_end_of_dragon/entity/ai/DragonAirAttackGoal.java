@@ -18,7 +18,22 @@ public class DragonAirAttackGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        return false; // 空中攻撃はコマンドテスト専用にする
+        if (dragon.level().isClientSide()) return false;
+        if (!dragon.isAlive()) return false;
+        if (!dragon.isCombatStarted()) return false;
+        if (!(dragon.level() instanceof ServerLevel level)) return false;
+        if (dragon.isIntroStateNow()) return false;
+        if (dragon.isCombatLocked()) return false;
+        if (dragon.isAttackMovementLocked()) return false;
+        if (dragon.isAirborneBoss(level)) return false;
+        if (dragon.findBossTarget(level) == null) return false;
+
+        if (cooldown > 0) {
+            cooldown--;
+            return false;
+        }
+
+        return dragon.tryConsumeAirAttackCooldown();
     }
 
     @Override
@@ -33,9 +48,7 @@ public class DragonAirAttackGoal extends Goal {
         LivingEntity target = dragon.findBossTarget(level);
         if (target == null || !target.isAlive()) return;
 
-        if (--cooldown > 0) return;
-
-        cooldown = 160 + dragon.getRandom().nextInt(120);
+        cooldown = 220 + dragon.getRandom().nextInt(160);
 
         if (dragon.getRandom().nextBoolean()) {
             dragon.startRagnarokSequence();

@@ -54,10 +54,7 @@ public class TheEndOfDragonCollisionRenderer<R extends LivingEntityRenderState &
             case FLY,
                  FLY_START,
                  FLY_SHOT,
-                 RAGNAROK_ASCEND,
-                 FIGURE_ASCEND,
                  FIGURE_EIGHT,
-                 FIGURE_DESCEND,
                  INTRO_RISE,
                  INTRO_FLY_TO_PORTAL,
                  INTRO_DIVE_TO_PORTAL -> entity.getFlightPitch();

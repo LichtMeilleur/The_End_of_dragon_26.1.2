@@ -4,6 +4,7 @@ import com.geckolib.cache.model.GeoBone;
 import com.geckolib.model.GeoModel;
 import com.geckolib.renderer.base.GeoRenderState;
 import com.licht_meilleur.the_end_of_dragon.TheEndOfDragon;
+import com.licht_meilleur.the_end_of_dragon.client.render.TedRenderTickets;
 import com.licht_meilleur.the_end_of_dragon.entity.TheEndOfDragonDisplayEntity;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
@@ -17,7 +18,18 @@ public class TheEndOfDragonDisplayModel extends GeoModel<TheEndOfDragonDisplayEn
 
     @Override
     public Identifier getTextureResource(GeoRenderState renderState) {
-        return TheEndOfDragon.id("textures/entity/the_end_of_dragon.png");
+        int stage = renderState.getOrDefaultGeckolibData(
+                TedRenderTickets.CRYSTAL_FADE_STAGE,
+                0
+        );
+
+        return switch (stage) {
+            case 1 -> TheEndOfDragon.id("textures/entity/the_end_of_dragon_crystal_fade_25.png");
+            case 2 -> TheEndOfDragon.id("textures/entity/the_end_of_dragon_crystal_fade_50.png");
+            case 3 -> TheEndOfDragon.id("textures/entity/the_end_of_dragon_crystal_fade_75.png");
+            case 4 -> TheEndOfDragon.id("textures/entity/the_end_of_dragon_crystal_fade_100.png");
+            default -> TheEndOfDragon.id("textures/entity/the_end_of_dragon.png");
+        };
     }
 
     @Override

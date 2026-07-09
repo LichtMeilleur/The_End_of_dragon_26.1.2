@@ -34,6 +34,24 @@ public final class ModItems {
                     )
             );
 
+    public static final ResourceKey<Item> THE_END_PIECE_KEY =
+            ResourceKey.create(
+                    Registries.ITEM,
+                    Identifier.fromNamespaceAndPath(TheEndOfDragon.MOD_ID, "the_end_piece")
+            );
+
+    public static final Item THE_END_PIECE =
+            Registry.register(
+                    BuiltInRegistries.ITEM,
+                    THE_END_PIECE_KEY.identifier(),
+                    new Item(
+                            new Item.Properties()
+                                    .setId(THE_END_PIECE_KEY)
+                    )
+            );
+
+
+
     public static final ResourceKey<Item> TED_DEBUG_BOW_KEY =
             ResourceKey.create(
                     Registries.ITEM,

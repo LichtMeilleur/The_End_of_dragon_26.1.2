@@ -27,9 +27,24 @@ import net.minecraft.world.phys.AABB;
 import java.util.Comparator;
 
 public final class TEDDebugCommands {
+
+    private static boolean canUseTedDebug(CommandSourceStack source) {
+        ServerPlayer player = source.getPlayer();
+
+        // コンソール等は許可
+        if (player == null) {
+            return true;
+        }
+
+        return source.getServer()
+                .getPlayerList()
+                .isOp(player.nameAndId());
+    }
+
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(
                 Commands.literal("ted")
+                        .requires(TEDDebugCommands::canUseTedDebug)
                         .then(Commands.literal("spawn")
                                 .executes(context -> {
                                     try {
@@ -101,12 +116,38 @@ public final class TEDDebugCommands {
                                     return 1;
                                 })
                         )
+                        .then(Commands.literal("kill")
+                                .executes(ctx -> {
+                                    ServerPlayer player = ctx.getSource().getPlayerOrException();
+                                    ServerLevel level = ctx.getSource().getLevel();
+
+                                    TheEndOfDragonCoreEntity dragon =
+                                            level.getEntitiesOfClass(
+                                                            TheEndOfDragonCoreEntity.class,
+                                                            player.getBoundingBox().inflate(256.0D),
+                                                            e -> e.isAlive()
+                                                    )
+                                                    .stream()
+                                                    .min(Comparator.comparingDouble(player::distanceToSqr))
+                                                    .orElse(null);
+
+                                    if (dragon == null) {
+                                        ctx.getSource().sendFailure(Component.literal("Dragon not found"));
+                                        return 0;
+                                    }
+
+                                    dragon.setHealth(0.0F);
+                                    dragon.die(level.damageSources().generic());
+
+                                    return 1;
+                                }))
 
 
         );
 
         dispatcher.register(
                 Commands.literal("ted_anim")
+                        .requires(TEDDebugCommands::canUseTedDebug)
                         .then(Commands.argument("animation", StringArgumentType.word())
                                 .executes(context -> {
                                     String key = StringArgumentType.getString(context, "animation");
@@ -203,7 +244,7 @@ public final class TEDDebugCommands {
 
         dispatcher.register(
                 Commands.literal("ted_debug")
-
+                        .requires(TEDDebugCommands::canUseTedDebug)
                         .then(Commands.literal("yaw")
                                 .then(Commands.argument("yaw", com.mojang.brigadier.arguments.FloatArgumentType.floatArg())
                                         .executes(ctx -> {
@@ -358,6 +399,7 @@ public final class TEDDebugCommands {
         );
         dispatcher.register(
                 Commands.literal("ted_air")
+                        .requires(TEDDebugCommands::canUseTedDebug)
                         .requires(CommandSourceStack::isPlayer)
                         .then(Commands.literal("ragnarok")
                                 .executes(ctx -> {

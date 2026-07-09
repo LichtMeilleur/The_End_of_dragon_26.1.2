@@ -12,6 +12,7 @@ import com.licht_meilleur.the_end_of_dragon.entity.vfx.*;
 import com.licht_meilleur.the_end_of_dragon.registry.ModEntities;
 
 import com.licht_meilleur.the_end_of_dragon.entity.ai.*;
+import com.licht_meilleur.the_end_of_dragon.registry.ModItems;
 import com.licht_meilleur.the_end_of_dragon.world.EndPortalSealHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
@@ -19,11 +20,16 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
+import net.minecraft.world.BossEvent;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
@@ -32,6 +38,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LightBlock;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.UUID;
 
 public class TheEndOfDragonCoreEntity extends Monster {
     private static final EntityDataAccessor<Integer> DATA_STATE =
@@ -75,6 +83,17 @@ public class TheEndOfDragonCoreEntity extends Monster {
     private final java.util.Set<Long> forcedChunks = new java.util.HashSet<>();
 
 
+    private int flyShotAnimTicks = 0;
+    private int flyShotFireDelay = 0;
+    //テイルウィップ
+    private boolean tailWhipHitDone = false;
+
+    private int unsafeFallTicks = 0;
+
+    //ドロップアイテム
+    private boolean deathDropSpawned = false;
+
+
 
     private static boolean between(int age, int start, int end) {
         return age >= start && age <= end;
@@ -98,14 +117,22 @@ public class TheEndOfDragonCoreEntity extends Monster {
         this.yHeadRotO = yaw;
     }
 
+    private final ServerBossEvent bossBar = new ServerBossEvent(
+            UUID.randomUUID(),
+            net.minecraft.network.chat.Component.translatable("boss.the_end_of_dragon.the_end_of_dragon"),
+            BossEvent.BossBarColor.PURPLE,
+            BossEvent.BossBarOverlay.PROGRESS
+    );
+
 
 
     @Override
     protected void registerGoals() {
         this.goalSelector.addGoal(0, new DragonRecoveryGoal(this));
         this.goalSelector.addGoal(1, new DragonAirAttackGoal(this));
-        this.goalSelector.addGoal(2, new DragonGroundAttackGoal(this));
-        this.goalSelector.addGoal(3, new DragonMoveGoal(this));
+        this.goalSelector.addGoal(2, new DragonTailWhipGoal(this));
+        this.goalSelector.addGoal(3, new DragonGroundAttackGoal(this));
+        this.goalSelector.addGoal(4, new DragonMoveGoal(this));
     }
 
 
@@ -158,13 +185,27 @@ public class TheEndOfDragonCoreEntity extends Monster {
         if (this.getDragonState() == state) return;
 
 
+        /*
+        System.out.println("[TED STATE] " + this.getDragonState() + " -> " + state
+                + " age=" + this.getDragonStateAgeTicks()
+                + " tick=" + this.tickCount);
 
+
+         */
         this.entityData.set(DATA_STATE, state.ordinal());
         this.stateStartTick = this.tickCount;
+
+        if (state == DragonState.TAIL_WHIP) {
+            this.tailWhipHitDone = false;
+        }
 
         if (state == DragonState.SUPER_LANDING
                 || state == DragonState.INTRO_SUPER_LANDING) {
             this.superLandingImpacted = false;
+        }
+
+        if (state == DragonState.DEAD) {
+            this.deathDropSpawned = false;
         }
     }
 
@@ -185,6 +226,13 @@ public class TheEndOfDragonCoreEntity extends Monster {
     public void tick() {
         super.tick();
 
+        if (!this.level().isClientSide()
+                && this.level() instanceof ServerLevel serverLevel
+                && this.getDragonState() == DragonState.DEAD) {
+            tickDeathSequence(serverLevel);
+            return;
+        }
+
 
 
         this.setInvisible(true);
@@ -197,15 +245,187 @@ public class TheEndOfDragonCoreEntity extends Monster {
 
         ServerLevel serverLevel = (ServerLevel) this.level();
 
+        if (deathSequenceStarted) {
+            tickDeathSequence(serverLevel);
+            return;
+        }
+
+
+        if (!this.isIntroStateNow() && this.getDragonState() != DragonState.DEAD) {
+            this.combatStarted = true;
+        }
+
+        updateCrystalFadeStage();
+        this.tickChildren();
+
         this.tickChildren();
         this.tickAttackVfx();
+        this.tickFlyShotRequest(serverLevel);
         this.attackStateMachine.tick(serverLevel);
         this.tickBodyBlockBreak(serverLevel);
+        this.tickAirAttackCooldown();
+
+        if (this.getDragonState() == DragonState.DEAD) {
+            updateCrystalFadeStage();
+            tickChildren();
+
+            int age = this.getDragonStateAgeTicks();
+
+            if (!deathDropSpawned && age >= 110) {
+                deathDropSpawned = true;
+
+                ItemEntity item = new ItemEntity(
+                        serverLevel,
+                        this.getX(),
+                        this.getY() + 1.0D,
+                        this.getZ(),
+                        new ItemStack(ModItems.THE_END_PIECE)
+                );
+
+                serverLevel.addFreshEntity(item);
+            }
+
+            if (age > 120) {
+                this.discard();
+            }
+
+            return;
+        }
 
         if (!this.level().isClientSide() && this.level() instanceof ServerLevel level) {
             maintainForcedChunks(level);
         }
+
+        bossBar.setProgress(this.getHealth() / this.getMaxHealth());
+        bossBar.setName(
+                net.minecraft.network.chat.Component.translatable("boss.the_end_of_dragon.the_end_of_dragon")
+        );
     }
+
+    private void updateCrystalFadeStage() {
+        if (this.getDragonState() != DragonState.DEAD) {
+            this.crystalFadeStage = 0;
+            return;
+        }
+
+        int age = this.getDragonStateAgeTicks();
+
+        if (age >= 110) {
+            this.crystalFadeStage = 4;
+        } else if (age >= 90) {
+            this.crystalFadeStage = 3;
+        } else if (age >= 60) {
+            this.crystalFadeStage = 2;
+        } else if (age >= 30) {
+            this.crystalFadeStage = 1;
+        } else {
+            this.crystalFadeStage = 0;
+        }
+    }
+
+    private int crystalFadeStage = 0;
+
+    public int getCrystalFadeStage() {
+        return crystalFadeStage;
+    }
+
+    @Override
+    public void startSeenByPlayer(ServerPlayer player) {
+        super.startSeenByPlayer(player);
+        bossBar.addPlayer(player);
+    }
+    @Override
+    public void stopSeenByPlayer(ServerPlayer player) {
+        super.stopSeenByPlayer(player);
+        bossBar.removePlayer(player);
+    }
+
+    private boolean isAirAttackStateForRecovery() {
+        return switch (this.getDragonState()) {
+            case FLY_START,
+                 FLY,
+                 FLY_ASCEND,
+                 FIGURE_EIGHT,
+                 FLY_DESCEND,
+                 FLY_SHOT,
+                 FLAMES_OF_RAGNAROK,
+                 FALL,
+                 LANDING,
+                 SUPER_LANDING -> true;
+
+            default -> false;
+        };
+    }
+
+    public boolean shouldEmergencyRecover(ServerLevel level) {
+        if (!this.isAlive()) return false;
+        if (this.getDragonState() == DragonState.DEAD) return false;
+        if (this.isIntroStateNow()) return false;
+
+        // 空中攻撃中は復帰判定しない
+        if (isAirAttackStateForRecovery()) {
+            unsafeFallTicks = 0;
+            return false;
+        }
+
+        Vec3 center = this.arenaCenter(level);
+
+        double dx = this.getX() - center.x;
+        double dz = this.getZ() - center.z;
+
+        boolean outOfArena = (dx * dx + dz * dz) > 220.0D * 220.0D;
+        boolean tooLow = this.getY() < center.y - 35.0D;
+
+        // 地上攻撃・通常中なのに落ちている状態
+        boolean falling = this.getY() < center.y - 20.0D;
+
+        if ((outOfArena || tooLow) && falling) {
+            unsafeFallTicks++;
+        } else {
+            unsafeFallTicks = 0;
+        }
+
+        return unsafeFallTicks >= 20;
+    }
+
+    public void startEmergencyRecovery() {
+        this.setAttackMovementLocked(true);
+        this.setDeltaMovement(Vec3.ZERO);
+        this.fallDistance = 0.0F;
+        this.setDragonState(DragonState.RECOVERY_ASCEND);
+        this.attackStateMachine.cancelAirSequence();
+    }
+
+    public void tickEmergencyRecoveryMove(ServerLevel level) {
+        Vec3 center = this.arenaCenter(level);
+        Vec3 safe = center.add(0.0D, 65.0D, 0.0D);
+
+
+        if (this.getDragonState() == DragonState.RECOVERY_ASCEND) {
+            if (this.getY() < safe.y) {
+                moveBossByNoFace(level, new Vec3(0.0D, 12.0D, 0.0D));
+                return;
+            }
+
+            this.setDragonState(DragonState.RECOVERY_RETURN);
+            return;
+        }
+
+        if (this.getDragonState() == DragonState.RECOVERY_RETURN) {
+            Vec3 move = safe.subtract(this.position());
+
+            if (move.length() < 6.0D) {
+                this.setPos(safe.x, safe.y, safe.z);
+                this.setDragonState(DragonState.FLY_DESCEND);
+                return;
+            }
+
+            moveBossBy(level, move.normalize().scale(Math.min(24.0D, move.length())));
+        }
+    }
+
+
+
 
     public void moveBossBy(ServerLevel level, Vec3 move) {
         moveByVector(level, move);
@@ -247,6 +467,7 @@ public class TheEndOfDragonCoreEntity extends Monster {
         syncChildrenNow();
     }
 
+
     private void maintainForcedChunks(ServerLevel level) {
 
         int cx = Mth.floor(this.getX()) >> 4;
@@ -284,6 +505,36 @@ public class TheEndOfDragonCoreEntity extends Monster {
         forcedChunks.addAll(next);
     }
 
+    public void cancelAttackAndRecover() {
+        this.setAttackMovementLocked(false);
+        this.setDeltaMovement(Vec3.ZERO);
+        this.fallDistance = 0.0F;
+    }
+
+    private <T extends Entity> T getChild(int entityId, Class<T> type) {
+        if (entityId == -1) {
+            return null;
+        }
+
+        Entity entity = this.level().getEntity(entityId);
+        if (type.isInstance(entity) && !entity.isRemoved()) {
+            return type.cast(entity);
+        }
+
+        return null;
+    }
+
+    private void syncChildrenNow() {
+        TheEndOfDragonDisplayEntity display =
+                this.getChild(this.displayEntityId, TheEndOfDragonDisplayEntity.class);
+
+        TheEndOfDragonCollisionEntity collision =
+                this.getChild(this.collisionEntityId, TheEndOfDragonCollisionEntity.class);
+
+        if (display != null) display.syncFromCore(this);
+        if (collision != null) collision.syncFromCore(this);
+    }
+
 
 
     private void tickChildren() {
@@ -317,10 +568,66 @@ public class TheEndOfDragonCoreEntity extends Monster {
         collision.syncFromCore(this);
     }
 
+    private void discardChildren() {
+        TheEndOfDragonDisplayEntity display =
+                this.getChild(this.displayEntityId, TheEndOfDragonDisplayEntity.class);
+
+        TheEndOfDragonCollisionEntity collision =
+                this.getChild(this.collisionEntityId, TheEndOfDragonCollisionEntity.class);
+
+        if (display != null) {
+            display.discard();
+        }
+
+        if (collision != null) {
+            collision.discard();
+        }
+
+        // IDで拾えなかった残骸対策
+        AABB area = this.getBoundingBox().inflate(128.0D);
+
+        for (TheEndOfDragonDisplayEntity e : this.level().getEntitiesOfClass(
+                TheEndOfDragonDisplayEntity.class,
+                area
+        )) {
+            e.discard();
+        }
+
+        for (TheEndOfDragonCollisionEntity e : this.level().getEntitiesOfClass(
+                TheEndOfDragonCollisionEntity.class,
+                area
+        )) {
+            e.discard();
+        }
+
+        this.displayEntityId = -1;
+        this.collisionEntityId = -1;
+    }
+
     private void updatePhysicsMode() {
-        // 地上テスト中は全部自前移動にする
-        this.noPhysics = true;
-        this.setNoGravity(true);
+        DragonState state = this.getDragonState();
+
+        boolean flying = switch (state) {
+            case FLY_START,
+                 FLY,
+                 FLY_ASCEND,
+                 FLY_DESCEND,
+                 FIGURE_EIGHT,
+                 FLY_SHOT,
+                 FLAMES_OF_RAGNAROK,
+                 FALL,
+                 INTRO_RISE,
+                 INTRO_WAIT_PORTAL,
+                 INTRO_FLY_TO_PORTAL,
+                 INTRO_DIVE_TO_PORTAL,
+                 RECOVERY_ASCEND,
+                 RECOVERY_RETURN -> true;
+
+            default -> false;
+        };
+
+        this.noPhysics = flying;
+        this.setNoGravity(flying);
         this.fallDistance = 0.0F;
     }
 
@@ -328,18 +635,7 @@ public class TheEndOfDragonCoreEntity extends Monster {
 
 
 
-    private <T extends Entity> T getChild(int entityId, Class<T> type) {
-        if (entityId == -1) {
-            return null;
-        }
 
-        Entity entity = this.level().getEntity(entityId);
-        if (type.isInstance(entity) && entity.isAlive()) {
-            return type.cast(entity);
-        }
-
-        return null;
-    }
 
     public boolean isIntroStateNow() {
         return isIntroState(this.getDragonState());
@@ -375,7 +671,7 @@ public class TheEndOfDragonCoreEntity extends Monster {
 
     @Override
     public boolean isPickable() {
-        return false;
+        return true;
     }
 
     @Override
@@ -405,7 +701,7 @@ public class TheEndOfDragonCoreEntity extends Monster {
                 forcedChunks.clear();
             }
         }
-
+        bossBar.removeAllPlayers();
 
         super.remove(reason);
     }
@@ -420,13 +716,63 @@ public class TheEndOfDragonCoreEntity extends Monster {
         this.attackMovementLocked = locked;
     }
 
-    @Override
-    public void die(net.minecraft.world.damagesource.DamageSource damageSource) {
-        super.die(damageSource);
+    private boolean deathSequenceStarted;
+    private boolean deathSequenceFinished;
+    private int deathTicks;
 
-        if (!this.level().isClientSide() && this.level() instanceof ServerLevel serverLevel) {
+    @Override
+    public void die(DamageSource source) {
+        if (deathSequenceStarted) {
+            return;
+        }
+
+        deathSequenceStarted = true;
+
+        this.setHealth(0.0F);
+        this.setDragonState(DragonState.DEAD);
+
+        this.setAttackMovementLocked(true);
+        this.getNavigation().stop();
+        this.setDeltaMovement(Vec3.ZERO);
+
+        if (!level().isClientSide() && level() instanceof ServerLevel serverLevel) {
             EndPortalSealHandler.restorePortal(serverLevel);
         }
+    }
+
+    private TheEndOfDragonDisplayEntity displayEntity;
+    private TheEndOfDragonCollisionEntity collisionEntity;
+
+    private void tickDeathSequence(ServerLevel level) {
+        deathTicks++;
+
+        if (deathTicks < 120) {
+            tickChildren();
+            return;
+        }
+
+        if (!deathSequenceFinished) {
+            deathSequenceFinished = true;
+
+            ItemEntity item = new ItemEntity(
+                    level,
+                    this.getX(),
+                    this.getY() + 1.0D,
+                    this.getZ(),
+                    new ItemStack(ModItems.THE_END_PIECE)
+            );
+
+            item.setDeltaMovement(
+                    this.getRandom().nextGaussian() * 0.08D,
+                    0.25D,
+                    this.getRandom().nextGaussian() * 0.08D
+            );
+
+            level.addFreshEntity(item);
+        }
+
+        discardChildren();
+        this.discard();
     }
 
     @Override
@@ -610,7 +956,27 @@ public class TheEndOfDragonCoreEntity extends Monster {
         return true;
     }
 
+    private int airAttackCooldown = 160;
 
+    public boolean tryConsumeAirAttackCooldown() {
+        if (airAttackCooldown > 0) {
+            return false;
+        }
+
+        airAttackCooldown = 260 + this.getRandom().nextInt(160);
+        return true;
+    }
+
+    private void tickAirAttackCooldown() {
+        if (this.level().isClientSide()) return;
+        if (this.isCombatLocked()) return;
+        if (this.isIntroStateNow()) return;
+        if (this.getDragonState() == DragonState.DEAD) return;
+
+        if (airAttackCooldown > 0) {
+            airAttackCooldown--;
+        }
+    }
 
 
 
@@ -675,7 +1041,8 @@ public class TheEndOfDragonCoreEntity extends Monster {
                  SUPER_LANDING,
                  FIGURE_EIGHT,
                  FLY_ASCEND,
-                 FLY_DESCEND-> true;
+                 FLY_DESCEND,
+                TAIL_WHIP -> true;
 
             default -> false;
         };
@@ -688,6 +1055,10 @@ public class TheEndOfDragonCoreEntity extends Monster {
             float damage
     ) {
         damage = reduceIncomingBossDamage(damage);
+
+        if (this.getDragonState() == DragonState.DEAD) {
+            return false;
+        }
 
         return super.hurtServer(level, source, damage);
     }
@@ -768,6 +1139,8 @@ public class TheEndOfDragonCoreEntity extends Monster {
     }
 
 
+
+
     private void tickAttackVfx() {
         if (!(this.level() instanceof net.minecraft.server.level.ServerLevel serverLevel)) {
             return;
@@ -841,13 +1214,11 @@ public class TheEndOfDragonCoreEntity extends Monster {
             case FLAMES_OF_RAGNAROK -> {
                 boolean firing = between(age, FLAMES_FIRE_START, FLAMES_FIRE_END);
 
-                updateAttachedVfx(serverLevel, TedVfxSpecs.FRONT_LEFT_LASER, firing);
-                updateAttachedVfx(serverLevel, TedVfxSpecs.FRONT_RIGHT_LASER, firing);
-                updateAttachedVfx(serverLevel, TedVfxSpecs.BACK_LEFT_LASER, firing);
-                updateAttachedVfx(serverLevel, TedVfxSpecs.BACK_RIGHT_LASER, firing);
-
-                if (age > 120) {
-                    this.setDragonState(DragonState.FALL);
+                if (firing) {
+                    updateRagnarokLaserBeam(serverLevel, DragonCollisionPart.FRONT_LEFT_HAND);
+                    updateRagnarokLaserBeam(serverLevel, DragonCollisionPart.FRONT_RIGHT_HAND);
+                    updateRagnarokLaserBeam(serverLevel, DragonCollisionPart.BACK_LEFT_HAND);
+                    updateRagnarokLaserBeam(serverLevel, DragonCollisionPart.BACK_RIGHT_HAND);
                 }
 
                 syncChildrenNow();
@@ -885,6 +1256,15 @@ public class TheEndOfDragonCoreEntity extends Monster {
                 }
             }
 
+            case TAIL_WHIP -> {
+                if (!tailWhipHitDone && age >= 6 && age <= 12) {
+                    tailWhipHitDone = true;
+                    applyTailWhipDamage(serverLevel);
+                }
+            }
+
+
+
             case SUPER_LANDING -> {
                 updateSuperLanding(serverLevel);
             }
@@ -915,6 +1295,7 @@ public class TheEndOfDragonCoreEntity extends Monster {
 
             case INTRO_SUPER_LANDING -> {
                 updateIntroSuperLanding(serverLevel);
+
             }
 
             default -> {
@@ -936,7 +1317,78 @@ public class TheEndOfDragonCoreEntity extends Monster {
     }
 
 
+    private void applyTailWhipDamage(ServerLevel level) {
+        double radius = TedConfig.values.tailWhipRadius;
 
+        AABB area = this.getBoundingBox().inflate(radius, 5.0D, radius);
+
+        var entities = level.getEntitiesOfClass(
+                LivingEntity.class,
+                area,
+                entity -> entity.isAlive()
+                        && entity != this
+                        && !(entity instanceof TheEndOfDragonCoreEntity)
+                        && !(entity instanceof TheEndOfDragonEntity)
+                        && !(entity instanceof TheEndOfDragonDisplayEntity)
+                        && !(entity instanceof TheEndOfDragonCollisionEntity)
+        );
+
+        for (LivingEntity entity : entities) {
+            Vec3 to = entity.position().subtract(this.position());
+
+            double horizontalSq = to.x * to.x + to.z * to.z;
+            if (horizontalSq > radius * radius) {
+                continue;
+            }
+
+            entity.hurtServer(
+                    level,
+                    level.damageSources().mobAttack(this),
+                    TedConfig.values.tailWhipDamage
+                            * (float) TedConfig.values.damageMultiplier
+            );
+
+            Vec3 knock = new Vec3(to.x, 0.0D, to.z);
+
+            if (knock.lengthSqr() > 1.0E-6D) {
+                knock = knock.normalize();
+
+                entity.push(
+                        knock.x * TedConfig.values.tailWhipKnockback,
+                        TedConfig.values.tailWhipKnockbackY,
+                        knock.z * TedConfig.values.tailWhipKnockback
+                );
+
+                entity.hurtMarked = true;
+            }
+        }
+    }
+
+
+    public void requestFlyShot(ServerLevel level) {
+        this.flyShotAnimTicks = 10;
+        this.flyShotFireDelay = 5;
+    }
+
+    private void tickFlyShotRequest(ServerLevel level) {
+        if (flyShotAnimTicks <= 0) {
+            return;
+        }
+
+        flyShotAnimTicks--;
+
+        if (flyShotFireDelay > 0) {
+            flyShotFireDelay--;
+
+            if (flyShotFireDelay == 0) {
+                fireLightProjectile(level);
+            }
+        }
+    }
+
+    public boolean isFlyShotAnimPlaying() {
+        return flyShotAnimTicks > 0;
+    }
 
     private Vec3 getArenaCenter(ServerLevel level) {
         if (this.introPortalCenter != null) {
@@ -956,6 +1408,10 @@ public class TheEndOfDragonCoreEntity extends Monster {
         if (!superLandingImpacted) {
             applyIntroSuperLandingImpact(level);
             superLandingImpacted = true;
+        }
+
+        if (this.getDragonStateAgeTicks() > 45) {
+            finishIntroAndStartCombat();
         }
     }
 
@@ -1032,35 +1488,43 @@ public class TheEndOfDragonCoreEntity extends Monster {
 
     private void updateIntroWaitPortal(ServerLevel level, int age) {
         EndPortalSealHandler.coverPortalArea(level);
-
         updateFlightJets(level);
 
-
-
-        // 約5秒待つ。バニラのポータル生成待ち
         if (age >= 160) {
-            this.setDragonState(DragonState.INTRO_FLY_TO_PORTAL);
+            this.setDragonState(DragonState.INTRO_DIVE_TO_PORTAL);
         }
     }
 
     private void updateIntroRise(ServerLevel level, int age) {
-        setVisualRotation(this.getYRot(), -90.0F);
-
-        moveByVector(level, new Vec3(0.0D, 20.0D, 0.0D));
         updateFlightJets(level);
 
-        if (age >= 18) {
-            setVisualRotation(this.getYRot(), 0.0F);
-            this.setDragonState(DragonState.INTRO_WAIT_PORTAL);
+        double targetY = this.introPortalCenter != null
+                ? this.introPortalCenter.getY() + 1000.0D
+                : this.getY() + 1000.0D;
+
+        if (this.getY() < targetY) {
+            moveByVector(level, new Vec3(0.0D, 20.0D, 0.0D), false);
+            return;
         }
+
+        this.setDragonState(DragonState.INTRO_WAIT_PORTAL);
+    }
+
+    public void startIntroAscendFlight() {
+        this.attackStateMachine.startIntroAscend();
     }
 
 
 
     private void updateIntroFlyToPortal(ServerLevel level) {
-        if (this.introPortalAboveTarget == null) {
+        if (this.introPortalCenter == null) {
             this.setDragonState(DragonState.IDLE);
             return;
+        }
+
+        if (this.introPortalAboveTarget == null) {
+            this.introPortalAboveTarget = Vec3.atCenterOf(this.introPortalCenter)
+                    .add(0.0D, 1000.0D, 0.0D);
         }
 
         Vec3 current = this.position();
@@ -1106,33 +1570,17 @@ public class TheEndOfDragonCoreEntity extends Monster {
 
 
     private void updateIntroDiveToPortal(ServerLevel level) {
-        setVisualRotation(this.getYRot(), 90.0F);
+        updateFlightJets(level);
 
         if (this.introPortalCenter != null) {
             Vec3 center = Vec3.atCenterOf(this.introPortalCenter);
 
-            this.setPos(
-                    center.x,
-                    this.getY(),
-                    center.z
-            );
+            this.setPos(center.x, this.getY(), center.z);
         }
 
-        Vec3 move = new Vec3(0.0D, -20.0D, 0.0D);
-        moveByVector(level, move);
-
-        level.sendParticles(
-                ParticleTypes.SMOKE,
-                this.getX(),
-                this.getY() + 3.0D,
-                this.getZ(),
-                20,
-                1.5D, 0.8D, 1.5D,
-                0.08D
-        );
+        moveByVector(level, new Vec3(0.0D, -24.0D, 0.0D), false);
 
         if (isNearPortalImpactHeight()) {
-            setVisualRotation(this.getYRot(), 0.0F);
             this.setDragonState(DragonState.INTRO_SUPER_LANDING);
         }
     }
@@ -1174,19 +1622,9 @@ public class TheEndOfDragonCoreEntity extends Monster {
         this.fallDistance = 0.0F;
         this.setDragonState(DragonState.IDLE);
         syncChildrenNow();
-
     }
 
-    private void syncChildrenNow() {
-        TheEndOfDragonDisplayEntity display =
-                this.getChild(this.displayEntityId, TheEndOfDragonDisplayEntity.class);
 
-        TheEndOfDragonCollisionEntity collision =
-                this.getChild(this.collisionEntityId, TheEndOfDragonCollisionEntity.class);
-
-        if (display != null) display.syncFromCore(this);
-        if (collision != null) collision.syncFromCore(this);
-    }
 
 
     private boolean superLandingImpacted = false;
@@ -1869,6 +2307,10 @@ public class TheEndOfDragonCoreEntity extends Monster {
                 this,
                 8.0F,
                 entity -> entity != this
+                        && !(entity instanceof TheEndOfDragonCoreEntity)
+                        && !(entity instanceof TheEndOfDragonEntity)
+                        && !(entity instanceof TheEndOfDragonDisplayEntity)
+                        && !(entity instanceof TheEndOfDragonCollisionEntity)
         );
     }
 
@@ -1926,6 +2368,10 @@ public class TheEndOfDragonCoreEntity extends Monster {
                 this,
                 8.0F,
                 entity -> entity != this
+                        && !(entity instanceof TheEndOfDragonCoreEntity)
+                        && !(entity instanceof TheEndOfDragonEntity)
+                        && !(entity instanceof TheEndOfDragonDisplayEntity)
+                        && !(entity instanceof TheEndOfDragonCollisionEntity)
         );
     }
 
@@ -2054,7 +2500,106 @@ public class TheEndOfDragonCoreEntity extends Monster {
                 .add(box.obb().axisZ().normalize().scale(z));
     }
 
+    private void updateRagnarokLaserBeam(
+            ServerLevel level,
+            DragonCollisionPart part
+    ) {
+        DragonCollisionBox box = getCollisionPartBox(part);
+        if (box == null || box.obb() == null) {
+            return;
+        }
 
+        Vec3 start = box.obb().center();
+        Vec3 direction = box.obb().axisY().normalize();
+
+        double length = raycastLaserLength(level, start, direction, 96.0D);
+
+        TedBeamHitbox beam = new TedBeamHitbox(
+                start,
+                direction,
+                length,
+                8.0D
+        );
+
+        beam.spawnLaserParticles(level);
+
+        beam.damageEntities(
+                level,
+                this,
+                TedConfig.values.laserDamage * 2.0F * (float) TedConfig.values.damageMultiplier,
+                entity -> entity != this
+                        && !(entity instanceof TheEndOfDragonCoreEntity)
+                        && !(entity instanceof TheEndOfDragonEntity)
+                        && !(entity instanceof TheEndOfDragonDisplayEntity)
+                        && !(entity instanceof TheEndOfDragonCollisionEntity)
+        );
+
+        spawnExtraRagnarokLaserParticles(level, start, direction, length, 8.0D);
+        spawnRagnarokImpactParticles(level, start.add(direction.scale(length)), 8.0D);
+    }
+
+    private void spawnExtraRagnarokLaserParticles(
+            ServerLevel level,
+            Vec3 start,
+            Vec3 dir,
+            double length,
+            double radius
+    ) {
+        int steps = 72;
+
+        for (int i = 0; i <= steps; i++) {
+            double t = i / (double) steps;
+            Vec3 p = start.add(dir.scale(length * t));
+
+            // レーザーの芯。狭く・多め
+            level.sendParticles(
+                    ParticleTypes.END_ROD,
+                    p.x, p.y, p.z,
+                    10,
+                    0.18D, 0.18D, 0.18D,
+                    0.0D
+            );
+
+            // 外側の熱。スケール6〜8相当だが、拡散は狭め
+            level.sendParticles(
+                    ParticleTypes.FLAME,
+                    p.x, p.y, p.z,
+                    6,
+                    0.55D, 0.55D, 0.55D,
+                    0.01D
+            );
+        }
+    }
+
+    private void spawnRagnarokImpactParticles(
+            ServerLevel level,
+            Vec3 pos,
+            double radius
+    ) {
+        level.sendParticles(
+                ParticleTypes.EXPLOSION,
+                pos.x, pos.y, pos.z,
+                1,
+                0.3D, 0.3D, 0.3D,
+                0.0D
+        );
+
+        level.sendParticles(
+                ParticleTypes.FLAME,
+                pos.x, pos.y, pos.z,
+                35,
+                1.2D, 0.5D, 1.2D,
+                0.06D
+        );
+
+        level.sendParticles(
+                ParticleTypes.LARGE_SMOKE,
+                pos.x, pos.y, pos.z,
+                12,
+                0.8D, 0.4D, 0.8D,
+                0.03D
+        );
+    }
 
     private TedVfxEntity getOrCreateLaserVfx(
             ServerLevel serverLevel,
@@ -2315,6 +2860,10 @@ public class TheEndOfDragonCoreEntity extends Monster {
                 this,
                 TedConfig.values.laserDamage * (float) TedConfig.values.damageMultiplier,
                 entity -> entity != this
+                        && !(entity instanceof TheEndOfDragonCoreEntity)
+                        && !(entity instanceof TheEndOfDragonEntity)
+                        && !(entity instanceof TheEndOfDragonDisplayEntity)
+                        && !(entity instanceof TheEndOfDragonCollisionEntity)
         );
 
         switch (spec.type()) {

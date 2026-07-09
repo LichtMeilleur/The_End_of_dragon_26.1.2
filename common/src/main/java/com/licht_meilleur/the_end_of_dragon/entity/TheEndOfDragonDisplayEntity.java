@@ -1,5 +1,8 @@
 package com.licht_meilleur.the_end_of_dragon.entity;
 
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.level.Level;
@@ -7,6 +10,7 @@ import net.minecraft.world.level.Level;
 public class TheEndOfDragonDisplayEntity extends TheEndOfDragonEntity {
     private DragonState renderState = DragonState.IDLE;
     private float flightPitch = 0.0F;
+
 
 
 
@@ -23,11 +27,17 @@ public class TheEndOfDragonDisplayEntity extends TheEndOfDragonEntity {
 
         this.setXRot(core.getVisualPitch());
         this.xRotO = core.getVisualPitch();
+
+
     }
+
+
 
     public float getFlightPitch() {
         return this.flightPitch;
     }
+
+
 
     @Override
     protected DragonState getAnimationState() {

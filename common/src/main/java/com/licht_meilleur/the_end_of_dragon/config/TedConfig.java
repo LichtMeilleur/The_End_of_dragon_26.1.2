@@ -50,6 +50,11 @@ public final class TedConfig {
         public float orbDamage = 9999.0F;
 
 
+        public float tailWhipDamage = 14.0F;
+        public double tailWhipRadius = 18.0D;
+        public double tailWhipKnockback = 2.2D;
+        public double tailWhipKnockbackY = 0.45D;
+
 
         public boolean enableBlockBreak = true;
 

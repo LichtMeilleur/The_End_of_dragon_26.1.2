@@ -26,6 +26,8 @@ public class TheEndOfDragonCollisionEntity extends TheEndOfDragonEntity {
     private int animationAgeTicks = 0;
 
 
+    private int coreEntityId = -1;
+
 
     @Override
     public void syncFromCore(TheEndOfDragonCoreEntity core) {
@@ -37,7 +39,36 @@ public class TheEndOfDragonCollisionEntity extends TheEndOfDragonEntity {
         this.setXRot(core.getVisualPitch());
         this.xRotO = core.getVisualPitch();
 
+        this.coreEntityId = core.getId();
 
+
+    }
+
+    private TheEndOfDragonCoreEntity getCore() {
+        if (coreEntityId == -1) return null;
+
+        var entity = this.level().getEntity(coreEntityId);
+        return entity instanceof TheEndOfDragonCoreEntity core ? core : null;
+    }
+
+    @Override
+    public boolean isPickable() {
+        return true;
+    }
+
+    @Override
+    public boolean hurtServer(
+            net.minecraft.server.level.ServerLevel level,
+            net.minecraft.world.damagesource.DamageSource source,
+            float damage
+    ) {
+        TheEndOfDragonCoreEntity core = getCore();
+
+        if (core == null || !core.isAlive()) {
+            return false;
+        }
+
+        return core.hurtServer(level, source, damage);
     }
 
     private float flightPitch = 0.0F;
@@ -121,11 +152,14 @@ public class TheEndOfDragonCollisionEntity extends TheEndOfDragonEntity {
         this.yHeadRotO = parent.yHeadRotO;
         this.xRotO = parent.xRotO;
 
+        /*
         if (this.tickCount % 20 == 0) {
             System.out.println("[TED CHILD ROT] " + this.getClass().getSimpleName()
                     + " yaw=" + this.getYRot()
                     + " pitch=" + this.getXRot());
         }
+
+         */
     }
 
     public List<DragonCollisionBox> getCollisionBoxes() {

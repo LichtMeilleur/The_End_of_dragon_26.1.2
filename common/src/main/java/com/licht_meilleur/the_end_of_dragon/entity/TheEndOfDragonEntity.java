@@ -7,11 +7,14 @@ import com.geckolib.animation.AnimationController;
 import com.geckolib.animation.RawAnimation;
 import com.geckolib.animation.object.PlayState;
 import com.geckolib.util.GeckoLibUtil;
+import com.licht_meilleur.the_end_of_dragon.registry.ModItems;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 public abstract class TheEndOfDragonEntity extends Monster implements GeoEntity {
@@ -35,6 +38,9 @@ public abstract class TheEndOfDragonEntity extends Monster implements GeoEntity 
     public static final String ANIM_SUPER_LANDING = "animation.model.super_landing";
     public static final String ANIM_FLY_ASCEND = "animation.model.fly_ascend";
     public static final String ANIM_FLY_DESCEND = "animation.model.fly_descend";
+    public static final String ANIM_TAIL_WHIP = "animation.model.tail_whip_6tick_start_12tick_end";
+    public static final String ANIM_DEAD = "animation.model.dead";
+
 
     protected TheEndOfDragonEntity(EntityType<? extends Monster> type, Level level) {
         super(type, level);
@@ -50,15 +56,32 @@ public abstract class TheEndOfDragonEntity extends Monster implements GeoEntity 
 
     private float flightPitch = 0.0F;
 
+    private int localDeadTicks = 0;
+    private int localCrystalFadeStage = 0;
+
+
+
     private static final EntityDataAccessor<Integer> DATA_RENDER_STATE =
             SynchedEntityData.defineId(TheEndOfDragonEntity.class, EntityDataSerializers.INT);
 
+
+    private static final EntityDataAccessor<Boolean> DATA_FLY_SHOT_ANIM =
+            SynchedEntityData.defineId(TheEndOfDragonEntity.class, EntityDataSerializers.BOOLEAN);
+
+
+    private static final EntityDataAccessor<Integer> DATA_CRYSTAL_STAGE =
+            SynchedEntityData.defineId(
+                    TheEndOfDragonEntity.class,
+                    EntityDataSerializers.INT);
 
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
         builder.define(DATA_RENDER_STATE, DragonState.IDLE.ordinal());
+        builder.define(DATA_FLY_SHOT_ANIM, false);
+        builder.define(DATA_CRYSTAL_STAGE,0);
     }
+
 
     protected DragonState getAnimationState() {
         return DragonState.IDLE;
@@ -85,7 +108,6 @@ public abstract class TheEndOfDragonEntity extends Monster implements GeoEntity 
         this.xRotO = pitch;
 
 
-
         updateFlightPitchFromMovement();
 
         this.setXRot(this.flightPitch);
@@ -93,15 +115,15 @@ public abstract class TheEndOfDragonEntity extends Monster implements GeoEntity 
 
         this.entityData.set(DATA_RENDER_STATE, core.getDragonState().ordinal());
 
-        /*
-        System.out.println(
-                (this.level().isClientSide() ? "[CLIENT]" : "[SERVER]")
-                        + " syncFromCore "
-                        + this.getClass().getSimpleName()
-        );
+        if (core.getDragonState() == DragonState.DEAD && this.tickCount % 20 == 0) {
+            System.out.println("[TED CRYSTAL SYNC] stage=" + core.getCrystalFadeStage());
+        }
 
-         */
+        entityData.set(DATA_CRYSTAL_STAGE,
+                core.getCrystalFadeStage());
+        this.entityData.set(DATA_CRYSTAL_STAGE, core.getCrystalFadeStage());
     }
+
     protected DragonState getSyncedRenderState() {
         int id = this.entityData.get(DATA_RENDER_STATE);
         DragonState[] values = DragonState.values();
@@ -111,6 +133,10 @@ public abstract class TheEndOfDragonEntity extends Monster implements GeoEntity 
         }
 
         return values[id];
+    }
+
+    public int getCrystalFadeStage() {
+        return this.localCrystalFadeStage;
     }
 
     private static boolean isFlyingState(DragonState state) {
@@ -198,12 +224,41 @@ public abstract class TheEndOfDragonEntity extends Monster implements GeoEntity 
         this.noPhysics = true;
         this.setNoGravity(true);
 
-        if (this.level().isClientSide()) {
-            updateFlightPitchFromMovement();
+        if (getSyncedRenderState() == DragonState.DEAD) {
+            localDeadTicks++;
 
-            this.setXRot(this.flightPitch);
-            this.xRotO = this.flightPitch;
+            if (localDeadTicks >= 110) {
+                localCrystalFadeStage = 4;
+            } else if (localDeadTicks >= 90) {
+                localCrystalFadeStage = 3;
+            } else if (localDeadTicks >= 60) {
+                localCrystalFadeStage = 2;
+            } else if (localDeadTicks >= 30) {
+                localCrystalFadeStage = 1;
+            }
+
+            // ←ここに追加
+            if (!this.level().isClientSide()
+                    && this instanceof TheEndOfDragonDisplayEntity
+                    && localDeadTicks == 120) {
+
+                ItemEntity item = new ItemEntity(
+                        this.level(),
+                        this.getX(),
+                        this.getY() + 1.0D,
+                        this.getZ(),
+                        new ItemStack(ModItems.THE_END_PIECE)
+                );
+
+                this.level().addFreshEntity(item);
+                this.discard();
+            }
+
+        } else {
+            localDeadTicks = 0;
+            localCrystalFadeStage = 0;
         }
+
     }
 
     @Override
@@ -221,6 +276,12 @@ public abstract class TheEndOfDragonEntity extends Monster implements GeoEntity 
     }
 
     private RawAnimation animationForState(DragonState state) {
+        if (this.entityData.get(DATA_FLY_SHOT_ANIM)) {
+            return RawAnimation.begin().thenPlay(ANIM_FLY_SHOT);
+        }
+
+
+
         return switch (state) {
             case WALK -> RawAnimation.begin().thenLoop(ANIM_WALK);
 
@@ -240,6 +301,7 @@ public abstract class TheEndOfDragonEntity extends Monster implements GeoEntity 
             case LIGHT_OF_DESTRUCTION -> RawAnimation.begin().thenPlay(ANIM_LIGHT_OF_DESTRUCTION);
             case PHOTON_BLASTER -> RawAnimation.begin().thenPlay(ANIM_PHOTON_BLASTER);
             case BLASTER_TACKLE -> RawAnimation.begin().thenPlay(ANIM_BLASTER_TACKLE);
+            case TAIL_WHIP -> RawAnimation.begin().thenPlay(ANIM_TAIL_WHIP);
 
             case INTRO_RISE,
                  INTRO_WAIT_PORTAL,
@@ -251,6 +313,11 @@ public abstract class TheEndOfDragonEntity extends Monster implements GeoEntity 
             case FLY_DESCEND -> RawAnimation.begin().thenLoop(ANIM_FLY_DESCEND);
 
             case FIGURE_EIGHT -> RawAnimation.begin().thenLoop(ANIM_FLY);
+
+            case DEAD -> RawAnimation.begin().thenPlayAndHold(ANIM_DEAD);
+
+            case RECOVERY_ASCEND -> RawAnimation.begin().thenLoop(ANIM_FLY_ASCEND);
+            case RECOVERY_RETURN -> RawAnimation.begin().thenLoop(ANIM_FLY);
 
             default -> RawAnimation.begin().thenLoop(ANIM_IDLE);
         };

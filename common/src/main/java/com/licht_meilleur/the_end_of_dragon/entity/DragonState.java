@@ -20,6 +20,7 @@ public enum DragonState {
     LIGHT_OF_DESTRUCTION,
     PHOTON_BLASTER,
     BLASTER_TACKLE,
+    TAIL_WHIP,
 
     FLY_ASCEND,
     FLY_DESCEND,
@@ -31,9 +32,13 @@ public enum DragonState {
     INTRO_DIVE_TO_PORTAL,
     INTRO_SUPER_LANDING,
 
-    RAGNAROK_ASCEND,
     FIGURE_EIGHT,
-    FIGURE_ASCEND,
-    FIGURE_DESCEND,
+
+    RECOVERY_ASCEND,
+    RECOVERY_RETURN,
+
+
+
+    DEAD
 
 }

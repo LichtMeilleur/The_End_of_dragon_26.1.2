@@ -11,7 +11,8 @@ public class DragonAttackStateMachine {
     private enum AirMode {
         NONE,
         RAGNAROK,
-        FIGURE
+        FIGURE,
+        INTRO
     }
 
     private AirMode airMode = AirMode.NONE;
@@ -23,13 +24,21 @@ public class DragonAttackStateMachine {
     private int figureEightStraightShots = 0;
     private boolean wasInShotWindow = false;
 
+    public void startIntroAscend() {
+        airMode = AirMode.INTRO;
+        ascendTicks = 20;
+
+        dragon.setAttackMovementLocked(true);
+        dragon.setDragonState(DragonState.FLY_ASCEND);
+    }
+
     public DragonAttackStateMachine(TheEndOfDragonCoreEntity dragon) {
         this.dragon = dragon;
     }
 
     public void startRagnarok() {
         airMode = AirMode.RAGNAROK;
-        ascendTicks = 20;
+        ascendTicks = 5;
 
         dragon.setAttackMovementLocked(true);
         dragon.setDragonState(DragonState.FLY_START);
@@ -84,11 +93,12 @@ public class DragonAttackStateMachine {
                 }
             }
 
-            case FLY_SHOT -> {
-                if (age > 10) {
-                    dragon.setDragonState(DragonState.FIGURE_EIGHT);
+            case TAIL_WHIP -> {
+                if (age > 20) {
+                    dragon.setDragonState(DragonState.IDLE);
                 }
             }
+
 
             case ORB_OF_ANNIHILATION -> {
                 if (age > 65) dragon.setDragonState(DragonState.IDLE);
@@ -118,8 +128,13 @@ public class DragonAttackStateMachine {
     private void tickAscend(ServerLevel level) {
         int age = dragon.getDragonStateAgeTicks();
 
+        if (airMode == AirMode.INTRO) {
+            dragon.setDragonState(DragonState.INTRO_WAIT_PORTAL);
+            return;
+        }
+
         if (age < ascendTicks) {
-            dragon.moveBossByNoFace(level, new Vec3(0.0D, 2.0D, 0.0D));
+            dragon.moveBossByNoFace(level, new Vec3(0.0D, 15.0D, 0.0D));
             return;
         }
 
@@ -153,10 +168,28 @@ public class DragonAttackStateMachine {
             dragon.moveBossBy(level, move.normalize().scale(Math.min(20.0D, move.length())));
         }
 
-        double sin = Math.sin(t);
-        double cos = Math.cos(t);
+        Vec3 centerFlat = new Vec3(center.x, dragon.getY(), center.z);
 
-        boolean shotWindow = Math.abs(sin) < 0.65D && cos > 0.0D;
+        Vec3 pos = dragon.position();
+        Vec3 target = new Vec3(x, y, z);
+
+        Vec3 toCenter = centerFlat.subtract(pos);
+        Vec3 moveDir = target.subtract(pos);
+
+        boolean movingToCenter =
+                toCenter.lengthSqr() > 1.0D
+                        && moveDir.lengthSqr() > 1.0D
+                        && moveDir.normalize().dot(toCenter.normalize()) > 0.65D;
+
+// 中央を超える前だけ
+        boolean beforeCenter = toCenter.length() > 35.0D;
+
+// 中心へ向かう途中だけ
+        boolean shotWindow =
+                movingToCenter
+                        && beforeCenter
+                        && toCenter.length() < 170.0D
+                        && toCenter.length() > 45.0D;
 
         if (shotWindow && !wasInShotWindow) {
             figureEightStraightShots = 0;
@@ -170,8 +203,7 @@ public class DragonAttackStateMachine {
                 && --figureEightShotCooldown <= 0) {
             figureEightStraightShots++;
             figureEightShotCooldown = 8;
-            dragon.setDragonState(DragonState.FLY_SHOT);
-            return;
+            dragon.requestFlyShot(level);
         }
 
         if (figureEightTicks >= 340) {
@@ -180,11 +212,20 @@ public class DragonAttackStateMachine {
     }
 
     private void tickFigureDescend(ServerLevel level) {
-        dragon.moveBossByNoFace(level, new Vec3(0.0D, -2.5D, 0.0D));
+        dragon.moveBossByNoFace(level, new Vec3(0.0D, -15.0D, 0.0D));
 
         if (dragon.isNearGroundForSuperLandingPublic(level)) {
             dragon.setDragonState(DragonState.SUPER_LANDING);
         }
+    }
+
+    public void cancelAirSequence() {
+        airMode = AirMode.NONE;
+
+        figureEightTicks = 0;
+        figureEightShotCooldown = 0;
+        figureEightStraightShots = 0;
+        wasInShotWindow = false;
     }
 
     private void finishAirSequence() {

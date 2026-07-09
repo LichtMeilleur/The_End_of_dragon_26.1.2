@@ -18,15 +18,13 @@ public class DragonRecoveryGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        if (!(dragon.level() instanceof ServerLevel level)) {
-            return false;
-        }
+        if (!(dragon.level() instanceof ServerLevel level)) return false;
+        return dragon.shouldEmergencyRecover(level);
+    }
 
-        if (dragon.isIntroStateNow()) {
-            return false;
-        }
-
-        return dragon.isRecoveringNeeded(level);
+    @Override
+    public void start() {
+        dragon.startEmergencyRecovery();
     }
 
     @Override
@@ -43,22 +41,26 @@ public class DragonRecoveryGoal extends Goal {
             return false;
         }
 
-        return dragon.isRecoveringNeeded(level);
-    }
+        DragonState state = dragon.getDragonState();
 
+        // Recoveryシーケンス中は継続
+        if (state == DragonState.RECOVERY_ASCEND
+                || state == DragonState.RECOVERY_RETURN
+                || state == DragonState.FLY_DESCEND
+                || state == DragonState.SUPER_LANDING) {
+            return true;
+        }
+
+        if (dragon.isCombatLocked()) {
+            return false;
+        }
+
+        return dragon.shouldEmergencyRecover(level);
+    }
     @Override
     public void tick() {
-        if (!(dragon.level() instanceof ServerLevel level)) {
-            return;
-        }
+        if (!(dragon.level() instanceof ServerLevel level)) return;
 
-        Vec3 target = dragon.arenaCenter(level).add(0.0D, 45.0D, 0.0D);
-        Vec3 move = target.subtract(dragon.position());
-
-        dragon.setDragonState(DragonState.FLY);
-
-        if (move.lengthSqr() > 1.0E-6D) {
-            dragon.moveBossBy(level, move.normalize().scale(Math.min(18.0D, move.length())));
-        }
+        dragon.tickEmergencyRecoveryMove(level);
     }
 }

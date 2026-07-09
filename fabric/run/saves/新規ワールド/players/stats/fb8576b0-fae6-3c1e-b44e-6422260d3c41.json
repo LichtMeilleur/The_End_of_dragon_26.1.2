@@ -1,0 +1,19 @@
+{
+  "stats": {
+    "minecraft:picked_up": {
+      "minecraft:ender_pearl": 1,
+      "the_end_of_dragon:the_end_piece": 1
+    },
+    "minecraft:custom": {
+      "minecraft:time_since_rest": 1473,
+      "minecraft:walk_one_cm": 4946,
+      "minecraft:total_world_time": 1564,
+      "minecraft:leave_game": 1,
+      "minecraft:fly_one_cm": 14655,
+      "minecraft:play_time": 1473,
+      "minecraft:jump": 7,
+      "minecraft:time_since_death": 1473
+    }
+  },
+  "DataVersion": 4790
+}
