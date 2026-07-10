@@ -15,9 +15,9 @@ public class TheEndOfDragonCollisionModel extends GeoModel<TheEndOfDragonCollisi
     @Override
     public Identifier getTextureResource(GeoRenderState renderState) {
         //赤い箱
-        return TheEndOfDragon.id("textures/entity/the_end_of_dragon_collision.png");
+        //return TheEndOfDragon.id("textures/entity/the_end_of_dragon_collision.png");
         //透明な箱
-        //return TheEndOfDragon.id("textures/entity/the_end_of_dragon_collision_transparent.png");
+        return TheEndOfDragon.id("textures/entity/the_end_of_dragon_collision_transparent.png");
     }
 
     @Override

@@ -204,7 +204,7 @@ public class TheEndOfDragonCoreEntity extends Monster {
             this.superLandingImpacted = false;
         }
 
-        if (state == DragonState.DEAD) {
+        if (state == DragonState.DEAD && this.getDragonState() != DragonState.DEAD) {
             this.deathDropSpawned = false;
         }
     }
@@ -226,14 +226,6 @@ public class TheEndOfDragonCoreEntity extends Monster {
     public void tick() {
         super.tick();
 
-        if (!this.level().isClientSide()
-                && this.level() instanceof ServerLevel serverLevel
-                && this.getDragonState() == DragonState.DEAD) {
-            tickDeathSequence(serverLevel);
-            return;
-        }
-
-
 
         this.setInvisible(true);
 
@@ -245,7 +237,7 @@ public class TheEndOfDragonCoreEntity extends Monster {
 
         ServerLevel serverLevel = (ServerLevel) this.level();
 
-        if (deathSequenceStarted) {
+        if (deathSequenceStarted || this.getDragonState() == DragonState.DEAD) {
             tickDeathSequence(serverLevel);
             return;
         }
@@ -256,7 +248,6 @@ public class TheEndOfDragonCoreEntity extends Monster {
         }
 
         updateCrystalFadeStage();
-        this.tickChildren();
 
         this.tickChildren();
         this.tickAttackVfx();
@@ -265,32 +256,6 @@ public class TheEndOfDragonCoreEntity extends Monster {
         this.tickBodyBlockBreak(serverLevel);
         this.tickAirAttackCooldown();
 
-        if (this.getDragonState() == DragonState.DEAD) {
-            updateCrystalFadeStage();
-            tickChildren();
-
-            int age = this.getDragonStateAgeTicks();
-
-            if (!deathDropSpawned && age >= 110) {
-                deathDropSpawned = true;
-
-                ItemEntity item = new ItemEntity(
-                        serverLevel,
-                        this.getX(),
-                        this.getY() + 1.0D,
-                        this.getZ(),
-                        new ItemStack(ModItems.THE_END_PIECE)
-                );
-
-                serverLevel.addFreshEntity(item);
-            }
-
-            if (age > 120) {
-                this.discard();
-            }
-
-            return;
-        }
 
         if (!this.level().isClientSide() && this.level() instanceof ServerLevel level) {
             maintainForcedChunks(level);
@@ -525,6 +490,10 @@ public class TheEndOfDragonCoreEntity extends Monster {
     }
 
     private void syncChildrenNow() {
+        if (this.level().isClientSide()) return;
+        if (this.isRemoved()) return;
+        if (this.deathSequenceFinished) return;
+
         TheEndOfDragonDisplayEntity display =
                 this.getChild(this.displayEntityId, TheEndOfDragonDisplayEntity.class);
 
@@ -538,20 +507,28 @@ public class TheEndOfDragonCoreEntity extends Monster {
 
 
     private void tickChildren() {
+
+        if (this.level().isClientSide()) return;
+        if (this.isRemoved()) return;
+        if (this.deathSequenceFinished) return;
+
         TheEndOfDragonDisplayEntity display =
                 this.getChild(this.displayEntityId, TheEndOfDragonDisplayEntity.class);
 
         TheEndOfDragonCollisionEntity collision =
                 this.getChild(this.collisionEntityId, TheEndOfDragonCollisionEntity.class);
 
+
         if (display == null) {
             display = new TheEndOfDragonDisplayEntity(
                     ModEntities.THE_END_OF_DRAGON_DISPLAY,
                     this.level()
             );
+            display.setOwnerCoreUuid(this.getUUID());
             display.syncFromCore(this);
             this.level().addFreshEntity(display);
             this.displayEntityId = display.getId();
+            //logChildren("CREATE_DISPLAY");
         }
 
         if (collision == null) {
@@ -559,9 +536,11 @@ public class TheEndOfDragonCoreEntity extends Monster {
                     ModEntities.THE_END_OF_DRAGON_COLLISION,
                     this.level()
             );
+            collision.setOwnerCoreUuid(this.getUUID());
             collision.syncFromCore(this);
             this.level().addFreshEntity(collision);
             this.collisionEntityId = collision.getId();
+            //logChildren("CREATE_COLLISION");
         }
 
         display.syncFromCore(this);
@@ -569,39 +548,90 @@ public class TheEndOfDragonCoreEntity extends Monster {
     }
 
     private void discardChildren() {
-        TheEndOfDragonDisplayEntity display =
-                this.getChild(this.displayEntityId, TheEndOfDragonDisplayEntity.class);
+        UUID owner = this.getUUID();
 
-        TheEndOfDragonCollisionEntity collision =
-                this.getChild(this.collisionEntityId, TheEndOfDragonCollisionEntity.class);
-
-        if (display != null) {
-            display.discard();
-        }
-
-        if (collision != null) {
-            collision.discard();
-        }
-
-        // IDで拾えなかった残骸対策
-        AABB area = this.getBoundingBox().inflate(128.0D);
+        AABB area = new AABB(
+                this.getX() - 1024.0D,
+                this.level().getMinY(),
+                this.getZ() - 1024.0D,
+                this.getX() + 1024.0D,
+                this.level().getMaxY(),
+                this.getZ() + 1024.0D
+        );
 
         for (TheEndOfDragonDisplayEntity e : this.level().getEntitiesOfClass(
                 TheEndOfDragonDisplayEntity.class,
-                area
+                area,
+                e -> e.hasOwnerCoreUuid(owner)
         )) {
             e.discard();
         }
 
         for (TheEndOfDragonCollisionEntity e : this.level().getEntitiesOfClass(
                 TheEndOfDragonCollisionEntity.class,
-                area
+                area,
+                e -> e.hasOwnerCoreUuid(owner)
         )) {
             e.discard();
         }
 
         this.displayEntityId = -1;
         this.collisionEntityId = -1;
+    }
+
+    private void logChildren(String label) {
+        if (this.level().isClientSide()) return;
+
+        System.out.println("[TED CHILD][" + label + "]"
+                + " coreId=" + this.getId()
+                + " coreUuid=" + this.getUUID()
+                + " state=" + this.getDragonState()
+                + " removed=" + this.isRemoved()
+                + " displayId=" + this.displayEntityId
+                + " collisionId=" + this.collisionEntityId);
+
+        Entity display = this.level().getEntity(this.displayEntityId);
+        Entity collision = this.level().getEntity(this.collisionEntityId);
+
+
+
+        System.out.println("[TED CHILD][" + label + "] displayById="
+                + entityDebug(display));
+
+        System.out.println("[TED CHILD][" + label + "] collisionById="
+                + entityDebug(collision));
+
+        AABB area = this.getBoundingBox().inflate(1024.0D);
+
+        for (TheEndOfDragonDisplayEntity e : this.level().getEntitiesOfClass(
+                TheEndOfDragonDisplayEntity.class,
+                area
+        )) {
+            System.out.println("[TED CHILD][" + label + "] nearby display "
+                    + entityDebug(e)
+                    + " owner=" + e.getOwnerCoreUuid());
+        }
+
+        for (TheEndOfDragonCollisionEntity e : this.level().getEntitiesOfClass(
+                TheEndOfDragonCollisionEntity.class,
+                area
+        )) {
+            System.out.println("[TED CHILD][" + label + "] nearby collision "
+                    + entityDebug(e)
+                    + " owner=" + e.getOwnerCoreUuid());
+        }
+    }
+
+    private String entityDebug(Entity e) {
+        if (e == null) return "null";
+
+        return e.getClass().getSimpleName()
+                + "{id=" + e.getId()
+                + ", uuid=" + e.getUUID()
+                + ", removed=" + e.isRemoved()
+                + ", alive=" + e.isAlive()
+                + ", pos=" + e.position()
+                + "}";
     }
 
     private void updatePhysicsMode() {
@@ -682,14 +712,9 @@ public class TheEndOfDragonCoreEntity extends Monster {
     @Override
     public void remove(RemovalReason reason) {
         if (!this.level().isClientSide()) {
-            Entity display = this.level().getEntity(this.displayEntityId);
-            if (display != null) {
-                display.discard();
-            }
 
-            Entity collision = this.level().getEntity(this.collisionEntityId);
-            if (collision != null) {
-                collision.discard();
+            if (!deathSequenceStarted || deathSequenceFinished) {
+                discardChildren();
             }
 
             if (this.level() instanceof ServerLevel serverLevel) {
@@ -701,8 +726,8 @@ public class TheEndOfDragonCoreEntity extends Monster {
                 forcedChunks.clear();
             }
         }
-        bossBar.removeAllPlayers();
 
+        bossBar.removeAllPlayers();
         super.remove(reason);
     }
 
@@ -746,13 +771,11 @@ public class TheEndOfDragonCoreEntity extends Monster {
     private void tickDeathSequence(ServerLevel level) {
         deathTicks++;
 
-        if (deathTicks < 120) {
-            tickChildren();
-            return;
-        }
+        updateCrystalFadeStage();
+        tickChildren();
 
-        if (!deathSequenceFinished) {
-            deathSequenceFinished = true;
+        if (!deathDropSpawned && deathTicks >= 110) {
+            deathDropSpawned = true;
 
             ItemEntity item = new ItemEntity(
                     level,
@@ -771,8 +794,61 @@ public class TheEndOfDragonCoreEntity extends Monster {
             level.addFreshEntity(item);
         }
 
+        if (deathTicks < 160) {
+            return;
+        }
+
+        spawnDeathShatterEffect(level);
+        deathSequenceFinished = true;
         discardChildren();
         this.discard();
+    }
+
+    private void spawnDeathShatterEffect(ServerLevel level) {
+        Vec3 center = this.position().add(0.0D, 4.0D, 0.0D);
+
+
+        level.sendParticles(
+                ParticleTypes.END_ROD,
+                center.x, center.y, center.z,
+                420,
+                7.0D, 5.0D, 7.0D,
+                0.28D
+        );
+
+        level.sendParticles(
+                ParticleTypes.GLOW,
+                center.x, center.y, center.z,
+                260,
+                6.0D, 4.0D, 6.0D,
+                0.22D
+        );
+
+        level.sendParticles(
+                ParticleTypes.FIREWORK,
+                center.x, center.y, center.z,
+                120,
+                5.0D, 3.5D, 5.0D,
+                0.18D
+        );
+
+        level.sendParticles(
+                ParticleTypes.DUST_PLUME,
+                center.x, center.y - 1.0D, center.z,
+                90,
+                5.0D, 0.8D, 5.0D,
+                0.08D
+        );
+    }
+
+    @Override
+    protected void tickDeath() {
+        if (this.deathSequenceStarted) {
+            this.deathTime = 0;
+            return;
+        }
+
+        super.tickDeath();
     }
 
     @Override

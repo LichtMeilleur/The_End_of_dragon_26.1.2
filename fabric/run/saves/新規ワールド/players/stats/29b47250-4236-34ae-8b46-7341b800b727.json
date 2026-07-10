@@ -1,0 +1,21 @@
+{
+  "stats": {
+    "minecraft:picked_up": {
+      "minecraft:ender_pearl": 2
+    },
+    "minecraft:custom": {
+      "minecraft:time_since_rest": 2072,
+      "minecraft:walk_one_cm": 9519,
+      "minecraft:total_world_time": 2086,
+      "minecraft:leave_game": 1,
+      "minecraft:fly_one_cm": 27938,
+      "minecraft:play_time": 2072,
+      "minecraft:jump": 5,
+      "minecraft:time_since_death": 2072
+    },
+    "minecraft:used": {
+      "minecraft:torch": 5
+    }
+  },
+  "DataVersion": 4790
+}

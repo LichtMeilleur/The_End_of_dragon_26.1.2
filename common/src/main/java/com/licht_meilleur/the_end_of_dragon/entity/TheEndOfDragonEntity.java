@@ -17,6 +17,8 @@ import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
+import java.util.UUID;
+
 public abstract class TheEndOfDragonEntity extends Monster implements GeoEntity {
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
@@ -39,8 +41,12 @@ public abstract class TheEndOfDragonEntity extends Monster implements GeoEntity 
     public static final String ANIM_FLY_ASCEND = "animation.model.fly_ascend";
     public static final String ANIM_FLY_DESCEND = "animation.model.fly_descend";
     public static final String ANIM_TAIL_WHIP = "animation.model.tail_whip_6tick_start_12tick_end";
-    public static final String ANIM_DEAD = "animation.model.dead";
 
+    public static final String ANIM_JUDGMENT_RAY = "animation.model.judgment_ray_25tick_start";
+    public static final String ANIM_PHOTON_BUSTER = "animation.model.photon_buster_25tick_start_60tick_end";
+
+
+    public static final String ANIM_DEAD = "animation.model.dead";
 
     protected TheEndOfDragonEntity(EntityType<? extends Monster> type, Level level) {
         super(type, level);
@@ -59,7 +65,21 @@ public abstract class TheEndOfDragonEntity extends Monster implements GeoEntity 
     private int localDeadTicks = 0;
     private int localCrystalFadeStage = 0;
 
+    private static final int CHILD_DATA_VERSION = 1;
 
+    private UUID ownerCoreUuid = null;
+
+    public void setOwnerCoreUuid(UUID uuid) {
+        this.ownerCoreUuid = uuid;
+    }
+
+    public UUID getOwnerCoreUuid() {
+        return this.ownerCoreUuid;
+    }
+
+    public boolean hasOwnerCoreUuid(UUID uuid) {
+        return this.ownerCoreUuid != null && this.ownerCoreUuid.equals(uuid);
+    }
 
     private static final EntityDataAccessor<Integer> DATA_RENDER_STATE =
             SynchedEntityData.defineId(TheEndOfDragonEntity.class, EntityDataSerializers.INT);
@@ -92,6 +112,8 @@ public abstract class TheEndOfDragonEntity extends Monster implements GeoEntity 
     }
 
     public void syncFromCore(TheEndOfDragonCoreEntity core) {
+        this.setOwnerCoreUuid(core.getUUID());
+
         this.setPos(core.getX(), core.getY(), core.getZ());
 
         float yaw = core.getYRot();
@@ -122,6 +144,33 @@ public abstract class TheEndOfDragonEntity extends Monster implements GeoEntity 
         entityData.set(DATA_CRYSTAL_STAGE,
                 core.getCrystalFadeStage());
         this.entityData.set(DATA_CRYSTAL_STAGE, core.getCrystalFadeStage());
+    }
+
+
+    @Override
+    protected void addAdditionalSaveData(net.minecraft.world.level.storage.ValueOutput output) {
+        super.addAdditionalSaveData(output);
+
+        output.putInt("TedChildDataVersion", CHILD_DATA_VERSION);
+
+        if (this.ownerCoreUuid != null) {
+            output.putString("OwnerCoreUuid", this.ownerCoreUuid.toString());
+        }
+    }
+
+    @Override
+    protected void readAdditionalSaveData(net.minecraft.world.level.storage.ValueInput input) {
+        super.readAdditionalSaveData(input);
+
+        String uuidText = input.getStringOr("OwnerCoreUuid", "");
+
+        if (!uuidText.isEmpty()) {
+            try {
+                this.ownerCoreUuid = UUID.fromString(uuidText);
+            } catch (IllegalArgumentException ignored) {
+                this.ownerCoreUuid = null;
+            }
+        }
     }
 
     protected DragonState getSyncedRenderState() {
@@ -237,22 +286,6 @@ public abstract class TheEndOfDragonEntity extends Monster implements GeoEntity 
                 localCrystalFadeStage = 1;
             }
 
-            // ←ここに追加
-            if (!this.level().isClientSide()
-                    && this instanceof TheEndOfDragonDisplayEntity
-                    && localDeadTicks == 120) {
-
-                ItemEntity item = new ItemEntity(
-                        this.level(),
-                        this.getX(),
-                        this.getY() + 1.0D,
-                        this.getZ(),
-                        new ItemStack(ModItems.THE_END_PIECE)
-                );
-
-                this.level().addFreshEntity(item);
-                this.discard();
-            }
 
         } else {
             localDeadTicks = 0;
@@ -302,15 +335,20 @@ public abstract class TheEndOfDragonEntity extends Monster implements GeoEntity 
             case PHOTON_BLASTER -> RawAnimation.begin().thenPlay(ANIM_PHOTON_BLASTER);
             case BLASTER_TACKLE -> RawAnimation.begin().thenPlay(ANIM_BLASTER_TACKLE);
             case TAIL_WHIP -> RawAnimation.begin().thenPlay(ANIM_TAIL_WHIP);
+            case JUDGEMENT_RAY -> RawAnimation.begin().thenPlay(ANIM_JUDGMENT_RAY);
+            case PHOTON_BUSTER -> RawAnimation.begin().thenPlay(ANIM_PHOTON_BUSTER);
 
-            case INTRO_RISE,
+
+            case
                  INTRO_WAIT_PORTAL,
-                 INTRO_FLY_TO_PORTAL,
-                 INTRO_DIVE_TO_PORTAL -> RawAnimation.begin().thenLoop(ANIM_FLY);
+                 INTRO_FLY_TO_PORTAL -> RawAnimation.begin().thenLoop(ANIM_FLY);
+
             case INTRO_SUPER_LANDING -> RawAnimation.begin().thenPlay(ANIM_SUPER_LANDING);
 
-            case FLY_ASCEND -> RawAnimation.begin().thenLoop(ANIM_FLY_ASCEND);
-            case FLY_DESCEND -> RawAnimation.begin().thenLoop(ANIM_FLY_DESCEND);
+            case FLY_ASCEND,
+                 INTRO_RISE -> RawAnimation.begin().thenLoop(ANIM_FLY_ASCEND);
+            case FLY_DESCEND,
+                 INTRO_DIVE_TO_PORTAL -> RawAnimation.begin().thenLoop(ANIM_FLY_DESCEND);
 
             case FIGURE_EIGHT -> RawAnimation.begin().thenLoop(ANIM_FLY);
 
