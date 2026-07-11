@@ -21,7 +21,7 @@ public enum DragonState {
     PHOTON_BLASTER,
     BLASTER_TACKLE,
     TAIL_WHIP,
-    JUDGEMENT_RAY,
+    JUDGMENT_RAY,
     PHOTON_BUSTER,
 
 

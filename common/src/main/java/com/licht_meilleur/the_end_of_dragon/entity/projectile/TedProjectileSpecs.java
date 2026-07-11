@@ -7,15 +7,18 @@ public final class TedProjectileSpecs {
     public static final TedProjectileSpec ORB_OF_ANNIHILATION =
             new TedProjectileSpec(
                     TedVfxType.ORB_OF_ANIHILATION,
-                    6.0F,      // scale
-                    1.2D,      // speed
-                    160,       // maxAge
-                    6.0D,      // hitRadius
-                    true,      // destroyBlocks
-                    5.5D,       // destroyRadius
-                    false,      // createExplosion
-                    0,          //explosionRadius
-                    0           //explosionParticleCount
+                    6.0F,
+                    1.2D,
+                    160,
+                    6.0D,
+                    true,
+                    5.5D,
+                    false,
+                    0.0F,
+                    0,
+                    false,
+                    0,
+                    0.0D
             );
 
     public static final TedProjectileSpec LIGHT_PROJECTILE =
@@ -29,7 +32,26 @@ public final class TedProjectileSpecs {
                     1.5D,
                     true,
                     2.5F,
-                    28
+                    28,
+                    false,
+                    0,
+                    0.0D
+            );
+    public static final TedProjectileSpec JUDGMENT_RAY =
+            new TedProjectileSpec(
+                    TedVfxType.JUDGMENT_RAY,
+                    1.0F,
+                    2.4D,
+                    100,
+                    0.7D,
+                    true,
+                    1.8D,
+                    true,
+                    1.8F,
+                    18,
+                    true,
+                    10,
+                    0.08D
             );
 
     private TedProjectileSpecs() {

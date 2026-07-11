@@ -47,7 +47,13 @@ public final class TedConfig {
 
         public float lightProjectileDamage = 16.0F;
 
+        public float judgmentRayDamage = 7.0F;
+
+        public float photonBusterDamage = 22.0F;
+
         public float orbDamage = 9999.0F;
+
+
 
 
         public float tailWhipDamage = 14.0F;

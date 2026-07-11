@@ -18,6 +18,10 @@ public class DragonRecoveryGoal extends Goal {
 
     @Override
     public boolean canUse() {
+
+        if (dragon.isDebugFrozen()) {
+            return false;
+        }
         if (!(dragon.level() instanceof ServerLevel level)) return false;
         return dragon.shouldEmergencyRecover(level);
     }

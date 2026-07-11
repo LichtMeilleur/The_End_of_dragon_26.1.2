@@ -15,6 +15,7 @@ public enum TedVfxType {
             "orb_of_anihilation",
             "animation.model.attack"
     ),
+    //フォトンバスターに流用
     TED_LASER_BEAM(
             "ted_laser_beam",
             "ted_laser_beam",
@@ -34,6 +35,13 @@ public enum TedVfxType {
             "light_of_destruction",
             "textures/entity/light_of_destruction.png",
             "light_projectile",
+            "animation.model.attack"
+    ),
+    JUDGMENT_RAY(
+            "judgment_ray",
+            "ted_ray",
+            "textures/entity/ray.png",
+            "ted_ray",
             "animation.model.attack"
     ),
 

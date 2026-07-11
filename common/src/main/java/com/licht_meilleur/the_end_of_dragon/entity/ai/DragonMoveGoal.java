@@ -18,6 +18,10 @@ public class DragonMoveGoal extends Goal {
 
     @Override
     public boolean canUse() {
+
+        if (dragon.isDebugFrozen()) {
+            return false;
+        }
         if (dragon.isAttackMovementLocked()) return false;
         if (!(dragon.level() instanceof ServerLevel level)) return false;
         if (dragon.isIntroStateNow()) return false;

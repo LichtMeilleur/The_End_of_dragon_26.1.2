@@ -20,6 +20,10 @@ public class DragonTailWhipGoal extends Goal {
 
     @Override
     public boolean canUse() {
+
+        if (dragon.isDebugFrozen()) {
+            return false;
+        }
         if (!(dragon.level() instanceof ServerLevel level)) return false;
         if (!dragon.isAlive()) return false;
         if (!dragon.isCombatStarted()) return false;

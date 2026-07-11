@@ -44,9 +44,6 @@
 					}
 				}
 			}
-		},
-		"animation.model.null": {
-			"loop": true
 		}
 	}
 }

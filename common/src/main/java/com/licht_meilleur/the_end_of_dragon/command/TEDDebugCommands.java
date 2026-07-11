@@ -17,12 +17,14 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.Comparator;
 
@@ -168,8 +170,10 @@ public final class TEDDebugCommands {
                                         case "roar" -> DragonState.ROAR_OF_OBLITERATION;
                                         case "flames" -> DragonState.FLAMES_OF_RAGNAROK;
                                         case "light" -> DragonState.LIGHT_OF_DESTRUCTION;
-                                        case "photon" -> DragonState.PHOTON_BLASTER;
+                                        case "photon_blaster" -> DragonState.PHOTON_BLASTER;
                                         case "tackle" -> DragonState.BLASTER_TACKLE;
+                                        case "photon_buster" -> DragonState.PHOTON_BUSTER;
+                                        case "judgment_ray" -> DragonState.JUDGMENT_RAY;
 
                                         default -> DragonState.IDLE;
                                     };
@@ -395,6 +399,45 @@ public final class TEDDebugCommands {
                                         )
                                 )
                         )
+                        .then(Commands.literal("spawn_frozen")
+                                .executes(ctx -> {
+
+                                    CommandSourceStack source = ctx.getSource();
+
+                                    if (!(source.getLevel() instanceof ServerLevel level)) {
+                                        return 0;
+                                    }
+
+                                    TheEndOfDragonCoreEntity dragon =
+                                            ModEntities.THE_END_OF_DRAGON.create(
+                                                    level,
+                                                    EntitySpawnReason.COMMAND
+                                            );
+
+                                    if (dragon == null) {
+                                        return 0;
+                                    }
+
+                                    Vec3 pos = source.getPosition();
+
+                                    dragon.snapTo(
+                                            pos.x,
+                                            pos.y,
+                                            pos.z,
+                                            source.getRotation().y,
+                                            0.0F
+                                    );
+
+                                    dragon.setDebugFrozen(true);
+                                    dragon.setCombatStarted(true);
+                                    dragon.setDragonState(DragonState.IDLE);
+
+                                    level.addFreshEntity(dragon);
+
+                                    return 1;
+                                })
+                        )
+
 
         );
         dispatcher.register(

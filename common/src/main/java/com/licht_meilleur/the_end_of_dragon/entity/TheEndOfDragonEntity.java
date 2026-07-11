@@ -335,7 +335,7 @@ public abstract class TheEndOfDragonEntity extends Monster implements GeoEntity 
             case PHOTON_BLASTER -> RawAnimation.begin().thenPlay(ANIM_PHOTON_BLASTER);
             case BLASTER_TACKLE -> RawAnimation.begin().thenPlay(ANIM_BLASTER_TACKLE);
             case TAIL_WHIP -> RawAnimation.begin().thenPlay(ANIM_TAIL_WHIP);
-            case JUDGEMENT_RAY -> RawAnimation.begin().thenPlay(ANIM_JUDGMENT_RAY);
+            case JUDGMENT_RAY -> RawAnimation.begin().thenPlay(ANIM_JUDGMENT_RAY);
             case PHOTON_BUSTER -> RawAnimation.begin().thenPlay(ANIM_PHOTON_BUSTER);
 
 

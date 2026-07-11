@@ -68,6 +68,14 @@ public class TedVfxEntity extends Entity implements GeoEntity {
     private boolean destroyBlocks = false;
     private double destroyRadius = 0.0D;
 
+    private double projectileSpeed = 1.0D;
+
+    private boolean homing = false;
+    private int homingStartAge = 0;
+    private double homingStrength = 0.0D;
+
+    private int homingTargetId = -1;
+
     public TedVfxEntity(EntityType<?> type, Level level) {
         super(type, level);
         this.noPhysics = true;
@@ -154,13 +162,21 @@ public class TedVfxEntity extends Entity implements GeoEntity {
                 spec.maxAge()
         );
 
+        this.projectileSpeed = spec.speed();
+
         this.hitRadius = spec.hitRadius();
         this.damage = damageForProjectile(spec.type());
+
         this.destroyBlocks = spec.destroyBlocks();
         this.destroyRadius = spec.destroyRadius();
+
         this.createExplosion = spec.createExplosion();
         this.explosionRadius = spec.explosionRadius();
         this.explosionParticleCount = spec.explosionParticleCount();
+
+        this.homing = spec.homing();
+        this.homingStartAge = spec.homingStartAge();
+        this.homingStrength = spec.homingStrength();
     }
 
     public double getHitRadius() {
@@ -468,7 +484,8 @@ public class TedVfxEntity extends Entity implements GeoEntity {
         }
 
         if (this.getVfxType() != TedVfxType.LIGHT_PROJECTILE
-                && this.getVfxType() != TedVfxType.ORB_OF_ANIHILATION) {
+                && this.getVfxType() != TedVfxType.ORB_OF_ANIHILATION
+                && this.getVfxType() != TedVfxType.JUDGMENT_RAY) {
             return;
         }
 
@@ -496,15 +513,23 @@ public class TedVfxEntity extends Entity implements GeoEntity {
             );
         }
 
-        boolean hitBlock = !level.noCollision(this, this.getBoundingBox().inflate(0.1D));
+        boolean hitBlock =
+                !level.noCollision(
+                        this,
+                        this.getBoundingBox().inflate(0.1D)
+                );
 
-        if (this.getVfxType() == TedVfxType.LIGHT_PROJECTILE && hitBlock) {
-            onLightProjectileHit(level);
+        boolean smallProjectile =
+                this.getVfxType() == TedVfxType.LIGHT_PROJECTILE
+                        || this.getVfxType() == TedVfxType.JUDGMENT_RAY;
+
+        if (smallProjectile && hitBlock) {
+            onSmallProjectileHit(level);
             return;
         }
 
-        if (this.getVfxType() == TedVfxType.LIGHT_PROJECTILE && !entities.isEmpty()) {
-            onLightProjectileHit(level);
+        if (smallProjectile && !entities.isEmpty()) {
+            onSmallProjectileHit(level);
             return;
         }
 
@@ -517,13 +542,17 @@ public class TedVfxEntity extends Entity implements GeoEntity {
         }
     }
 
-    private void onLightProjectileHit(ServerLevel level) {
+    private void onSmallProjectileHit(ServerLevel level) {
         if (this.createExplosion) {
             spawnSmallExplosion(level, this.position());
         }
 
         if (this.isDestroyBlocks()) {
-            breakWeakBlocks(level, this.position(), this.getDestroyRadius());
+            breakWeakBlocks(
+                    level,
+                    this.position(),
+                    this.getDestroyRadius()
+            );
         }
 
         this.discard();
@@ -628,11 +657,151 @@ public class TedVfxEntity extends Entity implements GeoEntity {
             case LIGHT_PROJECTILE ->
                     TedConfig.values.lightProjectileDamage * multiplier;
 
+            case JUDGMENT_RAY ->
+                    TedConfig.values.judgmentRayDamage * multiplier;
+
             default ->
                     1.0F * multiplier;
         };
     }
 
+    public void setHomingTarget(Entity target) {
+        this.homingTargetId = target == null ? -1 : target.getId();
+    }
+
+    private Entity getHomingTarget() {
+        if (this.homingTargetId == -1) {
+            return null;
+        }
+
+        Entity entity = this.level().getEntity(this.homingTargetId);
+
+        if (entity == null || entity.isRemoved() || !entity.isAlive()) {
+            return null;
+        }
+
+        return entity;
+    }
+
+    private void tickHoming() {
+        if (!this.homing) {
+            return;
+        }
+
+        if (this.tickCount < this.homingStartAge) {
+            return;
+        }
+
+        Entity target = getHomingTarget();
+
+        if (target == null) {
+            return;
+        }
+
+        Vec3 currentMotion = this.getDeltaMovement();
+
+        if (currentMotion.lengthSqr() < 1.0E-7D) {
+            return;
+        }
+
+        Vec3 targetPosition;
+
+        if (target instanceof net.minecraft.world.entity.LivingEntity living) {
+            targetPosition = living.getEyePosition();
+        } else {
+            targetPosition = target.position();
+        }
+
+        Vec3 desiredDirection = targetPosition
+                .subtract(this.position());
+
+        if (desiredDirection.lengthSqr() < 1.0E-7D) {
+            return;
+        }
+
+        Vec3 currentDirection = currentMotion.normalize();
+        desiredDirection = desiredDirection.normalize();
+
+        Vec3 nextDirection = currentDirection
+                .lerp(desiredDirection, this.homingStrength);
+
+        if (nextDirection.lengthSqr() < 1.0E-7D) {
+            return;
+        }
+
+        this.setDeltaMovement(
+                nextDirection.normalize().scale(this.projectileSpeed)
+        );
+
+        updateRotationFromMotion();
+    }
+
+    private void updateRotationFromMotion() {
+        Vec3 motion = this.getDeltaMovement();
+
+        if (motion.lengthSqr() < 1.0E-7D) {
+            return;
+        }
+
+        Vec3 direction = motion.normalize();
+
+        float yaw = (float) Math.toDegrees(
+                Math.atan2(-direction.x, direction.z)
+        );
+
+        float pitch = (float) -Math.toDegrees(
+                Math.asin(direction.y)
+        );
+
+        this.setYRot(yaw);
+        this.setXRot(pitch);
+
+        this.yRotO = yaw;
+        this.xRotO = pitch;
+    }
+
+    private void spawnJudgmentRayTrail(ServerLevel level) {
+        if ((this.tickCount & 1) != 0) {
+            return;
+        }
+
+        Vec3 motion = this.getDeltaMovement();
+
+        if (motion.lengthSqr() < 1.0E-7D) {
+            return;
+        }
+
+        Vec3 backward = motion.normalize().scale(-0.7D);
+
+        for (int i = 0; i < 5; i++) {
+            Vec3 point = this.position()
+                    .add(backward.scale(i * 0.55D));
+
+            level.sendParticles(
+                    ParticleTypes.END_ROD,
+                    point.x,
+                    point.y,
+                    point.z,
+                    1,
+                    0.03D,
+                    0.03D,
+                    0.03D,
+                    0.0D
+            );
+        }
+
+        level.sendParticles(
+                ParticleTypes.ELECTRIC_SPARK,
+                this.getX(),
+                this.getY(),
+                this.getZ(),
+                2,
+                0.12D,
+                0.12D,
+                0.12D,
+                0.01D
+        );
+    }
 
 
 

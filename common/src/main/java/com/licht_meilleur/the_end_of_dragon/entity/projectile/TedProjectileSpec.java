@@ -13,6 +13,10 @@ public record TedProjectileSpec(
         double destroyRadius,
         boolean createExplosion,
         float explosionRadius,
-        int explosionParticleCount
+        int explosionParticleCount,
+
+        boolean homing,
+        int homingStartAge,
+        double homingStrength
 ) {
 }

@@ -2,6 +2,7 @@ package com.licht_meilleur.the_end_of_dragon.entity.state;
 
 import com.licht_meilleur.the_end_of_dragon.entity.DragonState;
 import com.licht_meilleur.the_end_of_dragon.entity.TheEndOfDragonCoreEntity;
+import com.licht_meilleur.the_end_of_dragon.entity.beam.TedBeamSpecs;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.phys.Vec3;
 
@@ -12,6 +13,7 @@ public class DragonAttackStateMachine {
         NONE,
         RAGNAROK,
         FIGURE,
+        JUDGMENT,
         INTRO
     }
 
@@ -52,6 +54,14 @@ public class DragonAttackStateMachine {
         figureEightShotCooldown = 12;
         figureEightStraightShots = 0;
         wasInShotWindow = false;
+
+        dragon.setAttackMovementLocked(true);
+        dragon.setDragonState(DragonState.FLY_START);
+    }
+
+    public void startJudgmentRay() {
+        airMode = AirMode.JUDGMENT;
+        ascendTicks = 35;
 
         dragon.setAttackMovementLocked(true);
         dragon.setDragonState(DragonState.FLY_START);
@@ -120,6 +130,18 @@ public class DragonAttackStateMachine {
                 if (age > 20) dragon.setDragonState(DragonState.IDLE);
             }
 
+            case JUDGMENT_RAY -> {
+                if (age > 40) {
+                    dragon.setDragonState(DragonState.FLY_DESCEND);
+                }
+            }
+            case PHOTON_BUSTER -> {
+                if (age > TedBeamSpecs.PHOTON_BUSTER.fireEndTick() + 10) {
+                    dragon.setAttackMovementLocked(false);
+                    dragon.setDragonState(DragonState.IDLE);
+                }
+            }
+
             default -> {
             }
         }
@@ -146,6 +168,11 @@ public class DragonAttackStateMachine {
         if (airMode == AirMode.FIGURE) {
             figureEightTicks = 0;
             dragon.setDragonState(DragonState.FIGURE_EIGHT);
+            return;
+        }
+
+        if (airMode == AirMode.JUDGMENT) {
+            dragon.setDragonState(DragonState.JUDGMENT_RAY);
             return;
         }
 
@@ -212,6 +239,9 @@ public class DragonAttackStateMachine {
     }
 
     private void tickFigureDescend(ServerLevel level) {
+
+
+
         dragon.moveBossByNoFace(level, new Vec3(0.0D, -15.0D, 0.0D));
 
         if (dragon.isNearGroundForSuperLandingPublic(level)) {

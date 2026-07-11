@@ -177,9 +177,9 @@ public class TedVfxRenderer<R extends EntityRenderState & GeoRenderState>
         Vec3 forward = safeNormalize(forwardRaw, new Vec3(0, 0, 1));
         Vec3 up = safeNormalize(upRaw, new Vec3(0, 1, 0));
 
-        // モデルの +Z を BeamHitbox direction に向ける
+        // モデルの +Z（South）をBeamHitboxのdirectionへ向ける
         Quaternionf q = new Quaternionf().rotationTo(
-                0.0F, 0.0F, -1.0F,
+                0.0F, 0.0F, 1.0F,
                 (float) forward.x,
                 (float) forward.y,
                 (float) forward.z
