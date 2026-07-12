@@ -7,6 +7,7 @@
 	"authors": [
 		"LichtMeilleur"
 	],
+	"icon": "assets/the_end_of_dragon/icon.png",
 	"license": "ARR",
 	"environment": "*",
 	"entrypoints": {

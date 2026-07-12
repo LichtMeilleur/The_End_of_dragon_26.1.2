@@ -8,74 +8,28 @@ import com.licht_meilleur.the_end_of_dragon.entity.vfx.TedVfxEntity;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 
 public final class ModEntities {
 
-
     public static final ResourceKey<EntityType<?>> THE_END_OF_DRAGON_KEY =
             ResourceKey.create(
                     Registries.ENTITY_TYPE,
-                    Identifier.fromNamespaceAndPath(TheEndOfDragon.MOD_ID, "the_end_of_dragon")
+                    TheEndOfDragon.id("the_end_of_dragon")
             );
-
-    public static final EntityType<TheEndOfDragonCoreEntity> THE_END_OF_DRAGON =
-            Registry.register(
-                    BuiltInRegistries.ENTITY_TYPE,
-                    THE_END_OF_DRAGON_KEY.identifier(),
-                    EntityType.Builder.of(
-                                    TheEndOfDragonCoreEntity::new,
-                                    MobCategory.MONSTER
-                            )
-                            .sized(8.0F, 10.0F)
-                            .clientTrackingRange(16)
-                            .updateInterval(1)
-                            .build(THE_END_OF_DRAGON_KEY)
-            );
-
-
 
     public static final ResourceKey<EntityType<?>> THE_END_OF_DRAGON_DISPLAY_KEY =
             ResourceKey.create(
                     Registries.ENTITY_TYPE,
                     TheEndOfDragon.id("the_end_of_dragon_display")
             );
-    public static final EntityType<TheEndOfDragonDisplayEntity> THE_END_OF_DRAGON_DISPLAY =
-            Registry.register(
-                    BuiltInRegistries.ENTITY_TYPE,
-                    THE_END_OF_DRAGON_DISPLAY_KEY.identifier(),
-                    EntityType.Builder.of(
-                                    TheEndOfDragonDisplayEntity::new,
-                                    MobCategory.MONSTER
-                            )
-                            .sized(8.0F, 10.0F)
-                            .clientTrackingRange(16)
-                            .updateInterval(1)
-                            .noSave()
-                            .build(THE_END_OF_DRAGON_DISPLAY_KEY)
-            );
 
     public static final ResourceKey<EntityType<?>> THE_END_OF_DRAGON_COLLISION_KEY =
             ResourceKey.create(
                     Registries.ENTITY_TYPE,
                     TheEndOfDragon.id("the_end_of_dragon_collision")
-            );
-    public static final EntityType<TheEndOfDragonCollisionEntity> THE_END_OF_DRAGON_COLLISION =
-            Registry.register(
-                    BuiltInRegistries.ENTITY_TYPE,
-                    THE_END_OF_DRAGON_COLLISION_KEY.identifier(),
-                    EntityType.Builder.of(
-                                    TheEndOfDragonCollisionEntity::new,
-                                    MobCategory.MONSTER
-                            )
-                            .sized(8.0F, 10.0F)
-                            .clientTrackingRange(16)
-                            .updateInterval(1)
-                            .noSave()
-                            .build(THE_END_OF_DRAGON_COLLISION_KEY)
             );
 
     public static final ResourceKey<EntityType<?>> TED_VFX_KEY =
@@ -84,20 +38,126 @@ public final class ModEntities {
                     TheEndOfDragon.id("ted_vfx")
             );
 
-    public static final EntityType<TedVfxEntity> TED_VFX =
-            Registry.register(
-                    BuiltInRegistries.ENTITY_TYPE,
-                    TED_VFX_KEY.identifier(),
-                    EntityType.Builder.<TedVfxEntity>of(TedVfxEntity::new, MobCategory.MISC)
-                            .sized(1.0F, 1.0F)
-                            .clientTrackingRange(128)
-                            .updateInterval(1)
-                            .noSave()
-                            .build(TED_VFX_KEY)
-            );
+    /*
+     * 各ローダーの登録処理によって代入される。
+     *
+     * Fabric:
+     * registerFabric() 内で登録して代入。
+     *
+     * NeoForge:
+     * NeoForgeModEntitiesでDeferredRegisterした後、
+     * bindNeoForge()から代入。
+     */
+    public static EntityType<TheEndOfDragonCoreEntity> THE_END_OF_DRAGON;
+    public static EntityType<TheEndOfDragonDisplayEntity> THE_END_OF_DRAGON_DISPLAY;
+    public static EntityType<TheEndOfDragonCollisionEntity> THE_END_OF_DRAGON_COLLISION;
+    public static EntityType<TedVfxEntity> TED_VFX;
 
+    private static boolean fabricRegistered = false;
+    private static boolean bound = false;
 
-    public static void init() {
+    /**
+     * Fabric専用の直接登録。
+     *
+     * NeoForgeからは絶対に呼ばないこと。
+     */
+    public static void registerFabric() {
+        if (fabricRegistered) {
+            return;
+        }
+
+        fabricRegistered = true;
+
+        THE_END_OF_DRAGON =
+                Registry.register(
+                        BuiltInRegistries.ENTITY_TYPE,
+                        THE_END_OF_DRAGON_KEY.identifier(),
+                        EntityType.Builder.of(
+                                        TheEndOfDragonCoreEntity::new,
+                                        MobCategory.MONSTER
+                                )
+                                .sized(8.0F, 10.0F)
+                                .clientTrackingRange(16)
+                                .updateInterval(1)
+                                .build(THE_END_OF_DRAGON_KEY)
+                );
+
+        THE_END_OF_DRAGON_DISPLAY =
+                Registry.register(
+                        BuiltInRegistries.ENTITY_TYPE,
+                        THE_END_OF_DRAGON_DISPLAY_KEY.identifier(),
+                        EntityType.Builder.of(
+                                        TheEndOfDragonDisplayEntity::new,
+                                        MobCategory.MONSTER
+                                )
+                                .sized(8.0F, 10.0F)
+                                .clientTrackingRange(16)
+                                .updateInterval(1)
+                                .noSave()
+                                .build(THE_END_OF_DRAGON_DISPLAY_KEY)
+                );
+
+        THE_END_OF_DRAGON_COLLISION =
+                Registry.register(
+                        BuiltInRegistries.ENTITY_TYPE,
+                        THE_END_OF_DRAGON_COLLISION_KEY.identifier(),
+                        EntityType.Builder.of(
+                                        TheEndOfDragonCollisionEntity::new,
+                                        MobCategory.MONSTER
+                                )
+                                .sized(8.0F, 10.0F)
+                                .clientTrackingRange(16)
+                                .updateInterval(1)
+                                .noSave()
+                                .build(THE_END_OF_DRAGON_COLLISION_KEY)
+                );
+
+        TED_VFX =
+                Registry.register(
+                        BuiltInRegistries.ENTITY_TYPE,
+                        TED_VFX_KEY.identifier(),
+                        EntityType.Builder.of(
+                                        TedVfxEntity::new,
+                                        MobCategory.MISC
+                                )
+                                .sized(1.0F, 1.0F)
+                                .clientTrackingRange(128)
+                                .updateInterval(1)
+                                .noSave()
+                                .build(TED_VFX_KEY)
+                );
+
+        bound = true;
+
+        TheEndOfDragon.LOGGER.info(
+                "Registered The End Of Dragon entities for Fabric"
+        );
+    }
+
+    /**
+     * NeoForgeのDeferredRegisterで作成されたEntityTypeを
+     * Common側へ渡す。
+     */
+    public static void bindNeoForge(
+            EntityType<TheEndOfDragonCoreEntity> core,
+            EntityType<TheEndOfDragonDisplayEntity> display,
+            EntityType<TheEndOfDragonCollisionEntity> collision,
+            EntityType<TedVfxEntity> vfx
+    ) {
+        THE_END_OF_DRAGON = core;
+        THE_END_OF_DRAGON_DISPLAY = display;
+        THE_END_OF_DRAGON_COLLISION = collision;
+        TED_VFX = vfx;
+
+        bound = true;
+
+        TheEndOfDragon.LOGGER.info(
+                "Bound NeoForge entity types to common registry references"
+        );
+    }
+
+    public static boolean isBound() {
+        return bound;
     }
 
     private ModEntities() {

@@ -1,76 +1,117 @@
 package com.licht_meilleur.the_end_of_dragon;
 
-import com.licht_meilleur.the_end_of_dragon.neoforge.client.TheEndOfDragonNeoForgeClient;
 import com.licht_meilleur.the_end_of_dragon.command.TEDDebugCommands;
 import com.licht_meilleur.the_end_of_dragon.config.TedConfig;
 import com.licht_meilleur.the_end_of_dragon.entity.TheEndOfDragonCoreEntity;
-import com.licht_meilleur.the_end_of_dragon.entity.TheEndOfDragonEntity;
+import com.licht_meilleur.the_end_of_dragon.neoforge.client.TheEndOfDragonNeoForgeClient;
 import com.licht_meilleur.the_end_of_dragon.neoforge.network.TedNeoForgeNetwork;
-import com.licht_meilleur.the_end_of_dragon.registry.ModEntities;
+import com.licht_meilleur.the_end_of_dragon.neoforge.registry.NeoForgeCreativeTabs;
+import com.licht_meilleur.the_end_of_dragon.neoforge.registry.NeoForgeModEntities;
+import com.licht_meilleur.the_end_of_dragon.neoforge.registry.NeoForgeModItems;
+import com.licht_meilleur.the_end_of_dragon.neoforge.registry.NeoForgeModSounds;
 import com.licht_meilleur.the_end_of_dragon.world.EndDragonSpawnHandler;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.fml.loading.FMLPaths;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
-import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 
 @Mod(TheEndOfDragon.MOD_ID)
 public final class TheEndOfDragonNeoForge {
 
-
-
     public TheEndOfDragonNeoForge(IEventBus modBus) {
+        NeoForgeModEntities.register(modBus);
+        NeoForgeModSounds.register(modBus);
+        NeoForgeModItems.register(modBus);
+        NeoForgeCreativeTabs.register(modBus);
+
         TheEndOfDragon.init();
 
         TedConfig.load(FMLPaths.CONFIGDIR.get());
 
+        modBus.addListener(this::commonSetup);
         modBus.addListener(this::registerAttributes);
-        modBus.addListener(TheEndOfDragonNeoForgeClient::registerEntityRenderers);
-        NeoForge.EVENT_BUS.register(this);
+
+        modBus.addListener(
+                TheEndOfDragonNeoForgeClient::registerEntityRenderers
+        );
+
+        modBus.addListener(
+                TheEndOfDragonNeoForgeClient::registerGuiLayers
+        );
 
         TedNeoForgeNetwork.initSender();
 
         modBus.addListener(
                 TedNeoForgeNetwork::registerPayloads
         );
+
         modBus.addListener(
                 TheEndOfDragonNeoForgeClient::registerClientPayloads
         );
+
+        NeoForge.EVENT_BUS.register(this);
     }
 
-    private void registerAttributes(EntityAttributeCreationEvent event) {
+    private void commonSetup(FMLCommonSetupEvent event) {
+        event.enqueueWork(() -> {
+            /*
+             * DeferredRegister完了後にCommon側へ値を渡す。
+             */
+            NeoForgeModEntities.bindCommonReferences();
+            NeoForgeModSounds.bindCommonReferences();
+            NeoForgeModItems.bindCommonReferences();
+            NeoForgeCreativeTabs.bindCommon();
+
+            TheEndOfDragon.LOGGER.info(
+                    "The End Of Dragon NeoForge common setup completed"
+            );
+        });
+    }
+
+    private void registerAttributes(
+            EntityAttributeCreationEvent event
+    ) {
+        /*
+         * このイベントではCommonの可変フィールドではなく、
+         * NeoForge側Holderを直接使う。
+         */
         event.put(
-                ModEntities.THE_END_OF_DRAGON,
+                NeoForgeModEntities.THE_END_OF_DRAGON.get(),
                 TheEndOfDragonCoreEntity.createAttributes().build()
         );
 
         event.put(
-                ModEntities.THE_END_OF_DRAGON_DISPLAY,
+                NeoForgeModEntities.THE_END_OF_DRAGON_DISPLAY.get(),
                 TheEndOfDragonCoreEntity.createAttributes().build()
         );
 
         event.put(
-                ModEntities.THE_END_OF_DRAGON_COLLISION,
+                NeoForgeModEntities.THE_END_OF_DRAGON_COLLISION.get(),
                 TheEndOfDragonCoreEntity.createAttributes().build()
         );
     }
 
     @SubscribeEvent
-    public void onServerTick(net.neoforged.neoforge.event.tick.ServerTickEvent.Post event) {
+    public void onServerTick(
+            net.neoforged.neoforge.event.tick.ServerTickEvent.Post event
+    ) {
         for (ServerLevel level : event.getServer().getAllLevels()) {
-            if (level.dimension() == net.minecraft.world.level.Level.END) {
+            if (level.dimension() ==
+                    net.minecraft.world.level.Level.END) {
                 EndDragonSpawnHandler.tick(level);
             }
         }
     }
 
     @SubscribeEvent
-    public void onRegisterCommands(RegisterCommandsEvent event) {
+    public void onRegisterCommands(
+            RegisterCommandsEvent event
+    ) {
         TEDDebugCommands.register(event.getDispatcher());
     }
 }

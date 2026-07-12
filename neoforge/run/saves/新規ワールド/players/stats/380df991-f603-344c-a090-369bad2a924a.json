@@ -1,20 +1,24 @@
 {
   "stats": {
     "minecraft:custom": {
-      "minecraft:sprint_one_cm": 2760,
-      "minecraft:open_chest": 1,
-      "minecraft:time_since_rest": 1934,
-      "minecraft:walk_one_cm": 6779,
-      "minecraft:total_world_time": 1010,
-      "minecraft:leave_game": 1,
-      "minecraft:fly_one_cm": 1378,
-      "minecraft:damage_taken": 30,
-      "minecraft:play_time": 967,
-      "minecraft:jump": 9,
-      "minecraft:time_since_death": 967
+      "minecraft:sprint_one_cm": 7465,
+      "minecraft:time_since_rest": 7802,
+      "minecraft:walk_one_cm": 14213,
+      "minecraft:total_world_time": 3971,
+      "minecraft:leave_game": 3,
+      "minecraft:fly_one_cm": 46811,
+      "minecraft:mob_kills": 1,
+      "minecraft:play_time": 3901,
+      "minecraft:jump": 67,
+      "minecraft:time_since_death": 3901
     },
     "minecraft:used": {
-      "polluted_world:gas_mask": 2
+      "the_end_of_dragon:the_end_of_dragon_spawn_egg": 2,
+      "minecraft:ender_eye": 12,
+      "minecraft:end_portal_frame": 15
+    },
+    "minecraft:killed": {
+      "minecraft:ender_dragon": 1
     }
   },
   "DataVersion": 4790

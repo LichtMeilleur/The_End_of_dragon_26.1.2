@@ -8,52 +8,54 @@ import net.minecraft.sounds.SoundEvent;
 
 public final class ModSounds {
 
-    // 攻撃
-    public static final SoundEvent TED_JUDGMENT_RAY =
-            register("ted_judgment_ray");
+    public static SoundEvent TED_JUDGMENT_RAY;
+    public static SoundEvent TED_LIGHTING;
+    public static SoundEvent TED_ORB_CHARGE;
+    public static SoundEvent TED_ORB_SHOOTING;
+    public static SoundEvent TED_PHOTON_BUSTER;
+    public static SoundEvent TED_PHOTON_BLASTER;
+    public static SoundEvent TED_RAGNAROK;
+    public static SoundEvent TED_ROAR;
+    public static SoundEvent TED_SHOT;
+    public static SoundEvent TED_TACKLE;
 
-    public static final SoundEvent TED_LIGHTING =
-            register("ted_lighting");
+    public static SoundEvent TED_DEAD;
+    public static SoundEvent TED_JET;
 
-    public static final SoundEvent TED_ORB_CHARGE =
-            register("ted_orb_charge");
+    public static SoundEvent SYUUMATU_NO_LAEVATEIN;
 
-    public static final SoundEvent TED_ORB_SHOOTING =
-            register("ted_orb_shooting");
+    private static boolean fabricRegistered = false;
 
-    public static final SoundEvent TED_PHOTON_BUSTER =
-            register("ted_photon_buster");
+    public static void registerFabric() {
+        if (fabricRegistered) {
+            return;
+        }
 
-    public static final SoundEvent TED_PHOTON_BLASTER =
-            register("ted_photon_blaster");
+        fabricRegistered = true;
 
-    public static final SoundEvent TED_RAGNAROK =
-            register("ted_ragnarok");
+        TED_JUDGMENT_RAY = registerFabricSound("ted_judgment_ray");
+        TED_LIGHTING = registerFabricSound("ted_lighting");
+        TED_ORB_CHARGE = registerFabricSound("ted_orb_charge");
+        TED_ORB_SHOOTING = registerFabricSound("ted_orb_shooting");
+        TED_PHOTON_BUSTER = registerFabricSound("ted_photon_buster");
+        TED_PHOTON_BLASTER = registerFabricSound("ted_photon_blaster");
+        TED_RAGNAROK = registerFabricSound("ted_ragnarok");
+        TED_ROAR = registerFabricSound("ted_roar");
+        TED_SHOT = registerFabricSound("ted_shot");
+        TED_TACKLE = registerFabricSound("ted_tackle");
 
-    public static final SoundEvent TED_ROAR =
-            register("ted_roar");
+        TED_DEAD = registerFabricSound("ted_dead");
+        TED_JET = registerFabricSound("ted_jet");
 
-    public static final SoundEvent TED_SHOT =
-            register("ted_shot");
+        SYUUMATU_NO_LAEVATEIN =
+                registerFabricSound("syuumatu_no_laevatein");
 
-    public static final SoundEvent TED_TACKLE =
-            register("ted_tackle");
-
-    // 移動・死亡
-    public static final SoundEvent TED_DEAD =
-            register("ted_dead");
-
-    public static final SoundEvent TED_JET =
-            register("ted_jet");
-
-    // BGM
-    public static final SoundEvent SYUUMATU_NO_LAEVATEIN =
-            register("syuumatu_no_laevatein");
-
-    private ModSounds() {
+        TheEndOfDragon.LOGGER.info(
+                "Registered The End Of Dragon sounds for Fabric"
+        );
     }
 
-    private static SoundEvent register(String name) {
+    private static SoundEvent registerFabricSound(String name) {
         Identifier id = TheEndOfDragon.id(name);
 
         return Registry.register(
@@ -63,13 +65,42 @@ public final class ModSounds {
         );
     }
 
-    /*
-     * TheEndOfDragon.init()から呼び、クラスを読み込ませる。
-     * SoundEvent自体はstaticフィールドの初期化時に登録される。
-     */
-    public static void init() {
+    public static void bindNeoForge(
+            SoundEvent judgmentRay,
+            SoundEvent lighting,
+            SoundEvent orbCharge,
+            SoundEvent orbShooting,
+            SoundEvent photonBuster,
+            SoundEvent photonBlaster,
+            SoundEvent ragnarok,
+            SoundEvent roar,
+            SoundEvent shot,
+            SoundEvent tackle,
+            SoundEvent dead,
+            SoundEvent jet,
+            SoundEvent bgm
+    ) {
+        TED_JUDGMENT_RAY = judgmentRay;
+        TED_LIGHTING = lighting;
+        TED_ORB_CHARGE = orbCharge;
+        TED_ORB_SHOOTING = orbShooting;
+        TED_PHOTON_BUSTER = photonBuster;
+        TED_PHOTON_BLASTER = photonBlaster;
+        TED_RAGNAROK = ragnarok;
+        TED_ROAR = roar;
+        TED_SHOT = shot;
+        TED_TACKLE = tackle;
+
+        TED_DEAD = dead;
+        TED_JET = jet;
+
+        SYUUMATU_NO_LAEVATEIN = bgm;
+
         TheEndOfDragon.LOGGER.info(
-                "Registering The End Of Dragon sounds"
+                "Bound NeoForge sounds to common registry references"
         );
+    }
+
+    private ModSounds() {
     }
 }

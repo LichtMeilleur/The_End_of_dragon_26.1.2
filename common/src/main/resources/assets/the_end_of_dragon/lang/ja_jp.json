@@ -1,4 +1,6 @@
 {
+  "itemGroup.the_end_of_dragon": "The End Of Dragon",
   "boss.the_end_of_dragon.the_end_of_dragon": "終焉の龍",
-  "item.the_end_of_dragon.the_end_piece": "終焉の欠片"
+  "item.the_end_of_dragon.the_end_piece": "終焉の欠片",
+  "item.the_end_of_dragon.the_end_of_dragon_spawn_egg": "終焉の龍のスポーンエッグ"
 }

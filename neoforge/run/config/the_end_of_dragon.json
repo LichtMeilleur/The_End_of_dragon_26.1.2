@@ -1,0 +1,20 @@
+{
+  "healthMultiplier": 1.0,
+  "damageMultiplier": 1.0,
+  "roarDamage": 6.0,
+  "roarEquipmentDamage": 40,
+  "blasterTackleDamage": 18.0,
+  "superLandingDamage": 18.0,
+  "laserDamage": 10.0,
+  "lightProjectileDamage": 16.0,
+  "judgmentRayDamage": 7.0,
+  "photonBusterDamage": 22.0,
+  "orbDamage": 9999.0,
+  "tailWhipDamage": 14.0,
+  "tailWhipRadius": 18.0,
+  "tailWhipKnockback": 2.2,
+  "tailWhipKnockbackY": 0.45,
+  "enableBlockBreak": true,
+  "enableEquipmentBreak": true,
+  "blockBreakEnabled": true
+}

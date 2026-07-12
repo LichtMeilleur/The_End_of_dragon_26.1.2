@@ -4,3 +4,5 @@
 /gamemode creative
 /gamemode survival
 /gamemode creative
+/ted bow
+/ted_anim light

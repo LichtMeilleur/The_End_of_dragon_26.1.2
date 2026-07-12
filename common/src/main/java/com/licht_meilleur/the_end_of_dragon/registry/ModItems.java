@@ -7,69 +7,125 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.component.TypedEntityData;
 
 public final class ModItems {
+
+    public static final ResourceKey<Item> THE_END_OF_DRAGON_ICON_KEY =
+            ResourceKey.create(
+                    Registries.ITEM,
+                    TheEndOfDragon.id("the_end_of_dragon_icon")
+            );
+
     public static final ResourceKey<Item> THE_END_OF_DRAGON_SPAWN_EGG_KEY =
             ResourceKey.create(
                     Registries.ITEM,
-                    Identifier.fromNamespaceAndPath(TheEndOfDragon.MOD_ID, "the_end_of_dragon_spawn_egg")
-            );
-
-    public static final Item THE_END_OF_DRAGON_SPAWN_EGG =
-            Registry.register(
-                    BuiltInRegistries.ITEM,
-                    THE_END_OF_DRAGON_SPAWN_EGG_KEY.identifier(),
-                    new SpawnEggItem(
-                            new Item.Properties()
-                                    .setId(THE_END_OF_DRAGON_SPAWN_EGG_KEY)
-                                    .component(
-                                            DataComponents.ENTITY_DATA,
-                                            TypedEntityData.of(ModEntities.THE_END_OF_DRAGON, new CompoundTag())
-                                    )
-                    )
+                    TheEndOfDragon.id("the_end_of_dragon_spawn_egg")
             );
 
     public static final ResourceKey<Item> THE_END_PIECE_KEY =
             ResourceKey.create(
                     Registries.ITEM,
-                    Identifier.fromNamespaceAndPath(TheEndOfDragon.MOD_ID, "the_end_piece")
+                    TheEndOfDragon.id("the_end_piece")
             );
-
-    public static final Item THE_END_PIECE =
-            Registry.register(
-                    BuiltInRegistries.ITEM,
-                    THE_END_PIECE_KEY.identifier(),
-                    new Item(
-                            new Item.Properties()
-                                    .setId(THE_END_PIECE_KEY)
-                    )
-            );
-
-
 
     public static final ResourceKey<Item> TED_DEBUG_BOW_KEY =
             ResourceKey.create(
                     Registries.ITEM,
-                    Identifier.fromNamespaceAndPath(TheEndOfDragon.MOD_ID, "ted_debug_bow")
+                    TheEndOfDragon.id("ted_debug_bow")
             );
+    public static Item THE_END_OF_DRAGON_ICON;
+    public static Item THE_END_OF_DRAGON_SPAWN_EGG;
+    public static Item THE_END_PIECE;
+    public static Item TED_DEBUG_BOW;
 
-    public static final Item TED_DEBUG_BOW =
-            Registry.register(
-                    BuiltInRegistries.ITEM,
-                    TED_DEBUG_BOW_KEY.identifier(),
-                    new TedDebugBowItem(
-                            new Item.Properties()
-                                    .setId(TED_DEBUG_BOW_KEY)
-                                    .stacksTo(1)
-                    )
+    private static boolean fabricRegistered = false;
+
+    public static void registerFabric() {
+        if (fabricRegistered) {
+            return;
+        }
+
+        fabricRegistered = true;
+
+        if (ModEntities.THE_END_OF_DRAGON == null) {
+            throw new IllegalStateException(
+                    "ModEntities must be registered before ModItems"
             );
+        }
+        THE_END_OF_DRAGON_ICON =
+                Registry.register(
+                        BuiltInRegistries.ITEM,
+                        THE_END_OF_DRAGON_ICON_KEY.identifier(),
+                        new Item(
+                                new Item.Properties()
+                                        .setId(THE_END_OF_DRAGON_ICON_KEY)
+                        )
+                );
 
-    public static void init() {
+        THE_END_OF_DRAGON_SPAWN_EGG =
+                Registry.register(
+                        BuiltInRegistries.ITEM,
+                        THE_END_OF_DRAGON_SPAWN_EGG_KEY.identifier(),
+                        new SpawnEggItem(
+                                new Item.Properties()
+                                        .setId(
+                                                THE_END_OF_DRAGON_SPAWN_EGG_KEY
+                                        )
+                                        .component(
+                                                DataComponents.ENTITY_DATA,
+                                                TypedEntityData.of(
+                                                        ModEntities
+                                                                .THE_END_OF_DRAGON,
+                                                        new CompoundTag()
+                                                )
+                                        )
+                        )
+                );
+
+        THE_END_PIECE =
+                Registry.register(
+                        BuiltInRegistries.ITEM,
+                        THE_END_PIECE_KEY.identifier(),
+                        new Item(
+                                new Item.Properties()
+                                        .setId(THE_END_PIECE_KEY)
+                        )
+                );
+
+        TED_DEBUG_BOW =
+                Registry.register(
+                        BuiltInRegistries.ITEM,
+                        TED_DEBUG_BOW_KEY.identifier(),
+                        new TedDebugBowItem(
+                                new Item.Properties()
+                                        .setId(TED_DEBUG_BOW_KEY)
+                                        .stacksTo(1)
+                        )
+                );
+
+        TheEndOfDragon.LOGGER.info(
+                "Registered The End Of Dragon items for Fabric"
+        );
+    }
+
+    public static void bindNeoForge(
+            Item icon,
+            Item spawnEgg,
+            Item endPiece,
+            Item debugBow
+    ) {
+        THE_END_OF_DRAGON_ICON = icon;
+        THE_END_OF_DRAGON_SPAWN_EGG = spawnEgg;
+        THE_END_PIECE = endPiece;
+        TED_DEBUG_BOW = debugBow;
+
+        TheEndOfDragon.LOGGER.info(
+                "Bound NeoForge items to common registry references"
+        );
     }
 
     private ModItems() {

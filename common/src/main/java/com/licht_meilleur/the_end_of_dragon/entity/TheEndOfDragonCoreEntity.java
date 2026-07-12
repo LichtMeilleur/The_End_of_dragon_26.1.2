@@ -416,7 +416,9 @@ public class TheEndOfDragonCoreEntity extends Monster {
     public void tick() {
         super.tick();
 
-
+        if (!this.level().isClientSide()) {
+            this.initializeNormalSpawnIfNeeded();
+        }
 
         this.setInvisible(true);
 
@@ -484,6 +486,36 @@ public class TheEndOfDragonCoreEntity extends Monster {
         bossBar.setName(
                 net.minecraft.network.chat.Component.translatable("boss.the_end_of_dragon.the_end_of_dragon")
         );
+    }
+
+    private boolean normalSpawnInitialized = false;
+
+    private void initializeNormalSpawnIfNeeded() {
+        if (this.level().isClientSide()) {
+            return;
+        }
+
+        if (this.normalSpawnInitialized) {
+            return;
+        }
+
+        /*
+         * EndDragonSpawnHandlerがイベント設定を行うための
+         * 最初の1tickを待つ。
+         */
+        if (this.tickCount < 2) {
+            return;
+        }
+
+        this.normalSpawnInitialized = true;
+
+        if (this.spawnKind != DragonSpawnKind.NORMAL) {
+            return;
+        }
+
+        this.setCombatStarted(true);
+        this.setDragonState(DragonState.IDLE);
+        this.setPersistenceRequired();
     }
 
     private void updateCrystalFadeStage() {
@@ -1125,6 +1157,7 @@ public class TheEndOfDragonCoreEntity extends Monster {
 
         this.eventBgmStarted = false;
     }
+    //NBT保存
     @Override
     protected void addAdditionalSaveData(
             net.minecraft.world.level.storage.ValueOutput output
@@ -1135,6 +1168,7 @@ public class TheEndOfDragonCoreEntity extends Monster {
                 "TedSpawnKind",
                 this.spawnKind.name()
         );
+
     }
 
     @Override
