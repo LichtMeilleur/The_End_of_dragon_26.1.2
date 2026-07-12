@@ -38,7 +38,13 @@ public class TedVfxRenderer<R extends EntityRenderState & GeoRenderState>
         TedVfxType type = renderPassInfo.renderState()
                 .getGeckolibData(TedVfxRenderTickets.VFX_TYPE);
 
-        if (type != TedVfxType.TED_LASER_BEAM && type != TedVfxType.TED_JET) {
+        /*
+         * TED_LASER_BEAMはsubmit()内で、
+         * forwardとlengthから直接ポリゴンを描画する。
+         *
+         * ここで回転すると二重回転になるため、JETだけ従来方式を残す。
+         */
+        if (type != TedVfxType.TED_JET) {
             return;
         }
 
@@ -49,7 +55,6 @@ public class TedVfxRenderer<R extends EntityRenderState & GeoRenderState>
                 .getGeckolibData(TedVfxRenderTickets.VFX_UP);
 
         Quaternionf q = rotationFromBasis(forward, up);
-
         renderPassInfo.poseStack().mulPose(q);
     }
 
@@ -134,15 +139,9 @@ public class TedVfxRenderer<R extends EntityRenderState & GeoRenderState>
             effect.setRotY(0.0F);
             effect.setRotZ(0.0F);
 
-            if (finalType == TedVfxType.TED_LASER_BEAM) {
-                effect.setScaleX(1.0F);
-                effect.setScaleY(1.0F);
-                effect.setScaleZ(length);
-            } else {
-                effect.setScaleX(1.0F);
-                effect.setScaleY(1.0F);
-                effect.setScaleZ(1.0F);
-            }
+            effect.setScaleX(1.0F);
+            effect.setScaleY(1.0F);
+            effect.setScaleZ(1.0F);
         });
     }
 
@@ -228,6 +227,12 @@ public class TedVfxRenderer<R extends EntityRenderState & GeoRenderState>
     private static final RenderType ROAR_RENDER_TYPE =
             RenderTypes.entityTranslucentCullItemTarget(ROAR_TEXTURE);
 
+    private static final Identifier LASER_TEXTURE =
+            TheEndOfDragon.id("textures/vfx/ted_laser_beam.png");
+
+    private static final RenderType LASER_RENDER_TYPE =
+            RenderTypes.entityTranslucent(LASER_TEXTURE);
+
     private static final int ROAR_LIFE = 34;
 
     private static final int[] ROAR_DELAYS = {0, 3, 6};
@@ -312,14 +317,328 @@ public class TedVfxRenderer<R extends EntityRenderState & GeoRenderState>
             SubmitNodeCollector submitNodeCollector,
             CameraRenderState camera
     ) {
-        TedVfxType type = renderState.getGeckolibData(TedVfxRenderTickets.VFX_TYPE);
+        TedVfxType type = renderState.getGeckolibData(
+                TedVfxRenderTickets.VFX_TYPE
+        );
 
         if (type == TedVfxType.ROAR_OF_OBLITERATION) {
-            renderRoarOfObliteration(renderState, poseStack, submitNodeCollector, camera);
+            renderRoarOfObliteration(
+                    renderState,
+                    poseStack,
+                    submitNodeCollector,
+                    camera
+            );
             return;
         }
 
-        super.submit(renderState, poseStack, submitNodeCollector, camera);
+        /*
+         * Photon Busterなどのレーザービームは、
+         * Geckoモデルを描画せず、始点からforward方向へ直接描画する。
+         */
+        if (type == TedVfxType.TED_LASER_BEAM) {
+            renderLaserBeam(
+                    renderState,
+                    poseStack,
+                    submitNodeCollector
+            );
+            return;
+        }
+
+        super.submit(
+                renderState,
+                poseStack,
+                submitNodeCollector,
+                camera
+        );
+    }
+
+    private void renderLaserBeam(
+            R renderState,
+            PoseStack poseStack,
+            SubmitNodeCollector submitNodeCollector
+    ) {
+        Vec3 forwardRaw = renderState.getGeckolibData(
+                TedVfxRenderTickets.VFX_FORWARD
+        );
+
+        Vec3 upRaw = renderState.getGeckolibData(
+                TedVfxRenderTickets.VFX_UP
+        );
+
+        Float scaleData = renderState.getGeckolibData(
+                TedVfxRenderTickets.VFX_SCALE
+        );
+
+        Float lengthData = renderState.getGeckolibData(
+                TedVfxRenderTickets.VFX_LENGTH
+        );
+
+        Vec3 forward = safeNormalize(
+                forwardRaw,
+                new Vec3(0.0D, 0.0D, 1.0D)
+        );
+
+        Vec3 up = createBeamUp(forward, upRaw);
+
+        float scale = scaleData != null
+                ? Math.max(0.05F, scaleData)
+                : 1.0F;
+
+        float length = lengthData != null
+                ? Math.max(0.01F, lengthData)
+                : 1.0F;
+
+        /*
+         * modelScaleをそのまま半径にすると太すぎる場合があるため、
+         * Photon Busterのscale=5.0を基準に調整。
+         */
+        float outerRadius = scale;
+        float middleRadius = scale * 0.68F;
+        float coreRadius = scale * 0.30F;
+
+        poseStack.pushPose();
+
+        /*
+         * 外側の半透明光。
+         */
+        submitBeamLayer(
+                poseStack,
+                submitNodeCollector,
+                forward,
+                up,
+                length,
+                outerRadius,
+                255,
+                230,
+                70,
+                45
+        );
+
+        /*
+         * 中間の黄色いレーザー。
+         */
+        submitBeamLayer(
+                poseStack,
+                submitNodeCollector,
+                forward,
+                up,
+                length,
+                middleRadius,
+                255,
+                245,
+                120,
+                125
+        );
+
+        /*
+         * 中心の白い発光コア。
+         */
+        submitBeamLayer(
+                poseStack,
+                submitNodeCollector,
+                forward,
+                up,
+                length,
+                coreRadius,
+                255,
+                255,
+                245,
+                235
+        );
+
+        poseStack.popPose();
+    }
+
+    private Vec3 createBeamUp(Vec3 forward, Vec3 requestedUp) {
+        Vec3 up = safeNormalize(
+                requestedUp,
+                new Vec3(0.0D, 1.0D, 0.0D)
+        );
+
+        /*
+         * forward成分を取り除き、完全に直交させる。
+         */
+        up = up.subtract(
+                forward.scale(up.dot(forward))
+        );
+
+        if (up.lengthSqr() < 1.0E-6D) {
+            Vec3 helper = Math.abs(forward.y) < 0.95D
+                    ? new Vec3(0.0D, 1.0D, 0.0D)
+                    : new Vec3(1.0D, 0.0D, 0.0D);
+
+            up = helper.subtract(
+                    forward.scale(helper.dot(forward))
+            );
+        }
+
+        if (up.lengthSqr() < 1.0E-6D) {
+            return new Vec3(0.0D, 1.0D, 0.0D);
+        }
+
+        return up.normalize();
+    }
+
+    private void submitBeamLayer(
+            PoseStack poseStack,
+            SubmitNodeCollector submitNodeCollector,
+            Vec3 forward,
+            Vec3 up,
+            float length,
+            float radius,
+            int red,
+            int green,
+            int blue,
+            int alpha
+    ) {
+        /*
+         * right / up / forwardの直交座標を作成。
+         */
+        Vec3 right = up.cross(forward);
+
+        if (right.lengthSqr() < 1.0E-6D) {
+            return;
+        }
+
+        right = right.normalize();
+        Vec3 correctedUp = forward.cross(right).normalize();
+
+        /*
+         * 八角柱。
+         * 値を12や16へ増やせば、より丸い円柱になる。
+         */
+        int sides = 8;
+
+        Vec3[] startRing = new Vec3[sides];
+        Vec3[] endRing = new Vec3[sides];
+
+        Vec3 endCenter = forward.scale(length);
+
+        for (int i = 0; i < sides; i++) {
+            double angle = Math.PI * 2.0D * i / sides;
+
+            Vec3 offset = right
+                    .scale(Math.cos(angle) * radius)
+                    .add(correctedUp.scale(Math.sin(angle) * radius));
+
+            /*
+             * VFX Entity自体がレイキャスト始点に配置されているため、
+             * ローカル原点Vec3.ZEROがビーム始点になる。
+             */
+            startRing[i] = offset;
+            endRing[i] = endCenter.add(offset);
+        }
+
+        submitNodeCollector.submitCustomGeometry(
+                poseStack,
+                LASER_RENDER_TYPE,
+                (pose, buffer) -> {
+                    for (int i = 0; i < sides; i++) {
+                        int next = (i + 1) % sides;
+
+                        Vec3 a = startRing[i];
+                        Vec3 b = endRing[i];
+                        Vec3 c = endRing[next];
+                        Vec3 d = startRing[next];
+
+                        float u0 = i / (float) sides;
+                        float u1 = (i + 1) / (float) sides;
+
+                        Vec3 normal = a.add(d);
+
+                        if (normal.lengthSqr() < 1.0E-6D) {
+                            normal = correctedUp;
+                        } else {
+                            normal = normal.normalize();
+                        }
+
+                        /*
+                         * 側面。
+                         */
+                        laserVertex(
+                                buffer,
+                                pose,
+                                a,
+                                u0,
+                                1.0F,
+                                red,
+                                green,
+                                blue,
+                                alpha,
+                                normal
+                        );
+
+                        laserVertex(
+                                buffer,
+                                pose,
+                                b,
+                                u0,
+                                0.0F,
+                                red,
+                                green,
+                                blue,
+                                alpha,
+                                normal
+                        );
+
+                        laserVertex(
+                                buffer,
+                                pose,
+                                c,
+                                u1,
+                                0.0F,
+                                red,
+                                green,
+                                blue,
+                                alpha,
+                                normal
+                        );
+
+                        laserVertex(
+                                buffer,
+                                pose,
+                                d,
+                                u1,
+                                1.0F,
+                                red,
+                                green,
+                                blue,
+                                alpha,
+                                normal
+                        );
+                    }
+                }
+        );
+    }
+
+    private static void laserVertex(
+            VertexConsumer buffer,
+            PoseStack.Pose pose,
+            Vec3 position,
+            float u,
+            float v,
+            int red,
+            int green,
+            int blue,
+            int alpha,
+            Vec3 normal
+    ) {
+        buffer.addVertex(
+                        pose,
+                        (float) position.x,
+                        (float) position.y,
+                        (float) position.z
+                )
+                .setColor(red, green, blue, alpha)
+                .setUv(u, v)
+                .setOverlay(OverlayTexture.NO_OVERLAY)
+                .setLight(15728880)
+                .setNormal(
+                        pose,
+                        (float) normal.x,
+                        (float) normal.y,
+                        (float) normal.z
+                );
     }
 
 

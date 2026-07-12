@@ -1,10 +1,11 @@
 package com.licht_meilleur.the_end_of_dragon;
 
-import com.licht_meilleur.the_end_of_dragon.client.TheEndOfDragonNeoForgeClient;
+import com.licht_meilleur.the_end_of_dragon.neoforge.client.TheEndOfDragonNeoForgeClient;
 import com.licht_meilleur.the_end_of_dragon.command.TEDDebugCommands;
 import com.licht_meilleur.the_end_of_dragon.config.TedConfig;
 import com.licht_meilleur.the_end_of_dragon.entity.TheEndOfDragonCoreEntity;
 import com.licht_meilleur.the_end_of_dragon.entity.TheEndOfDragonEntity;
+import com.licht_meilleur.the_end_of_dragon.neoforge.network.TedNeoForgeNetwork;
 import com.licht_meilleur.the_end_of_dragon.registry.ModEntities;
 import com.licht_meilleur.the_end_of_dragon.world.EndDragonSpawnHandler;
 import net.minecraft.server.level.ServerLevel;
@@ -31,6 +32,15 @@ public final class TheEndOfDragonNeoForge {
         modBus.addListener(this::registerAttributes);
         modBus.addListener(TheEndOfDragonNeoForgeClient::registerEntityRenderers);
         NeoForge.EVENT_BUS.register(this);
+
+        TedNeoForgeNetwork.initSender();
+
+        modBus.addListener(
+                TedNeoForgeNetwork::registerPayloads
+        );
+        modBus.addListener(
+                TheEndOfDragonNeoForgeClient::registerClientPayloads
+        );
     }
 
     private void registerAttributes(EntityAttributeCreationEvent event) {

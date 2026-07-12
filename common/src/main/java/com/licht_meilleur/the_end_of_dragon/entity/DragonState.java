@@ -39,6 +39,7 @@ public enum DragonState {
 
     RECOVERY_ASCEND,
     RECOVERY_RETURN,
+    RECOVERY_DIVE,
 
 
 

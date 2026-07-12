@@ -4,6 +4,8 @@ import com.licht_meilleur.the_end_of_dragon.entity.DragonState;
 import com.licht_meilleur.the_end_of_dragon.entity.TheEndOfDragonCoreEntity;
 import com.licht_meilleur.the_end_of_dragon.entity.beam.TedBeamSpecs;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 
 public class DragonAttackStateMachine {
@@ -25,6 +27,9 @@ public class DragonAttackStateMachine {
     private int figureEightShotCooldown = 0;
     private int figureEightStraightShots = 0;
     private boolean wasInShotWindow = false;
+
+    private double judgmentTargetY = Double.NaN;
+    private int judgmentAscendSafetyTicks = 0;
 
     public void startIntroAscend() {
         airMode = AirMode.INTRO;
@@ -61,7 +66,9 @@ public class DragonAttackStateMachine {
 
     public void startJudgmentRay() {
         airMode = AirMode.JUDGMENT;
-        ascendTicks = 35;
+
+        judgmentTargetY = Double.NaN;
+        judgmentAscendSafetyTicks = 0;
 
         dragon.setAttackMovementLocked(true);
         dragon.setDragonState(DragonState.FLY_START);
@@ -99,6 +106,7 @@ public class DragonAttackStateMachine {
 
             case SUPER_LANDING -> {
                 if (age > 50) {
+                    dragon.finishRecoveryDive();
                     finishAirSequence();
                 }
             }
@@ -132,7 +140,7 @@ public class DragonAttackStateMachine {
 
             case JUDGMENT_RAY -> {
                 if (age > 40) {
-                    dragon.setDragonState(DragonState.FLY_DESCEND);
+                    dragon.setDragonState(DragonState.FALL);
                 }
             }
             case PHOTON_BUSTER -> {
@@ -155,8 +163,20 @@ public class DragonAttackStateMachine {
             return;
         }
 
+        /*
+         * Judgment Rayだけは固定tick上昇ではなく、
+         * 高所プレイヤーの高度へ合わせる。
+         */
+        if (airMode == AirMode.JUDGMENT) {
+            tickJudgmentAscend(level);
+            return;
+        }
+
         if (age < ascendTicks) {
-            dragon.moveBossByNoFace(level, new Vec3(0.0D, 15.0D, 0.0D));
+            dragon.moveBossByNoFace(
+                    level,
+                    new Vec3(0.0D, 15.0D, 0.0D)
+            );
             return;
         }
 
@@ -171,12 +191,67 @@ public class DragonAttackStateMachine {
             return;
         }
 
-        if (airMode == AirMode.JUDGMENT) {
-            dragon.setDragonState(DragonState.JUDGMENT_RAY);
+        finishAirSequence();
+    }
+
+    private void tickJudgmentAscend(ServerLevel level) {
+        judgmentAscendSafetyTicks++;
+
+        LivingEntity target = dragon.findJudgmentTarget(level);
+
+        if (Double.isNaN(judgmentTargetY)) {
+            Vec3 arenaCenter = dragon.arenaCenter(level);
+
+            double targetY = target != null
+                    ? target.getEyeY() + 8.0D
+                    : arenaCenter.y + 55.0D;
+
+            /*
+             * 低すぎる場所では撃たず、
+             * 高すぎてチャンク外へ行かないよう上限も設定。
+             */
+            judgmentTargetY = Mth.clamp(
+                    targetY,
+                    arenaCenter.y + 35.0D,
+                    arenaCenter.y + 140.0D
+            );
+
+            /*
+             * 現在位置より低い場合は無理に下降しない。
+             */
+            judgmentTargetY = Math.max(
+                    judgmentTargetY,
+                    dragon.getY()
+            );
+        }
+
+        if (target != null) {
+            Vec3 toTarget = target.position()
+                    .subtract(dragon.position());
+
+            dragon.setBossYawOnly(toTarget);
+        }
+
+        double difference =
+                judgmentTargetY - dragon.getY();
+
+        if (difference > 2.0D) {
+            double speed = Math.min(10.0D, difference);
+
+            dragon.moveBossByNoFace(
+                    level,
+                    new Vec3(0.0D, speed, 0.0D)
+            );
             return;
         }
 
-        finishAirSequence();
+        /*
+         * 何らかの理由で目標高度へ着けない場合の停止防止。
+         */
+        if (Math.abs(difference) <= 2.0D
+                || judgmentAscendSafetyTicks >= 80) {
+            dragon.setDragonState(DragonState.JUDGMENT_RAY);
+        }
     }
 
     private void tickFigureEight(ServerLevel level) {

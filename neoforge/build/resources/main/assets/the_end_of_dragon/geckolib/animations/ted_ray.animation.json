@@ -1,0 +1,50 @@
+{
+	"format_version": "1.8.0",
+	"animations": {
+		"animation.model.attack": {
+			"loop": true,
+			"animation_length": 1,
+			"bones": {
+				"light_block": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"1.0": {
+							"vector": [9000, -90, -8550]
+						}
+					},
+					"scale": {
+						"vector": [0.6, 0.6, 0.6]
+					}
+				},
+				"light_block2": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"1.0": {
+							"vector": [2430.0008, -39.9995, -2880.0003]
+						}
+					},
+					"scale": {
+						"vector": [0.6, 0.3, 0.1]
+					}
+				},
+				"light_block3": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"1.0": {
+							"vector": [0, 47.5011, -1080.0001]
+						}
+					},
+					"scale": {
+						"vector": [0.6, 0.6, 0.6]
+					}
+				}
+			}
+		}
+	}
+}

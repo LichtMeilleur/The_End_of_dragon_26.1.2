@@ -11,10 +11,13 @@ import com.licht_meilleur.the_end_of_dragon.entity.projectile.TedProjectileSpec;
 import com.licht_meilleur.the_end_of_dragon.entity.projectile.TedProjectileSpecs;
 import com.licht_meilleur.the_end_of_dragon.entity.state.DragonAttackStateMachine;
 import com.licht_meilleur.the_end_of_dragon.entity.vfx.*;
+import com.licht_meilleur.the_end_of_dragon.network.TedNetwork;
 import com.licht_meilleur.the_end_of_dragon.registry.ModEntities;
 
 import com.licht_meilleur.the_end_of_dragon.entity.ai.*;
 import com.licht_meilleur.the_end_of_dragon.registry.ModItems;
+import com.licht_meilleur.the_end_of_dragon.registry.ModSounds;
+import com.licht_meilleur.the_end_of_dragon.sound.TedSoundHelper;
 import com.licht_meilleur.the_end_of_dragon.world.EndPortalSealHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
@@ -29,11 +32,13 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
@@ -42,6 +47,7 @@ import net.minecraft.world.level.block.LightBlock;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.Comparator;
 import java.util.UUID;
 
 public class TheEndOfDragonCoreEntity extends Monster {
@@ -106,11 +112,21 @@ public class TheEndOfDragonCoreEntity extends Monster {
     //ジャッジメントレイ
     private int judgmentShotCooldown = 0;
     private int judgmentShotCount = 0;
+    // Judgment Ray
+    private static final int JUDGMENT_CHARGE_START = 1;
+    private static final int JUDGMENT_FIRE_START = 25;
+    private static final int JUDGMENT_FIRE_END = 40;
+    private static final int JUDGMENT_SHOT_INTERVAL = 2;
+    private static final int JUDGMENT_MAX_SHOTS = 32;
 
     private int unsafeFallTicks = 0;
 
     //ドロップアイテム
     private boolean deathDropSpawned = false;
+    //ジェット音時間
+    private int jetSoundCooldown = 0;
+
+    private Vec3 recoveryDiveTarget = null;
 
 
 
@@ -149,11 +165,41 @@ public class TheEndOfDragonCoreEntity extends Monster {
 
     @Override
     protected void registerGoals() {
-        this.goalSelector.addGoal(0, new DragonRecoveryGoal(this));
-        this.goalSelector.addGoal(1, new DragonAirAttackGoal(this));
-        this.goalSelector.addGoal(2, new DragonTailWhipGoal(this));
-        this.goalSelector.addGoal(3, new DragonGroundAttackGoal(this));
-        this.goalSelector.addGoal(4, new DragonMoveGoal(this));
+        /*
+         * 奈落・大幅な位置逸脱用。
+         */
+        this.goalSelector.addGoal(
+                0,
+                new DragonRecoveryGoal(this)
+        );
+
+        /*
+         * 長時間攻撃できていない場合の踏みつけ復帰。
+         */
+        this.goalSelector.addGoal(
+                1,
+                new DragonStallRecoveryGoal(this)
+        );
+
+        this.goalSelector.addGoal(
+                2,
+                new DragonAirAttackGoal(this)
+        );
+
+        this.goalSelector.addGoal(
+                3,
+                new DragonTailWhipGoal(this)
+        );
+
+        this.goalSelector.addGoal(
+                4,
+                new DragonGroundAttackGoal(this)
+        );
+
+        this.goalSelector.addGoal(
+                5,
+                new DragonMoveGoal(this)
+        );
     }
 
 
@@ -215,11 +261,29 @@ public class TheEndOfDragonCoreEntity extends Monster {
             + " tick=" + this.tickCount);
     */
 
+        if (state == DragonState.FALL) {
+            this.noPhysics = false;
+            this.setNoGravity(false);
+
+            this.setDeltaMovement(
+                    this.getDeltaMovement().x,
+                    Math.min(this.getDeltaMovement().y, -1.2D),
+                    this.getDeltaMovement().z
+            );
+
+            this.fallDistance = 0.0F;
+        }
+
         // Photon Busterを抜ける時は、残っているビームを消す
         if (previousState == DragonState.PHOTON_BUSTER
                 && state != DragonState.PHOTON_BUSTER) {
             hidePhotonBusterBeam();
             this.photonBusterLockedTarget = null;
+        }
+
+        if (isMeaningfulAttackStart(state)
+                && !isMeaningfulAttackStart(previousState)) {
+            this.markAttackStarted();
         }
 
         this.entityData.set(DATA_STATE, state.ordinal());
@@ -252,6 +316,57 @@ public class TheEndOfDragonCoreEntity extends Monster {
         }
     }
 
+    private Vec3 findRecoveryDiveGroundTarget(
+            ServerLevel level
+    ) {
+        LivingEntity target = findBossTarget(level);
+
+        double targetX;
+        double targetZ;
+
+        if (target != null && target.isAlive()) {
+            targetX = target.getX();
+            targetZ = target.getZ();
+        } else {
+            Vec3 arena = arenaCenter(level);
+            targetX = arena.x;
+            targetZ = arena.z;
+        }
+
+        int blockX = Mth.floor(targetX);
+        int blockZ = Mth.floor(targetZ);
+
+        int groundY = level.getHeight(
+                net.minecraft.world.level.levelgen.Heightmap.Types
+                        .MOTION_BLOCKING_NO_LEAVES,
+                blockX,
+                blockZ
+        );
+
+        return new Vec3(
+                blockX + 0.5D,
+                groundY,
+                blockZ + 0.5D
+        );
+    }
+
+    private boolean isMeaningfulAttackStart(DragonState state) {
+        return switch (state) {
+            case ORB_OF_ANNIHILATION,
+                 ROAR_OF_OBLITERATION,
+                 LIGHT_OF_DESTRUCTION,
+                 PHOTON_BLASTER,
+                 PHOTON_BUSTER,
+                 BLASTER_TACKLE,
+                 TAIL_WHIP,
+                 FLAMES_OF_RAGNAROK,
+                 FIGURE_EIGHT,
+                 JUDGMENT_RAY -> true;
+
+            default -> false;
+        };
+    }
+
     public int getDragonStateAgeTicks() {
         return Math.max(0, this.tickCount - this.stateStartTick);
     }
@@ -279,6 +394,19 @@ public class TheEndOfDragonCoreEntity extends Monster {
             this.setAttackMovementLocked(false);
         }
     }
+    //停止状態防止用
+    private int lastAttackStartedTick = 0;
+
+    public void markAttackStarted() {
+        this.lastAttackStartedTick = this.tickCount;
+    }
+
+    public int getTicksSinceLastAttack() {
+        return Math.max(
+                0,
+                this.tickCount - this.lastAttackStartedTick
+        );
+    }
 
     public boolean isDebugFrozen() {
         return this.debugFrozen;
@@ -287,6 +415,7 @@ public class TheEndOfDragonCoreEntity extends Monster {
     @Override
     public void tick() {
         super.tick();
+
 
 
         this.setInvisible(true);
@@ -317,6 +446,14 @@ public class TheEndOfDragonCoreEntity extends Monster {
             return;
         }
 
+        tickVoidRecovery(serverLevel);
+
+        if (this.getDragonState() == DragonState.RECOVERY_ASCEND
+                || this.getDragonState() == DragonState.RECOVERY_RETURN) {
+            tickChildren();
+            bossBar.setProgress(this.getHealth() / this.getMaxHealth());
+            return;
+        }
 
         if (!this.isIntroStateNow() && this.getDragonState() != DragonState.DEAD) {
             this.combatStarted = true;
@@ -324,16 +461,18 @@ public class TheEndOfDragonCoreEntity extends Monster {
 
         updateCrystalFadeStage();
 
-
+        tickVoidRecovery(serverLevel);
+        tickUnknownPositionRecovery(serverLevel);
 
         attackStateMachine.tick(serverLevel);
 
         this.tickChildren();
         this.tickAttackVfx();
         this.tickFlyShotRequest(serverLevel);
-        this.attackStateMachine.tick(serverLevel);
         this.tickBodyBlockBreak(serverLevel);
         this.tickAirAttackCooldown();
+
+        this.tickFlightJetSound(serverLevel);
 
 
         if (!this.level().isClientSide() && this.level() instanceof ServerLevel level) {
@@ -374,10 +513,26 @@ public class TheEndOfDragonCoreEntity extends Monster {
         return crystalFadeStage;
     }
 
+    private boolean enderDragonEventFight = false;
+    private boolean eventBgmStarted = false;
+
+    public void setEnderDragonEventFight(boolean eventFight) {
+        this.enderDragonEventFight = eventFight;
+    }
+
+
     @Override
     public void startSeenByPlayer(ServerPlayer player) {
         super.startSeenByPlayer(player);
+
         bossBar.addPlayer(player);
+
+        if (this.isEnderDragonEventFight()
+                && this.combatStarted
+                && !this.deathSequenceStarted
+                && this.getDragonState() != DragonState.DEAD) {
+            TedNetwork.sendBgmStart(player);
+        }
     }
     @Override
     public void stopSeenByPlayer(ServerPlayer player) {
@@ -394,6 +549,7 @@ public class TheEndOfDragonCoreEntity extends Monster {
                  FLY_DESCEND,
                  FLY_SHOT,
                  FLAMES_OF_RAGNAROK,
+                 JUDGMENT_RAY,
                  FALL,
                  LANDING,
                  SUPER_LANDING -> true;
@@ -441,31 +597,155 @@ public class TheEndOfDragonCoreEntity extends Monster {
         this.attackStateMachine.cancelAirSequence();
     }
 
-    public void tickEmergencyRecoveryMove(ServerLevel level) {
-        Vec3 center = this.arenaCenter(level);
-        Vec3 safe = center.add(0.0D, 65.0D, 0.0D);
-
-
-        if (this.getDragonState() == DragonState.RECOVERY_ASCEND) {
-            if (this.getY() < safe.y) {
-                moveBossByNoFace(level, new Vec3(0.0D, 12.0D, 0.0D));
-                return;
-            }
-
-            this.setDragonState(DragonState.RECOVERY_RETURN);
-            return;
+    public void tickEmergencyRecoveryMove(
+            ServerLevel level
+    ) {
+        if (this.recoveryDiveTarget == null) {
+            this.recoveryDiveTarget =
+                    findRecoveryDiveGroundTarget(level);
         }
 
-        if (this.getDragonState() == DragonState.RECOVERY_RETURN) {
-            Vec3 move = safe.subtract(this.position());
+        Vec3 groundTarget = this.recoveryDiveTarget;
 
-            if (move.length() < 6.0D) {
-                this.setPos(safe.x, safe.y, safe.z);
-                this.setDragonState(DragonState.FLY_DESCEND);
-                return;
+        /*
+         * 地表から45ブロック上を水平移動の目標にする。
+         */
+        Vec3 aboveTarget = groundTarget.add(
+                0.0D,
+                45.0D,
+                0.0D
+        );
+
+        switch (this.getDragonState()) {
+            case RECOVERY_ASCEND -> {
+                /*
+                 * 現在位置からまず十分な高度まで上昇。
+                 */
+                double targetY = Math.max(
+                        aboveTarget.y,
+                        this.arenaCenter(level).y + 45.0D
+                );
+
+                double difference =
+                        targetY - this.getY();
+
+                if (difference > 2.0D) {
+                    double speed =
+                            Math.min(10.0D, difference);
+
+                    moveBossByNoFace(
+                            level,
+                            new Vec3(0.0D, speed, 0.0D)
+                    );
+
+                    return;
+                }
+
+                this.setDragonState(
+                        DragonState.RECOVERY_RETURN
+                );
             }
 
-            moveBossBy(level, move.normalize().scale(Math.min(24.0D, move.length())));
+            case RECOVERY_RETURN -> {
+                /*
+                 * 高度を維持して、プレイヤー地表の真上へ移動。
+                 */
+                Vec3 horizontalTarget = new Vec3(
+                        aboveTarget.x,
+                        this.getY(),
+                        aboveTarget.z
+                );
+
+                Vec3 offset =
+                        horizontalTarget.subtract(this.position());
+
+                Vec3 horizontal = new Vec3(
+                        offset.x,
+                        0.0D,
+                        offset.z
+                );
+
+                double distance = horizontal.length();
+
+                if (distance <= 4.0D) {
+                    this.snapTo(
+                            horizontalTarget.x,
+                            this.getY(),
+                            horizontalTarget.z,
+                            this.getYRot(),
+                            this.getXRot()
+                    );
+
+                    this.setDeltaMovement(Vec3.ZERO);
+
+                    /*
+                     * ダイブ直前に地表高度だけ再取得。
+                     * プレイヤーが少し動いた場合にも対応しやすい。
+                     */
+                    this.recoveryDiveTarget =
+                            findRecoveryDiveGroundTarget(level);
+
+                    this.setDragonState(
+                            DragonState.RECOVERY_DIVE
+                    );
+
+                    return;
+                }
+
+                if (horizontal.lengthSqr() > 1.0E-6D) {
+                    moveBossBy(
+                            level,
+                            horizontal.normalize().scale(
+                                    Math.min(12.0D, distance)
+                            )
+                    );
+                }
+            }
+
+            case RECOVERY_DIVE -> {
+                Vec3 currentGroundTarget =
+                        this.recoveryDiveTarget;
+
+                if (currentGroundTarget == null) {
+                    currentGroundTarget =
+                            findRecoveryDiveGroundTarget(level);
+
+                    this.recoveryDiveTarget =
+                            currentGroundTarget;
+                }
+
+                double distanceToGround =
+                        this.getY() - currentGroundTarget.y;
+
+                /*
+                 * 地面へ近づいたらワープ移動せず、
+                 * SUPER_LANDINGへ切り替える。
+                 */
+                if (distanceToGround <= 8.0D) {
+                    this.setDeltaMovement(Vec3.ZERO);
+                    this.fallDistance = 0.0F;
+
+                    this.setDragonState(
+                            DragonState.SUPER_LANDING
+                    );
+
+                    return;
+                }
+
+                double diveSpeed =
+                        Math.min(
+                                8.0D,
+                                Math.max(3.0D, distanceToGround - 6.0D)
+                        );
+
+                moveBossByNoFace(
+                        level,
+                        new Vec3(0.0D, -diveSpeed, 0.0D)
+                );
+            }
+
+            default -> {
+            }
         }
     }
 
@@ -477,11 +757,56 @@ public class TheEndOfDragonCoreEntity extends Monster {
     }
 
     public void descendForRagnarok(ServerLevel level) {
-        moveByVector(level, new Vec3(0.0D, -14.0D, 0.0D), false);
+        /*
+         * FALL中は通常重力に任せる。
+         * setPosによる瞬間移動は行わない。
+         */
 
-        if (isNearGroundForSuperLanding(level)) {
+        if (shouldLandFromFall(level)) {
+            this.setDeltaMovement(Vec3.ZERO);
+            this.fallDistance = 0.0F;
             this.setDragonState(DragonState.LANDING);
+            return;
         }
+
+        /*
+         * 奈落付近まで落ちた場合は緊急復帰。
+         */
+        if (this.getY() <= level.getMinY() + 12.0D) {
+            this.setDeltaMovement(Vec3.ZERO);
+            this.fallDistance = 0.0F;
+            this.startEmergencyRecovery();
+        }
+    }
+
+    private boolean shouldLandFromFall(ServerLevel level) {
+        Vec3 start = this.position();
+
+        /*
+         * モデルの足元位置に合わせて調整可能。
+         * まずはCore位置から下8ブロックを確認する。
+         */
+        Vec3 end = start.add(0.0D, -8.0D, 0.0D);
+
+        var hit = level.clip(
+                new net.minecraft.world.level.ClipContext(
+                        start,
+                        end,
+                        net.minecraft.world.level.ClipContext.Block.COLLIDER,
+                        net.minecraft.world.level.ClipContext.Fluid.NONE,
+                        this
+                )
+        );
+
+        if (hit.getType()
+                != net.minecraft.world.phys.HitResult.Type.MISS) {
+            double distance =
+                    hit.getLocation().distanceTo(start);
+
+            return distance <= 7.0D;
+        }
+
+        return this.onGround();
     }
 
     public void moveBossByNoFace(ServerLevel level, Vec3 move) {
@@ -725,13 +1050,14 @@ public class TheEndOfDragonCoreEntity extends Monster {
                  FIGURE_EIGHT,
                  FLY_SHOT,
                  FLAMES_OF_RAGNAROK,
-                 FALL,
+                 JUDGMENT_RAY,
                  INTRO_RISE,
                  INTRO_WAIT_PORTAL,
                  INTRO_FLY_TO_PORTAL,
                  INTRO_DIVE_TO_PORTAL,
                  RECOVERY_ASCEND,
-                 RECOVERY_RETURN -> true;
+                 RECOVERY_RETURN,
+                 RECOVERY_DIVE-> true;
 
             default -> false;
         };
@@ -739,6 +1065,97 @@ public class TheEndOfDragonCoreEntity extends Monster {
         this.noPhysics = flying;
         this.setNoGravity(flying);
         this.fallDistance = 0.0F;
+    }
+
+    @Override
+    public boolean causeFallDamage(
+            double fallDistance,
+            float damageMultiplier,
+            net.minecraft.world.damagesource.DamageSource source
+    ) {
+        this.fallDistance = 0.0F;
+        return false;
+    }
+    //個体識別
+    private DragonSpawnKind spawnKind =
+        DragonSpawnKind.NORMAL;
+
+    public void setSpawnKind(
+            DragonSpawnKind spawnKind
+    ) {
+        this.spawnKind = spawnKind != null
+                ? spawnKind
+                : DragonSpawnKind.NORMAL;
+    }
+
+    public DragonSpawnKind getSpawnKind() {
+        return this.spawnKind;
+    }
+
+    public boolean isEnderDragonEventFight() {
+        return this.spawnKind
+                == DragonSpawnKind.ENDER_DRAGON_EVENT;
+    }
+    //BGM
+    private void startEventBgmForPlayers(
+            ServerLevel level
+    ) {
+        if (!this.isEnderDragonEventFight()
+                || this.eventBgmStarted) {
+            return;
+        }
+
+        this.eventBgmStarted = true;
+
+        for (ServerPlayer player : level.players()) {
+            TedNetwork.sendBgmStart(player);
+        }
+    }
+
+    private void stopEventBgmForPlayers(
+            ServerLevel level
+    ) {
+        if (!this.isEnderDragonEventFight()) {
+            return;
+        }
+
+        for (ServerPlayer player : level.players()) {
+            TedNetwork.sendBgmStop(player);
+        }
+
+        this.eventBgmStarted = false;
+    }
+    @Override
+    protected void addAdditionalSaveData(
+            net.minecraft.world.level.storage.ValueOutput output
+    ) {
+        super.addAdditionalSaveData(output);
+
+        output.putString(
+                "TedSpawnKind",
+                this.spawnKind.name()
+        );
+    }
+
+    @Override
+    protected void readAdditionalSaveData(
+            net.minecraft.world.level.storage.ValueInput input
+    ) {
+        super.readAdditionalSaveData(input);
+
+        String savedKind =
+                input.getStringOr(
+                        "TedSpawnKind",
+                        DragonSpawnKind.NORMAL.name()
+                );
+
+        try {
+            this.spawnKind =
+                    DragonSpawnKind.valueOf(savedKind);
+        } catch (IllegalArgumentException exception) {
+            this.spawnKind =
+                    DragonSpawnKind.NORMAL;
+        }
     }
 
 
@@ -881,6 +1298,14 @@ public class TheEndOfDragonCoreEntity extends Monster {
         }
 
         spawnDeathShatterEffect(level);
+
+        TedSoundHelper.playDeathShatter(
+                level,
+                this
+        );
+
+        stopEventBgmForPlayers(level);
+
         deathSequenceFinished = true;
         discardChildren();
         this.discard();
@@ -952,14 +1377,77 @@ public class TheEndOfDragonCoreEntity extends Monster {
     }
 
     public void startRagnarokSequence() {
+        this.markAttackStarted();
         attackStateMachine.startRagnarok();
     }
 
     public void startFigureEightSequence() {
+        this.markAttackStarted();
         attackStateMachine.startFigureEight();
     }
 
+    public void startJudgmentRaySequence() {
+        this.markAttackStarted();
+        attackStateMachine.startJudgmentRay();
+    }
 
+    public void startDiveStompSequence() {
+        this.markAttackStarted();
+        startRecoveryDiveSequence();
+    }
+
+    public void startRecoveryDiveSequence() {
+        if (!this.isAlive()) {
+            return;
+        }
+
+        if (this.getDragonState() == DragonState.DEAD
+                || this.isIntroStateNow()) {
+            return;
+        }
+
+        if (!(this.level() instanceof ServerLevel level)) {
+            return;
+        }
+
+        if (isRecoveryStateNow()) {
+            return;
+        }
+
+        this.attackStateMachine.cancelAirSequence();
+        this.hidePhotonBusterBeam();
+
+        this.getNavigation().stop();
+        this.setDeltaMovement(Vec3.ZERO);
+        this.fallDistance = 0.0F;
+        this.setAttackMovementLocked(true);
+
+        /*
+         * 開始時点のプレイヤー地表座標を固定。
+         * ダイブ直前まで追尾させたい場合は後で更新可能。
+         */
+        this.recoveryDiveTarget =
+                findRecoveryDiveGroundTarget(level);
+
+        this.setDragonState(
+                DragonState.RECOVERY_ASCEND
+        );
+    }
+
+    public boolean isRecoveryStateNow() {
+        return switch (this.getDragonState()) {
+            case RECOVERY_ASCEND,
+                 RECOVERY_RETURN,
+                 RECOVERY_DIVE,
+                 SUPER_LANDING -> true;
+
+            default -> false;
+        };
+    }
+    public void finishRecoveryDive() {
+        this.recoveryDiveTarget = null;
+        this.markAttackStarted();
+    }
 
 
 
@@ -1025,6 +1513,10 @@ public class TheEndOfDragonCoreEntity extends Monster {
                  INTRO_WAIT_PORTAL,
                  INTRO_FLY_TO_PORTAL,
                  INTRO_DIVE_TO_PORTAL -> false;
+
+            case RECOVERY_ASCEND,
+                 RECOVERY_RETURN,
+                 RECOVERY_DIVE -> false;
 
             default -> true;
         };
@@ -1211,18 +1703,81 @@ public class TheEndOfDragonCoreEntity extends Monster {
     @Override
     public boolean hurtServer(
             ServerLevel level,
-            net.minecraft.world.damagesource.DamageSource source,
+            DamageSource source,
             float damage
     ) {
-        damage = reduceIncomingBossDamage(damage);
-
-        if (this.getDragonState() == DragonState.DEAD) {
+        if (this.getDragonState() == DragonState.DEAD
+                || this.deathSequenceStarted) {
             return false;
         }
+
+        /*
+         * 奈落ダメージは受けず、緊急復帰へ移行する。
+         */
+        if (source.is(DamageTypes.FELL_OUT_OF_WORLD)) {
+            triggerVoidRecovery(level);
+            return false;
+        }
+
+        damage = reduceIncomingBossDamage(damage);
 
         return super.hurtServer(level, source, damage);
     }
 
+    private void tickVoidRecovery(ServerLevel level) {
+        if (!this.isAlive()) {
+            return;
+        }
+
+        if (this.getDragonState() == DragonState.DEAD
+                || this.deathSequenceStarted) {
+            return;
+        }
+
+        if (this.isIntroStateNow()) {
+            return;
+        }
+
+        if (this.getDragonState() == DragonState.RECOVERY_ASCEND
+                || this.getDragonState() == DragonState.RECOVERY_RETURN) {
+            return;
+        }
+
+        /*
+         * 奈落ダメージが始まる前に復帰させる。
+         * +8～+16程度で調整可能。
+         */
+        double recoveryY = level.getMinY() + 12.0D;
+
+        if (this.getY() <= recoveryY) {
+            triggerVoidRecovery(level);
+        }
+    }
+
+    private void triggerVoidRecovery(ServerLevel level) {
+        if (!this.isAlive()) {
+            return;
+        }
+
+        if (this.getDragonState() == DragonState.DEAD
+                || this.deathSequenceStarted) {
+            return;
+        }
+
+        if (this.getDragonState() == DragonState.RECOVERY_ASCEND
+                || this.getDragonState() == DragonState.RECOVERY_RETURN) {
+            return;
+        }
+
+        this.setHealth(Math.max(this.getHealth(), 1.0F));
+        this.setDeltaMovement(Vec3.ZERO);
+        this.fallDistance = 0.0F;
+
+        this.attackStateMachine.cancelAirSequence();
+        this.startEmergencyRecovery();
+    }
+
+//ダメージ軽減
     private float reduceIncomingBossDamage(float damage) {
         if (damage >= 500.0F) {
             return damage * 0.01F; // 99%カット
@@ -1230,6 +1785,10 @@ public class TheEndOfDragonCoreEntity extends Monster {
 
         if (damage >= 100.0F) {
             return damage * 0.30F; // 70%カット
+        }
+
+        if (damage >= 50.0F) {
+            return damage * 0.50F; // 50%カット
         }
 
         return damage;
@@ -1354,17 +1913,46 @@ public class TheEndOfDragonCoreEntity extends Monster {
 
 
             case ORB_OF_ANNIHILATION -> {
+                if (age == ORB_CHARGE_START) {
+                    TedSoundHelper.playBossSound(
+                            serverLevel,
+                            this,
+                            ModSounds.TED_ORB_CHARGE,
+                            7.0F,
+                            1.0F
+                    );
+                }
+
                 if (between(age, ORB_CHARGE_START, ORB_FIRE_TICK - 1)) {
                     updateOrbCharge(serverLevel, age);
                 }
 
                 if (age == ORB_FIRE_TICK) {
+                    TedSoundHelper.playBossSound(
+                            serverLevel,
+                            this,
+                            ModSounds.TED_ORB_SHOOTING,
+                            9.0F,
+                            1.0F
+                    );
+
                     fireOrbOfAnnihilation(serverLevel);
                 }
             }
 
             case PHOTON_BLASTER -> {
-                boolean firing = between(age, PHOTON_FIRE_START, PHOTON_FIRE_END);
+                if (age == PHOTON_FIRE_START) {
+                    TedSoundHelper.playBossSound(
+                            serverLevel,
+                            this,
+                            ModSounds.TED_PHOTON_BLASTER,
+                            8.0F,
+                            1.0F
+                    );
+                }
+
+                boolean firing =
+                        between(age, PHOTON_FIRE_START, PHOTON_FIRE_END);
 
                 if (firing) {
                     updatePhotonLasers(serverLevel);
@@ -1372,19 +1960,52 @@ public class TheEndOfDragonCoreEntity extends Monster {
             }
 
             case FLAMES_OF_RAGNAROK -> {
-                boolean firing = between(age, FLAMES_FIRE_START, FLAMES_FIRE_END);
+                if (age == FLAMES_FIRE_START) {
+                    TedSoundHelper.playBossSound(
+                            serverLevel,
+                            this,
+                            ModSounds.TED_RAGNAROK,
+                            11.0F,
+                            1.0F
+                    );
+                }
+
+                boolean firing =
+                        between(age, FLAMES_FIRE_START, FLAMES_FIRE_END);
 
                 if (firing) {
-                    updateRagnarokLaserBeam(serverLevel, DragonCollisionPart.FRONT_LEFT_HAND);
-                    updateRagnarokLaserBeam(serverLevel, DragonCollisionPart.FRONT_RIGHT_HAND);
-                    updateRagnarokLaserBeam(serverLevel, DragonCollisionPart.BACK_LEFT_HAND);
-                    updateRagnarokLaserBeam(serverLevel, DragonCollisionPart.BACK_RIGHT_HAND);
+                    updateRagnarokLaserBeam(
+                            serverLevel,
+                            DragonCollisionPart.FRONT_LEFT_HAND
+                    );
+                    updateRagnarokLaserBeam(
+                            serverLevel,
+                            DragonCollisionPart.FRONT_RIGHT_HAND
+                    );
+                    updateRagnarokLaserBeam(
+                            serverLevel,
+                            DragonCollisionPart.BACK_LEFT_HAND
+                    );
+                    updateRagnarokLaserBeam(
+                            serverLevel,
+                            DragonCollisionPart.BACK_RIGHT_HAND
+                    );
                 }
 
                 syncChildrenNow();
             }
 
             case LIGHT_OF_DESTRUCTION -> {
+                if (age == 20) {
+                    TedSoundHelper.playBossSound(
+                            serverLevel,
+                            this,
+                            ModSounds.TED_LIGHTING,
+                            7.0F,
+                            1.0F
+                    );
+                }
+
                 if (age >= 20 && age <= 30) {
                     updateLightOfDestruction(serverLevel, age);
                 }
@@ -1398,6 +2019,14 @@ public class TheEndOfDragonCoreEntity extends Monster {
 
             case ROAR_OF_OBLITERATION -> {
                 if (age == 1) {
+                    TedSoundHelper.playBossSound(
+                            serverLevel,
+                            this,
+                            ModSounds.TED_ROAR,
+                            10.0F,
+                            1.0F
+                    );
+
                     spawnRoarOfObliterationVfx(serverLevel);
                 }
 
@@ -1407,6 +2036,13 @@ public class TheEndOfDragonCoreEntity extends Monster {
             }
 
             case BLASTER_TACKLE -> {
+                if (age == 7) {
+                    TedSoundHelper.playTackleJet(
+                            serverLevel,
+                            this
+                    );
+                }
+
                 if (between(age, 7, 8)) {
                     updateFlightJets(serverLevel);
                 }
@@ -1424,26 +2060,61 @@ public class TheEndOfDragonCoreEntity extends Monster {
             }
 
             case JUDGMENT_RAY -> {
+                if (age == JUDGMENT_FIRE_START) {
+                    TedSoundHelper.playBossSound(
+                            serverLevel,
+                            this,
+                            ModSounds.TED_JUDGMENT_RAY,
+                            9.0F,
+                            1.0F
+                    );
+                }
 
-                updateJudgmentCharge(serverLevel);
+                if (age >= JUDGMENT_CHARGE_START
+                        && age < JUDGMENT_FIRE_START) {
+                    updateJudgmentCharge(serverLevel);
+                }
 
-                if (age >= 25 && age <= 40) {
+                boolean firing =
+                        age >= JUDGMENT_FIRE_START
+                                && age <= JUDGMENT_FIRE_END
+                                && judgmentShotCount < JUDGMENT_MAX_SHOTS;
 
-                    if (--judgmentShotCooldown <= 0) {
+                if (firing) {
+                    judgmentShotCooldown--;
 
-                        fireJudgmentProjectile(serverLevel);
+                    if (judgmentShotCooldown <= 0) {
+                        boolean fired =
+                                fireJudgmentProjectile(serverLevel);
 
-                        judgmentShotCooldown = 4;
-                        judgmentShotCount++;
+                        if (fired) {
+                            judgmentShotCount++;
+                            judgmentShotCooldown =
+                                    JUDGMENT_SHOT_INTERVAL;
+                        } else {
+                            judgmentShotCooldown = 1;
+                        }
                     }
                 }
             }
 
             case PHOTON_BUSTER -> {
+                TedBeamSpec spec = TedBeamSpecs.PHOTON_BUSTER;
+
+                if (age == spec.fireStartTick()) {
+                    TedSoundHelper.playBossSound(
+                            serverLevel,
+                            this,
+                            ModSounds.TED_PHOTON_BUSTER,
+                            12.0F,
+                            1.0F
+                    );
+                }
+
                 updatePhotonBuster(
                         serverLevel,
                         age,
-                        TedBeamSpecs.PHOTON_BUSTER
+                        spec
                 );
             }
 
@@ -1503,6 +2174,55 @@ public class TheEndOfDragonCoreEntity extends Monster {
 
 
 
+    private void tickFlightJetSound(ServerLevel level) {
+        if (!isJetFlightState()) {
+            jetSoundCooldown = 0;
+            return;
+        }
+
+        if (jetSoundCooldown > 0) {
+            jetSoundCooldown--;
+            return;
+        }
+
+        TedSoundHelper.playJet(
+                level,
+                this
+        );
+
+        /*
+         * ted_jet.oggが約1秒なら20tick。
+         * 2秒なら40tick程度へ変更する。
+         */
+        jetSoundCooldown = 38;
+    }
+
+    private boolean isJetFlightState() {
+        return switch (this.getDragonState()) {
+            case FLY_START,
+                 FLY,
+                 FLY_ASCEND,
+                 FLY_DESCEND,
+                 FIGURE_EIGHT,
+                 FLY_SHOT,
+                 FLAMES_OF_RAGNAROK,
+                 JUDGMENT_RAY,
+                 RECOVERY_ASCEND,
+                 RECOVERY_RETURN,
+                 INTRO_RISE,
+                 INTRO_WAIT_PORTAL,
+                 INTRO_FLY_TO_PORTAL,
+                 INTRO_DIVE_TO_PORTAL -> true;
+
+            /*
+             * FALLは自由落下なのでジェット音を鳴らさない。
+             * LANDINGも着地モーションなので鳴らさない。
+             */
+            default -> false;
+        };
+    }
+
+
     private void updatePhotonBuster(
             ServerLevel level,
             int age,
@@ -1540,12 +2260,11 @@ public class TheEndOfDragonCoreEntity extends Monster {
         Vec3 direction =
                 getPhotonBusterSweepDirection(start, age, spec, headForward);
 
-        double length = raycastLaserLength(
-                level,
-                start,
-                direction,
-                spec.maxLength()
-        );
+        /*
+         * Photon Busterはブロックを貫通して破壊するため、
+         * 最初のブロックで止まる通常レイキャストは使用しない。
+         */
+        double length = spec.maxLength();
 
         TedVfxEntity beamVfx =
                 getOrCreatePhotonBusterBeam(level, spec);
@@ -1774,6 +2493,7 @@ public class TheEndOfDragonCoreEntity extends Monster {
         return beam;
     }
 
+
     private void spawnPhotonBusterOuterParticles(
             ServerLevel level,
             Vec3 start,
@@ -1870,41 +2590,66 @@ public class TheEndOfDragonCoreEntity extends Monster {
             double length,
             TedBeamSpec spec
     ) {
-        Vec3 normalizedDirection = direction.normalize();
+        Vec3 dir = direction.normalize();
+        Vec3 end = start.add(dir.scale(length));
 
-        for (double distance = 3.0D;
-             distance <= length;
-             distance += spec.destroyStep()) {
+        double radius = spec.destroyRadius();
+        double radiusSqr = radius * radius;
 
-            Vec3 point =
-                    start.add(normalizedDirection.scale(distance));
+        /*
+         * ビーム全体を覆うAABBを作る。
+         */
+        double minX = Math.min(start.x, end.x) - radius;
+        double minY = Math.min(start.y, end.y) - radius;
+        double minZ = Math.min(start.z, end.z) - radius;
 
-            breakBlocksAroundPhotonBusterPoint(
-                    level,
-                    point,
-                    spec.destroyRadius()
-            );
-        }
-    }
+        double maxX = Math.max(start.x, end.x) + radius;
+        double maxY = Math.max(start.y, end.y) + radius;
+        double maxZ = Math.max(start.z, end.z) + radius;
 
-    private void breakBlocksAroundPhotonBusterPoint(
-            ServerLevel level,
-            Vec3 center,
-            double radius
-    ) {
-        int blockRadius = (int) Math.ceil(radius);
-        BlockPos base = BlockPos.containing(center);
+        BlockPos minPos = BlockPos.containing(
+                Math.floor(minX),
+                Math.floor(minY),
+                Math.floor(minZ)
+        );
 
-        for (int x = -blockRadius; x <= blockRadius; x++) {
-            for (int y = -blockRadius; y <= blockRadius; y++) {
-                for (int z = -blockRadius; z <= blockRadius; z++) {
-                    if (x * x + y * y + z * z
-                            > radius * radius) {
+        BlockPos maxPos = BlockPos.containing(
+                Math.ceil(maxX),
+                Math.ceil(maxY),
+                Math.ceil(maxZ)
+        );
+
+        BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();
+
+        for (int x = minPos.getX(); x <= maxPos.getX(); x++) {
+            for (int y = minPos.getY(); y <= maxPos.getY(); y++) {
+                for (int z = minPos.getZ(); z <= maxPos.getZ(); z++) {
+                    mutable.set(x, y, z);
+
+                    /*
+                     * 未ロードチャンクを、この破壊処理だけで強制ロードしない。
+                     */
+                    if (!level.hasChunkAt(mutable)) {
                         continue;
                     }
 
-                    BlockPos pos = base.offset(x, y, z);
-                    var state = level.getBlockState(pos);
+                    Vec3 blockCenter = Vec3.atCenterOf(mutable);
+
+                    /*
+                     * ブロック中心とビーム線分との距離を調べる。
+                     * 半径内なら円柱状の破壊範囲に入っている。
+                     */
+                    double distanceSqr = distanceToSegmentSqr(
+                            blockCenter,
+                            start,
+                            end
+                    );
+
+                    if (distanceSqr > radiusSqr) {
+                        continue;
+                    }
+
+                    var state = level.getBlockState(mutable);
 
                     if (state.isAir()) {
                         continue;
@@ -1912,14 +2657,14 @@ public class TheEndOfDragonCoreEntity extends Monster {
 
                     if (!canPhotonBusterDestroyBlock(
                             level,
-                            pos,
+                            mutable,
                             state
                     )) {
                         continue;
                     }
 
                     level.destroyBlock(
-                            pos,
+                            mutable,
                             false,
                             this
                     );
@@ -1927,6 +2672,30 @@ public class TheEndOfDragonCoreEntity extends Monster {
             }
         }
     }
+
+    private static double distanceToSegmentSqr(
+            Vec3 point,
+            Vec3 start,
+            Vec3 end
+    ) {
+        Vec3 segment = end.subtract(start);
+        double segmentLengthSqr = segment.lengthSqr();
+
+        if (segmentLengthSqr < 1.0E-8D) {
+            return point.distanceToSqr(start);
+        }
+
+        double t = point.subtract(start).dot(segment)
+                / segmentLengthSqr;
+
+        t = Mth.clamp(t, 0.0D, 1.0D);
+
+        Vec3 closest = start.add(segment.scale(t));
+
+        return point.distanceToSqr(closest);
+    }
+
+
 
     private boolean canPhotonBusterDestroyBlock(
             ServerLevel level,
@@ -1971,38 +2740,131 @@ public class TheEndOfDragonCoreEntity extends Monster {
         this.photonBusterBeamVfxId = -1;
     }
 
+    public LivingEntity findJudgmentTarget(ServerLevel level) {
+        AABB area = this.getBoundingBox().inflate(256.0D);
 
-    private void fireJudgmentProjectile(ServerLevel level) {
+        ServerPlayer highestPlayer = level.getEntitiesOfClass(
+                        ServerPlayer.class,
+                        area,
+                        p -> p.isAlive()
+                                && !p.isCreative()
+                                && !p.isSpectator()
+                ).stream()
+                .max(Comparator.comparingDouble(Entity::getY))
+                .orElse(null);
 
+        return highestPlayer != null
+                ? highestPlayer
+                : findBossTarget(level);
+
+    }
+
+    private Vec3 getJudgmentRayMuzzlePosition() {
         DragonCollisionBox head =
                 getCollisionPartBox(DragonCollisionPart.HEAD);
 
-        if (head == null) {
-            return;
-        }
-        LivingEntity target = this.getTarget();
+        if (head != null && head.obb() != null) {
+            Vec3 forward = head.obb().axisY().normalize();
 
-        if (target == null) {
-            return;
+            return head.obb().center()
+                    .add(forward.scale(2.5D));
         }
 
-        Vec3 start =
-                head.obb().center()
-                        .add(head.obb().axisY().normalize().scale(2.5));
+        /*
+         * CollisionアニメからHEADが取れない場合の予備位置。
+         * Coreの向きと概算の頭位置を使用する。
+         */
+        Vec3 forward = DragonLocatorSampler.forward(this);
 
-        Vec3 forward =
-                head.obb().axisY().normalize();
+        if (forward.lengthSqr() < 1.0E-7D) {
+            forward = new Vec3(0.0D, 0.0D, 1.0D);
+        } else {
+            forward = forward.normalize();
+        }
+
+        return this.position()
+                .add(0.0D, 5.0D, 0.0D)
+                .add(forward.scale(6.0D));
+    }
+
+    private Vec3 getJudgmentRayForward() {
+        DragonCollisionBox head =
+                getCollisionPartBox(DragonCollisionPart.HEAD);
+
+        if (head != null && head.obb() != null) {
+            return head.obb().axisY().normalize();
+        }
+
+        Vec3 forward = DragonLocatorSampler.forward(this);
+
+        if (forward.lengthSqr() < 1.0E-7D) {
+            return new Vec3(0.0D, 0.0D, 1.0D);
+        }
+
+        return forward.normalize();
+    }
+
+    private Vec3 getJudgmentRayUp(Vec3 forward) {
+        DragonCollisionBox head =
+                getCollisionPartBox(DragonCollisionPart.HEAD);
+
+        if (head != null && head.obb() != null) {
+            Vec3 up = head.obb().axisZ();
+
+            if (up.lengthSqr() > 1.0E-7D
+                    && Math.abs(up.normalize().dot(forward)) < 0.98D) {
+                return up.normalize();
+            }
+        }
+
+        if (Math.abs(forward.y) < 0.98D) {
+            return new Vec3(0.0D, 1.0D, 0.0D);
+        }
+
+        return new Vec3(1.0D, 0.0D, 0.0D);
+    }
+
+
+    private boolean fireJudgmentProjectile(ServerLevel level) {
+        LivingEntity target = findJudgmentTarget(level);
+
+        if (target == null || !target.isAlive()) {
+            return false;
+        }
+
+        if (target == null || !target.isAlive()) {
+            //System.out.println("[TED JUDGMENT] target missing");
+            return false;
+        }
+
+        Vec3 forward = getJudgmentRayForward();
+        Vec3 up = getJudgmentRayUp(forward);
+        Vec3 start = getJudgmentRayMuzzlePosition();
+
+        Vec3 targetDirection =
+                target.getEyePosition()
+                        .subtract(start);
+
+        if (targetDirection.lengthSqr() < 1.0E-7D) {
+            targetDirection = forward;
+        } else {
+            targetDirection = targetDirection.normalize();
+        }
 
         Vec3 spread = new Vec3(
-                random.nextGaussian()*0.22,
-                random.nextGaussian()*0.15,
-                random.nextGaussian()*0.22
+                this.random.nextGaussian() * 0.12D,
+                this.random.nextGaussian() * 0.09D,
+                this.random.nextGaussian() * 0.12D
         );
 
         Vec3 direction =
-                forward
-                        .add(spread)
-                        .normalize();
+                targetDirection.add(spread);
+
+        if (direction.lengthSqr() < 1.0E-7D) {
+            direction = targetDirection;
+        } else {
+            direction = direction.normalize();
+        }
 
         TedVfxEntity projectile =
                 ModEntities.TED_VFX.create(
@@ -2011,18 +2873,21 @@ public class TheEndOfDragonCoreEntity extends Monster {
                 );
 
         if (projectile == null) {
-            return;
+            //System.out.println("[TED JUDGMENT] TED_VFX create failed");
+            return false;
         }
 
-        projectile.setup(
-                TedProjectileSpecs.JUDGMENT_RAY
-        );
-
+        projectile.setup(TedProjectileSpecs.JUDGMENT_RAY);
         projectile.setProjectileOwner(this);
-
         projectile.setHomingTarget(target);
 
-        projectile.setPos(start);
+        projectile.snapTo(
+                start.x,
+                start.y,
+                start.z,
+                0.0F,
+                0.0F
+        );
 
         projectile.setDeltaMovement(
                 direction.scale(
@@ -2030,25 +2895,18 @@ public class TheEndOfDragonCoreEntity extends Monster {
                 )
         );
 
-        projectile.setBasis(
-                direction,
-                head.obb().axisZ()
-        );
+        projectile.setBasis(direction, up);
 
-        level.addFreshEntity(projectile);
+        boolean added = level.addFreshEntity(projectile);
 
-        /*
-        level.playSound(
-                null,
-                this.blockPosition(),
-                ModSounds.TED_JUDGMENT_RAY,
-                SoundSource.HOSTILE,
-                3.0F,
-                1.0F
-        );
+        if (added) {
+            TedSoundHelper.playShot(
+                    level,
+                    start
+            );
+        }
 
-         */
-
+        return added;
     }
 
 
@@ -2394,8 +3252,16 @@ public class TheEndOfDragonCoreEntity extends Monster {
         this.setDeltaMovement(Vec3.ZERO);
         this.fallDistance = 0.0F;
         this.setDragonState(DragonState.IDLE);
+
+        this.markAttackStarted();
         syncChildrenNow();
+
+        if (this.level() instanceof ServerLevel level) {
+            startEventBgmForPlayers(level);
+        }
     }
+
+
 
 
 
@@ -2414,6 +3280,48 @@ public class TheEndOfDragonCoreEntity extends Monster {
             }
         }
     }
+
+    private int unknownPositionTicks = 0;
+
+    private boolean isUnknownGroundAirState(ServerLevel level) {
+        DragonState state = this.getDragonState();
+
+        if (state == DragonState.DEAD) return false;
+        if (this.isIntroStateNow()) return false;
+
+        if (state == DragonState.RECOVERY_ASCEND
+                || state == DragonState.RECOVERY_RETURN
+                || state == DragonState.RECOVERY_DIVE) {
+            return false;
+        }
+
+        if (this.isAirAttackStateForRecovery()) {
+            return false;
+        }
+
+        boolean airborne = this.isAirborneBoss(level);
+        boolean nearGround = this.isNearGroundForSuperLandingPublic(level);
+
+        return !airborne && !nearGround;
+    }
+
+    private void tickUnknownPositionRecovery(ServerLevel level) {
+        if (isUnknownGroundAirState(level)) {
+            unknownPositionTicks++;
+        } else {
+            unknownPositionTicks = 0;
+        }
+
+        /*
+         * 一瞬の段差では発動せず、
+         * 約1秒間おかしい状態が続いたら復帰。
+         */
+        if (unknownPositionTicks >= 20) {
+            unknownPositionTicks = 0;
+            startRecoveryDiveSequence();
+        }
+    }
+
 
     private boolean isNearGroundForSuperLanding(ServerLevel level) {
         BlockPos base = this.blockPosition();
@@ -2867,32 +3775,44 @@ public class TheEndOfDragonCoreEntity extends Monster {
     }
 
     private void fireLightProjectile(ServerLevel serverLevel) {
-        DragonCollisionBox head = getCollisionPartBox(DragonCollisionPart.HEAD);
+        DragonCollisionBox head =
+                getCollisionPartBox(DragonCollisionPart.HEAD);
+
         if (head == null || head.obb() == null) {
             return;
         }
 
-        Vec3 axisY = head.obb().axisY().normalize();
+        Vec3 axisY =
+                head.obb().axisY().normalize();
 
-        // 頭の少し前から発射
-        Vec3 start = head.obb().center()
-                .add(axisY.scale(2.5D));
+        Vec3 start =
+                head.obb().center()
+                        .add(axisY.scale(2.5D));
 
         Vec3 shotDir = axisY;
 
-        net.minecraft.world.entity.player.Player target =
+        Player target =
                 serverLevel.getNearestPlayer(this, 512.0D);
 
         if (target != null) {
-            Vec3 toTarget = target.getEyePosition().subtract(start).normalize();
+            Vec3 toTarget =
+                    target.getEyePosition()
+                            .subtract(start)
+                            .normalize();
 
             double dot = axisY.dot(toTarget);
-            double maxAngleCos = Math.cos(Math.toRadians(120.0D));
+            double maxAngleCos =
+                    Math.cos(Math.toRadians(120.0D));
 
             if (dot > maxAngleCos) {
                 shotDir = toTarget;
             }
         }
+
+        TedSoundHelper.playShot(
+                serverLevel,
+                start
+        );
 
         spawnProjectile(
                 serverLevel,
@@ -2951,6 +3871,111 @@ public class TheEndOfDragonCoreEntity extends Monster {
                 1.0F,
                 2
         );
+    }
+    public boolean shouldUseOrbAgainstDefense(
+            LivingEntity target
+    ) {
+        if (target == null || !target.isAlive()) {
+            return false;
+        }
+
+        double armor =
+                target.getAttributeValue(
+                        Attributes.ARMOR
+                );
+
+        double toughness =
+                target.getAttributeValue(
+                        Attributes.ARMOR_TOUGHNESS
+                );
+
+        /*
+         * バニラのネザライト一式を基準に、
+         * 少し上までは許容する。
+         */
+        boolean excessiveArmor =
+                armor > 24.0D;
+
+        boolean excessiveToughness =
+                toughness > 16.0D;
+
+        /*
+         * 防具強度は防御力より希少なので、
+         * 少し重めに評価する。
+         *
+         * ネザライト一式:
+         * 20 + 12 * 0.75 = 29
+         *
+         * 発動基準:
+         * 36超過
+         */
+        double defenseScore =
+                armor + toughness * 0.75D;
+
+        boolean excessiveCombinedDefense =
+                defenseScore > 36.0D;
+
+        return excessiveArmor
+                || excessiveToughness
+                || excessiveCombinedDefense;
+    }
+
+    public LivingEntity findHighDefenseTarget(
+            ServerLevel level
+    ) {
+        AABB area =
+                this.getBoundingBox().inflate(256.0D);
+
+        LivingEntity bestTarget = null;
+        double bestScore = Double.NEGATIVE_INFINITY;
+
+        for (ServerPlayer player :
+                level.getEntitiesOfClass(
+                        ServerPlayer.class,
+                        area,
+                        p -> p.isAlive()
+                                && !p.isCreative()
+                                && !p.isSpectator()
+                )) {
+
+            if (!shouldUseOrbAgainstDefense(player)) {
+                continue;
+            }
+
+            double armor =
+                    player.getAttributeValue(
+                            Attributes.ARMOR
+                    );
+
+            double toughness =
+                    player.getAttributeValue(
+                            Attributes.ARMOR_TOUGHNESS
+                    );
+
+            double score =
+                    armor + toughness * 0.75D;
+
+            if (score > bestScore) {
+                bestScore = score;
+                bestTarget = player;
+            }
+        }
+
+        return bestTarget;
+    }
+
+    private LivingEntity orbTarget;
+
+    public void setOrbTarget(LivingEntity target) {
+        this.orbTarget = target;
+    }
+
+    public LivingEntity getOrbTarget() {
+        return this.orbTarget;
+    }
+
+    public void clearOrbTarget() {
+        this.orbTarget = null;
     }
 
     private Vec3 orbChargePos() {

@@ -40,7 +40,7 @@ public final class TedProjectileSpecs {
     public static final TedProjectileSpec JUDGMENT_RAY =
             new TedProjectileSpec(
                     TedVfxType.JUDGMENT_RAY,
-                    1.0F,
+                    4.0F,
                     2.4D,
                     100,
                     0.7D,

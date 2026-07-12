@@ -24,7 +24,7 @@
 						}
 					},
 					"position": {
-						"vector": [0, 0, -3.5]
+						"vector": [0, 0, 0.5]
 					}
 				},
 				"ring": {
@@ -37,7 +37,7 @@
 						}
 					},
 					"position": {
-						"vector": [0, 0, -6]
+						"vector": [0, 0, 5]
 					},
 					"scale": {
 						"vector": [1.5, 1.5, 0.05]

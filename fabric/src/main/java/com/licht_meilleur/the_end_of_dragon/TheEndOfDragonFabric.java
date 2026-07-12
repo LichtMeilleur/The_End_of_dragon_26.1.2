@@ -3,6 +3,7 @@ package com.licht_meilleur.the_end_of_dragon;
 import com.licht_meilleur.the_end_of_dragon.command.TEDDebugCommands;
 import com.licht_meilleur.the_end_of_dragon.config.TedConfig;
 import com.licht_meilleur.the_end_of_dragon.entity.TheEndOfDragonCoreEntity;
+import com.licht_meilleur.the_end_of_dragon.fabric.network.TedFabricNetwork;
 import com.licht_meilleur.the_end_of_dragon.registry.ModEntities;
 import com.licht_meilleur.the_end_of_dragon.world.EndDragonSpawnHandler;
 import net.fabricmc.api.ModInitializer;
@@ -18,6 +19,7 @@ public final class TheEndOfDragonFabric implements ModInitializer {
     @Override
     public void onInitialize() {
         TheEndOfDragon.init();
+        TedFabricNetwork.init();
 
         TedConfig.load(FabricLoader.getInstance().getConfigDir());
 

@@ -1,7 +1,7 @@
 license="All Rights Reserved"
 
 [[mods]]
-modId="the_end_of_dragon
+modId="the_end_of_dragon"
 version="1.0.0"
 displayName="the_end_of_dragon"
 authors="LichtMeilleur"
@@ -24,8 +24,8 @@ ordering="NONE"
 side="BOTH"
 
 [[dependencies.the_end_of_dragon]]
-modId="terrablender"
+modId="geckolib"
 type="required"
-versionRange="[0,)"
-ordering="AFTER"
+versionRange="[5.5,)"
+ordering="NONE"
 side="BOTH"

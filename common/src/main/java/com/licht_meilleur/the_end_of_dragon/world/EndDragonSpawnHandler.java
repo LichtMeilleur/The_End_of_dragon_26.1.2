@@ -1,5 +1,6 @@
 package com.licht_meilleur.the_end_of_dragon.world;
 
+import com.licht_meilleur.the_end_of_dragon.entity.DragonSpawnKind;
 import com.licht_meilleur.the_end_of_dragon.registry.ModEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -46,13 +47,25 @@ public final class EndDragonSpawnHandler {
                 return;
             }
 
+
             BlockPos portalCenter = EndPortalSealHandler.findPortalCenter(level);
 
             boss.snapTo(pos.x, pos.y + 2.0D, pos.z, 0.0F, 0.0F);
             boss.setHealth(boss.getMaxHealth());
             boss.setPersistenceRequired();
 
+            boss.setSpawnKind(
+                    DragonSpawnKind.ENDER_DRAGON_EVENT
+            );
+
             level.addFreshEntity(boss);
+
+            boss.setEnderDragonEventFight(true);
+
+            System.out.println(
+                    "[TED BGM] event spawn flag="
+                            + boss.isEnderDragonEventFight()
+            );
 
             boss.startIntroSequence(portalCenter);
         } catch (Throwable t) {

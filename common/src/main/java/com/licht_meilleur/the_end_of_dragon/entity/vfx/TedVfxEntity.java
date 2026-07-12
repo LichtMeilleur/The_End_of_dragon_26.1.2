@@ -17,6 +17,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -256,22 +257,46 @@ public class TedVfxEntity extends Entity implements GeoEntity {
         this.noPhysics = true;
         this.setNoGravity(true);
 
-        if (!this.level().isClientSide()) {
-            Vec3 motion = this.getDeltaMovement();
+        if (this.level().isClientSide()) {
+            return;
+        }
 
-            if (motion.lengthSqr() > 1.0E-7D) {
-                this.setPos(
-                        this.getX() + motion.x,
-                        this.getY() + motion.y,
-                        this.getZ() + motion.z
-                );
-            }
-            tickProjectileCollision();
-            tickOrbCollision();
+        /*
+         * ホーミング弾のみ進行方向を補正。
+         * 移動前に速度を変更する。
+         */
+        if (this.homing) {
+            tickHoming();
+        }
 
-            if (this.tickCount >= this.getMaxAge()) {
-                this.discard();
-            }
+        /*
+         * 現在の速度方向へモデルを向ける。
+         */
+        updateRotationFromMotion();
+
+        Vec3 motion = this.getDeltaMovement();
+
+        if (motion.lengthSqr() > 1.0E-7D) {
+            this.setPos(
+                    this.getX() + motion.x,
+                    this.getY() + motion.y,
+                    this.getZ() + motion.z
+            );
+        }
+
+        /*
+         * 移動後の位置から尾を描画する。
+         */
+        if (this.getVfxType() == TedVfxType.JUDGMENT_RAY
+                && this.level() instanceof ServerLevel serverLevel) {
+            spawnJudgmentRayTrail(serverLevel);
+        }
+
+        tickProjectileCollision();
+        tickOrbCollision();
+
+        if (this.tickCount >= this.getMaxAge()) {
+            this.discard();
         }
     }
 
@@ -692,9 +717,18 @@ public class TedVfxEntity extends Entity implements GeoEntity {
             return;
         }
 
+        if (this.getVfxType() == TedVfxType.JUDGMENT_RAY) {
+            int homingInterval = 2;
+
+            if ((this.tickCount - this.homingStartAge)
+                    % homingInterval != 0) {
+                return;
+            }
+        }
+
         Entity target = getHomingTarget();
 
-        if (target == null) {
+        if (target == null || target.isRemoved()) {
             return;
         }
 
@@ -706,14 +740,18 @@ public class TedVfxEntity extends Entity implements GeoEntity {
 
         Vec3 targetPosition;
 
-        if (target instanceof net.minecraft.world.entity.LivingEntity living) {
+        if (target instanceof LivingEntity living) {
+            if (!living.isAlive()) {
+                return;
+            }
+
             targetPosition = living.getEyePosition();
         } else {
             targetPosition = target.position();
         }
 
-        Vec3 desiredDirection = targetPosition
-                .subtract(this.position());
+        Vec3 desiredDirection =
+                targetPosition.subtract(this.position());
 
         if (desiredDirection.lengthSqr() < 1.0E-7D) {
             return;
@@ -722,86 +760,103 @@ public class TedVfxEntity extends Entity implements GeoEntity {
         Vec3 currentDirection = currentMotion.normalize();
         desiredDirection = desiredDirection.normalize();
 
-        Vec3 nextDirection = currentDirection
-                .lerp(desiredDirection, this.homingStrength);
+        Vec3 nextDirection = currentDirection.lerp(
+                desiredDirection,
+                this.homingStrength
+        );
 
         if (nextDirection.lengthSqr() < 1.0E-7D) {
             return;
         }
 
         this.setDeltaMovement(
-                nextDirection.normalize().scale(this.projectileSpeed)
+                nextDirection.normalize()
+                        .scale(this.projectileSpeed)
         );
-
-        updateRotationFromMotion();
     }
 
     private void updateRotationFromMotion() {
         Vec3 motion = this.getDeltaMovement();
 
-        if (motion.lengthSqr() < 1.0E-7D) {
+        if (motion.lengthSqr() < 1.0E-6D) {
             return;
         }
 
         Vec3 direction = motion.normalize();
 
-        float yaw = (float) Math.toDegrees(
-                Math.atan2(-direction.x, direction.z)
-        );
+        Vec3 up = Math.abs(direction.y) < 0.98D
+                ? new Vec3(0.0D, 1.0D, 0.0D)
+                : new Vec3(1.0D, 0.0D, 0.0D);
 
-        float pitch = (float) -Math.toDegrees(
-                Math.asin(direction.y)
-        );
-
-        this.setYRot(yaw);
-        this.setXRot(pitch);
-
-        this.yRotO = yaw;
-        this.xRotO = pitch;
+        this.setBasis(direction, up);
     }
 
     private void spawnJudgmentRayTrail(ServerLevel level) {
-        if ((this.tickCount & 1) != 0) {
-            return;
-        }
-
         Vec3 motion = this.getDeltaMovement();
 
-        if (motion.lengthSqr() < 1.0E-7D) {
-            return;
+        Vec3 trailDirection;
+
+        if (motion.lengthSqr() < 1.0E-6D) {
+            trailDirection = this.getForward().scale(-1.0D);
+        } else {
+            trailDirection = motion.normalize().scale(-1.0D);
         }
 
-        Vec3 backward = motion.normalize().scale(-0.7D);
+        /*
+         * 弾の少し後ろへ尾を出す。
+         */
+        Vec3 trailCenter =
+                this.position()
+                        .add(trailDirection.scale(0.45D));
 
-        for (int i = 0; i < 5; i++) {
-            Vec3 point = this.position()
-                    .add(backward.scale(i * 0.55D));
-
-            level.sendParticles(
-                    ParticleTypes.END_ROD,
-                    point.x,
-                    point.y,
-                    point.z,
-                    1,
-                    0.03D,
-                    0.03D,
-                    0.03D,
-                    0.0D
-            );
-        }
+        level.sendParticles(
+                ParticleTypes.END_ROD,
+                trailCenter.x,
+                trailCenter.y,
+                trailCenter.z,
+                3,
+                0.08D,
+                0.08D,
+                0.08D,
+                0.005D
+        );
 
         level.sendParticles(
                 ParticleTypes.ELECTRIC_SPARK,
-                this.getX(),
-                this.getY(),
-                this.getZ(),
+                trailCenter.x,
+                trailCenter.y,
+                trailCenter.z,
                 2,
-                0.12D,
-                0.12D,
-                0.12D,
+                0.10D,
+                0.10D,
+                0.10D,
                 0.01D
         );
+
+        /*
+         * 長めの尾。
+         */
+        for (int i = 1; i <= 3; i++) {
+            Vec3 trailPoint =
+                    this.position().add(
+                            trailDirection.scale(0.45D + i * 0.35D)
+                    );
+
+            level.sendParticles(
+                    ParticleTypes.END_ROD,
+                    trailPoint.x,
+                    trailPoint.y,
+                    trailPoint.z,
+                    1,
+                    0.025D,
+                    0.025D,
+                    0.025D,
+                    0.0D
+            );
+        }
     }
+
+
 
 
 

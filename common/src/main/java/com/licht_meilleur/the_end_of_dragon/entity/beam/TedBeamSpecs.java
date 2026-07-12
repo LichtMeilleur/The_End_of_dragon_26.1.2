@@ -15,7 +15,7 @@ public final class TedBeamSpecs {
                     true,      // ブロック破壊
                     2.5D,      // 破壊半径
                     5.0D,      // 射線上の破壊間隔
-                    4,         // 4tickごとに破壊
+                    2,         // 4tickごとに破壊
 
                     25,        // 発射開始
                     60         // 発射終了

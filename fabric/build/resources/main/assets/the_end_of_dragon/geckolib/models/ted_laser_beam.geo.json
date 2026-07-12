@@ -13,22 +13,22 @@
 			"bones": [
 				{
 					"name": "root",
-					"pivot": [0, 8, -8]
+					"pivot": [0, 8, 6]
 				},
 				{
 					"name": "parent_root",
 					"parent": "root",
-					"pivot": [0, 8, -8]
+					"pivot": [0, 8, 8]
 				},
 				{
 					"name": "local_root",
 					"parent": "parent_root",
-					"pivot": [0, 8, -8]
+					"pivot": [0, 8, 7]
 				},
 				{
 					"name": "effect_root",
 					"parent": "local_root",
-					"pivot": [0, 8, -8]
+					"pivot": [0, 8, 8]
 				},
 				{
 					"name": "small_laser",
@@ -55,10 +55,8 @@
 					"pivot": [0, 8, -1],
 					"cubes": [
 						{
-							"origin": [-7, 1, -6],
+							"origin": [-7, 1, -8],
 							"size": [14, 14, 14],
-							"pivot": [0, 8, 0],
-							"rotation": [180, 0, 0],
 							"uv": {
 								"north": {"uv": [34, 54], "uv_size": [10, 10]},
 								"east": {"uv": [24, 54], "uv_size": [10, 10]},

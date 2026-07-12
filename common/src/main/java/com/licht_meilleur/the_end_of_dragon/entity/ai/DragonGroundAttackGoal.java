@@ -54,44 +54,96 @@ public class DragonGroundAttackGoal extends Goal {
         chooseGroundAttack(level, target);
     }
 
-    private void chooseGroundAttack(ServerLevel level, LivingEntity target) {
-        Vec3 toTarget = target.position().subtract(dragon.position());
+    private void chooseGroundAttack(
+            ServerLevel level,
+            LivingEntity target
+    ) {
+        Vec3 toTarget =
+                target.position().subtract(dragon.position());
+
         dragon.setBossYawOnly(toTarget);
 
+        // 不可壊・超高耐久装備への対策
         if (dragon.shouldPunishOverpoweredEquipment(target)) {
-            dragon.setDragonState(DragonState.ROAR_OF_OBLITERATION);
+            dragon.setDragonState(
+                    DragonState.ROAR_OF_OBLITERATION
+            );
             return;
         }
 
-        double distance = dragon.distanceTo(target);
-        double yDiff = Math.abs(target.getY() - dragon.getY());
+        // 高防御プレイヤーへのOrb優先
+        LivingEntity highDefenseTarget =
+                dragon.findHighDefenseTarget(level);
 
+        if (highDefenseTarget != null
+                && dragon.getRandom().nextFloat() < 0.45F) {
+
+            Vec3 toHighDefenseTarget =
+                    highDefenseTarget.position()
+                            .subtract(dragon.position());
+
+            dragon.setTarget(highDefenseTarget);
+            dragon.setBossYawOnly(toHighDefenseTarget);
+
+            dragon.setDragonState(
+                    DragonState.ORB_OF_ANNIHILATION
+            );
+            return;
+        }
+
+        double distance =
+                dragon.distanceTo(target);
+
+        double targetAbove =
+                target.getEyeY() - dragon.getY();
+
+        // 極端な高所籠城時のみ低確率Judgment Ray
+        if (targetAbove >= 24.0D
+                && dragon.getRandom().nextFloat() < 0.20F) {
+            dragon.startJudgmentRaySequence();
+            return;
+        }
+
+        // 通常の高低差は踏みつけ
+        if (Math.abs(targetAbove) >= 6.0D) {
+            dragon.startDiveStompSequence();
+            return;
+        }
+
+        // 近距離
         if (distance < 18.0D) {
             if (dragon.getRandom().nextBoolean()) {
-                dragon.setDragonState(DragonState.ROAR_OF_OBLITERATION);
+                dragon.setDragonState(
+                        DragonState.ROAR_OF_OBLITERATION
+                );
             } else {
-                dragon.setDragonState(DragonState.BLASTER_TACKLE);
+                dragon.setDragonState(
+                        DragonState.BLASTER_TACKLE
+                );
             }
             return;
         }
 
-        if (yDiff > 8.0D) {
-            if (dragon.getRandom().nextBoolean()) {
-                dragon.setDragonState(DragonState.ORB_OF_ANNIHILATION);
-            } else {
-                dragon.setDragonState(DragonState.BLASTER_TACKLE);
-            }
-            return;
-        }
-
-        int roll = dragon.getRandom().nextInt(5);
-
-        switch (roll) {
-            case 0 -> dragon.setDragonState(DragonState.ORB_OF_ANNIHILATION);
-            case 1 -> dragon.setDragonState(DragonState.ROAR_OF_OBLITERATION);
-            case 2 -> dragon.setDragonState(DragonState.PHOTON_BLASTER);
-            case 3 -> dragon.setDragonState(DragonState.LIGHT_OF_DESTRUCTION);
-            case 4 -> dragon.setDragonState(DragonState.BLASTER_TACKLE);
+        // 通常抽選
+        switch (dragon.getRandom().nextInt(6)) {
+            case 0 -> dragon.setDragonState(
+                    DragonState.ORB_OF_ANNIHILATION
+            );
+            case 1 -> dragon.setDragonState(
+                    DragonState.ROAR_OF_OBLITERATION
+            );
+            case 2 -> dragon.setDragonState(
+                    DragonState.PHOTON_BLASTER
+            );
+            case 3 -> dragon.setDragonState(
+                    DragonState.LIGHT_OF_DESTRUCTION
+            );
+            case 4 -> dragon.setDragonState(
+                    DragonState.BLASTER_TACKLE
+            );
+            case 5 -> dragon.setDragonState(
+                    DragonState.PHOTON_BUSTER
+            );
         }
     }
 }

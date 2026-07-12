@@ -47,17 +47,43 @@ public class DragonAirAttackGoal extends Goal {
 
     @Override
     public void tick() {
-        if (!(dragon.level() instanceof ServerLevel level)) return;
+        if (!(dragon.level() instanceof ServerLevel level)) {
+            return;
+        }
 
-        LivingEntity target = dragon.findBossTarget(level);
-        if (target == null || !target.isAlive()) return;
+        LivingEntity target =
+                dragon.findBossTarget(level);
 
-        cooldown = 220 + dragon.getRandom().nextInt(160);
+        if (target == null || !target.isAlive()) {
+            return;
+        }
 
-        if (dragon.getRandom().nextBoolean()) {
-            dragon.startRagnarokSequence();
-        } else {
-            dragon.startFigureEightSequence();
+        cooldown =
+                220 + dragon.getRandom().nextInt(160);
+
+        double targetAbove =
+                target.getEyeY() - dragon.getY();
+
+        /*
+         * 極端な高所にいるときだけ、
+         * 25%程度でJudgment Rayを選ぶ。
+         */
+        if (targetAbove >= 24.0D
+                && dragon.getRandom().nextFloat() < 0.25F) {
+            dragon.startJudgmentRaySequence();
+            return;
+        }
+
+        /*
+         * 通常は3択。
+         * 踏みつけを位置修正兼攻撃として採用。
+         */
+        int roll = dragon.getRandom().nextInt(3);
+
+        switch (roll) {
+            case 0 -> dragon.startRagnarokSequence();
+            case 1 -> dragon.startFigureEightSequence();
+            case 2 -> dragon.startDiveStompSequence();
         }
     }
 }

@@ -1,72 +1,106 @@
 {
-  "ted.bgm.syuumatu_no_laevatein": {
+  "ted_judgment_ray": {
+    "sounds": [
+      {
+        "name": "the_end_of_dragon:attack_sound/ted_judgment_ray",
+        "attenuation_distance": 96
+      }
+    ]
+  },
+  "ted_lighting": {
+    "sounds": [
+      {
+        "name": "the_end_of_dragon:attack_sound/ted_lighting",
+        "attenuation_distance": 80
+      }
+    ]
+  },
+  "ted_orb_charge": {
+    "sounds": [
+      {
+        "name": "the_end_of_dragon:attack_sound/ted_orb_charge",
+        "attenuation_distance": 96
+      }
+    ]
+  },
+  "ted_orb_shooting": {
+    "sounds": [
+      {
+        "name": "the_end_of_dragon:attack_sound/ted_orb_shooting",
+        "attenuation_distance": 96
+      }
+    ]
+  },
+  "ted_photon_buster": {
+    "sounds": [
+      {
+        "name": "the_end_of_dragon:attack_sound/ted_photon_buster",
+        "attenuation_distance": 128
+      }
+    ]
+  },
+  "ted_photon_blaster": {
+    "sounds": [
+      {
+        "name": "the_end_of_dragon:attack_sound/ted_photon_blaster",
+        "attenuation_distance": 96
+      }
+    ]
+  },
+  "ted_ragnarok": {
+    "sounds": [
+      {
+        "name": "the_end_of_dragon:attack_sound/ted_ragnarok",
+        "attenuation_distance": 128
+      }
+    ]
+  },
+  "ted_roar": {
+    "sounds": [
+      {
+        "name": "the_end_of_dragon:attack_sound/ted_roar",
+        "attenuation_distance": 128
+      }
+    ]
+  },
+  "ted_shot": {
+    "sounds": [
+      {
+        "name": "the_end_of_dragon:attack_sound/ted_shot",
+        "attenuation_distance": 64
+      }
+    ]
+  },
+  "ted_tackle": {
+    "sounds": [
+      {
+        "name": "the_end_of_dragon:attack_sound/ted_tackle",
+        "attenuation_distance": 80
+      }
+    ]
+  },
+  "ted_dead": {
+    "sounds": [
+      {
+        "name": "the_end_of_dragon:movement/ted_dead",
+        "attenuation_distance": 128
+      }
+    ]
+  },
+  "ted_jet": {
+    "sounds": [
+      {
+        "name": "the_end_of_dragon:movement/ted_jet",
+        "attenuation_distance": 64
+      }
+    ]
+  },
+  "syuumatu_no_laevatein": {
     "sounds": [
       {
         "name": "the_end_of_dragon:bgm/syuumatu_no_laevatein",
         "stream": true
       }
-    ]
-  },
-
-  "ted.attack.judgment_ray": {
-    "sounds": [
-      "the_end_of_dragon:attack_sound/ted_judgment_ray"
-    ]
-  },
-  "ted.attack.photon_buster": {
-    "sounds": [
-      "the_end_of_dragon:attack_sound/ted_photon_buster"
-    ]
-  },
-  "ted.attack.photon_blaster": {
-    "sounds": [
-      "the_end_of_dragon:attack_sound/ted_photon_blaster"
-    ]
-  },
-  "ted.attack.ragnarok": {
-    "sounds": [
-      "the_end_of_dragon:attack_sound/ted_ragnarok"
-    ]
-  },
-  "ted.attack.orb_cherge": {
-    "sounds": [
-      "the_end_of_dragon:attack_sound/ted_orb_cherge"
-    ]
-  },
-  "ted.attack.orb_shooting": {
-    "sounds": [
-      "the_end_of_dragon:attack_sound/ted_orb_shooting"
-    ]
-  },
-  "ted.attack.lighting": {
-    "sounds": [
-      "the_end_of_dragon:attack_sound/ted_lighting"
-    ]
-  },
-  "ted.attack.roar": {
-    "sounds": [
-      "the_end_of_dragon:attack_sound/ted_roar"
-    ]
-  },
-  "ted.attack.shot": {
-    "sounds": [
-      "the_end_of_dragon:attack_sound/ted_shot"
-    ]
-  },
-  "ted.attack.tackle": {
-    "sounds": [
-      "the_end_of_dragon:attack_sound/ted_tackle"
-    ]
-  },
-
-  "ted.movement.jet": {
-    "sounds": [
-      "the_end_of_dragon:movement/ted_jet"
-    ]
-  },
-  "ted.movement.dead": {
-    "sounds": [
-      "the_end_of_dragon:movement/ted_dead"
     ]
   }
 }

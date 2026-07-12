@@ -138,7 +138,7 @@ public abstract class TheEndOfDragonEntity extends Monster implements GeoEntity 
         this.entityData.set(DATA_RENDER_STATE, core.getDragonState().ordinal());
 
         if (core.getDragonState() == DragonState.DEAD && this.tickCount % 20 == 0) {
-            System.out.println("[TED CRYSTAL SYNC] stage=" + core.getCrystalFadeStage());
+           // System.out.println("[TED CRYSTAL SYNC] stage=" + core.getCrystalFadeStage());
         }
 
         entityData.set(DATA_CRYSTAL_STAGE,
@@ -356,6 +356,7 @@ public abstract class TheEndOfDragonEntity extends Monster implements GeoEntity 
 
             case RECOVERY_ASCEND -> RawAnimation.begin().thenLoop(ANIM_FLY_ASCEND);
             case RECOVERY_RETURN -> RawAnimation.begin().thenLoop(ANIM_FLY);
+            case RECOVERY_DIVE -> RawAnimation.begin().thenLoop(ANIM_FLY_DESCEND);
 
             default -> RawAnimation.begin().thenLoop(ANIM_IDLE);
         };
