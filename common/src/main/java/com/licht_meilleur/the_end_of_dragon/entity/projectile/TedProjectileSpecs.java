@@ -51,7 +51,7 @@ public final class TedProjectileSpecs {
                     18,
                     true,
                     10,
-                    0.08D
+                    0.2D
             );
 
     private TedProjectileSpecs() {

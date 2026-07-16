@@ -17,8 +17,8 @@ public final class TedBeamSpecs {
                     5.0D,      // 射線上の破壊間隔
                     2,         // 4tickごとに破壊
 
-                    25,        // 発射開始
-                    60         // 発射終了
+                    44,        // 発射開始
+                    79         // 発射終了
             );
 
     private TedBeamSpecs() {

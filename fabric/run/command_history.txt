@@ -1,6 +1,3 @@
-/ted_anim judgemnt_ray
-/ted_anim tackle
-/ted_anim judgment_ray
 /ted_anim photn_buster
 /ted_anim photon_buster
 /ted_anim tackle
@@ -48,3 +45,6 @@
 /ted bow
 /gamemode survival
 /gamemode creative
+/ted bow
+/ted test_unbreakable_gear
+/ted bow

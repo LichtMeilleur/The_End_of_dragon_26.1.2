@@ -453,7 +453,7 @@ public final class DragonCollisionSampler {
             case BLASTER_TACKLE -> "animation.model.blaster_tackle_9tick_start";
             case  TAIL_WHIP -> "animation.model.tail_whip_6tick_start_12tick_end";
             case JUDGMENT_RAY -> "animation.model.judgment_ray_25tick_start";
-            case PHOTON_BUSTER -> "animation.model.photon_buster_25tick_start_60tick_end";
+            case PHOTON_BUSTER -> "animation.model.photon_buster_44tick_start_79tick_end";
 
             case FLY_ASCEND -> "animation.model.fly_ascend";
             case FLY_DESCEND -> "animation.model.fly_descend";

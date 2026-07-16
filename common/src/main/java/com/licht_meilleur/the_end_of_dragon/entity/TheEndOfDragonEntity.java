@@ -43,7 +43,7 @@ public abstract class TheEndOfDragonEntity extends Monster implements GeoEntity 
     public static final String ANIM_TAIL_WHIP = "animation.model.tail_whip_6tick_start_12tick_end";
 
     public static final String ANIM_JUDGMENT_RAY = "animation.model.judgment_ray_25tick_start";
-    public static final String ANIM_PHOTON_BUSTER = "animation.model.photon_buster_25tick_start_60tick_end";
+    public static final String ANIM_PHOTON_BUSTER = "animation.model.photon_buster_44tick_start_79tick_end";
 
 
     public static final String ANIM_DEAD = "animation.model.dead";

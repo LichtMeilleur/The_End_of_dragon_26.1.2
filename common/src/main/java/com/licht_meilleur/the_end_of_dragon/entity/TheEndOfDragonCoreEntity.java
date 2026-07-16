@@ -2425,7 +2425,7 @@ public class TheEndOfDragonCoreEntity extends Monster {
          * 下6ブロックから上18ブロックまで薙ぎ上げる。
          */
         Vec3 lowTarget =
-                this.photonBusterLockedTarget.add(0.0D, -6.0D, 0.0D);
+                this.photonBusterLockedTarget.add(0.0D, -2.0D, 0.0D);
 
         Vec3 highTarget =
                 this.photonBusterLockedTarget.add(0.0D, 18.0D, 0.0D);
