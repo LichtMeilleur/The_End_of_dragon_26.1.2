@@ -3,6 +3,7 @@ package com.licht_meilleur.the_end_of_dragon;
 import com.licht_meilleur.the_end_of_dragon.command.TEDDebugCommands;
 import com.licht_meilleur.the_end_of_dragon.config.TedConfig;
 import com.licht_meilleur.the_end_of_dragon.entity.TheEndOfDragonCoreEntity;
+import com.licht_meilleur.the_end_of_dragon.entity.enderman.TedAllyEndermanEntity;
 import com.licht_meilleur.the_end_of_dragon.neoforge.client.TheEndOfDragonNeoForgeClient;
 import com.licht_meilleur.the_end_of_dragon.neoforge.network.TedNeoForgeNetwork;
 import com.licht_meilleur.the_end_of_dragon.neoforge.registry.NeoForgeCreativeTabs;
@@ -93,6 +94,11 @@ public final class TheEndOfDragonNeoForge {
         event.put(
                 NeoForgeModEntities.THE_END_OF_DRAGON_COLLISION.get(),
                 TheEndOfDragonCoreEntity.createAttributes().build()
+        );
+
+        event.put(
+                NeoForgeModEntities.TED_ALLY_ENDERMAN.get(),
+                TedAllyEndermanEntity.createAttributes().build()
         );
     }
 

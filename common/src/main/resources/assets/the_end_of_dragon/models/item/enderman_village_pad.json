@@ -1,0 +1,29 @@
+{
+	"textures": {
+		"0": "the_end_of_dragon:item/enderman_village_pad",
+		"particle": "the_end_of_dragon:item/enderman_village_pad"
+	},
+	"elements": [
+		{
+			"from": [0, 0, 0],
+			"to": [16, 3, 16],
+			"faces": {
+				"north": {"uv": [4, 4, 8, 4.75], "texture": "#0"},
+				"east": {"uv": [0, 4, 4, 4.75], "texture": "#0"},
+				"south": {"uv": [12, 4, 16, 4.75], "texture": "#0"},
+				"west": {"uv": [8, 4, 12, 4.75], "texture": "#0"},
+				"up": {"uv": [13.5, 16, 2.5, 4.75], "texture": "#0"},
+				"down": {"uv": [12, 0, 8, 4], "texture": "#0"}
+			}
+		}
+	],
+	"groups": [
+		{
+			"name": "root",
+			"origin": [8, 8, 8],
+			"scope": 0,
+			"color": 0,
+			"children": [0]
+		}
+	]
+}

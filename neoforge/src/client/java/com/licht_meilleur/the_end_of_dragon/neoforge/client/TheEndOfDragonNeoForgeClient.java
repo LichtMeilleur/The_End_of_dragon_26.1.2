@@ -2,6 +2,7 @@ package com.licht_meilleur.the_end_of_dragon.neoforge.client;
 
 import com.licht_meilleur.the_end_of_dragon.TheEndOfDragon;
 import com.licht_meilleur.the_end_of_dragon.client.LightOfDestructionHudRenderer;
+import com.licht_meilleur.the_end_of_dragon.client.entity.enderman.TedAllyEndermanRenderer;
 import com.licht_meilleur.the_end_of_dragon.client.render.TheEndOfDragonCollisionRenderer;
 import com.licht_meilleur.the_end_of_dragon.client.render.TheEndOfDragonCoreRenderer;
 import com.licht_meilleur.the_end_of_dragon.client.render.TheEndOfDragonDisplayRenderer;
@@ -39,6 +40,11 @@ public final class TheEndOfDragonNeoForgeClient {
         event.registerEntityRenderer(
                 NeoForgeModEntities.TED_VFX.get(),
                 TedVfxRenderer::new
+        );
+
+        event.registerEntityRenderer(
+                NeoForgeModEntities.TED_ALLY_ENDERMAN.get(),
+                TedAllyEndermanRenderer::new
         );
     }
 

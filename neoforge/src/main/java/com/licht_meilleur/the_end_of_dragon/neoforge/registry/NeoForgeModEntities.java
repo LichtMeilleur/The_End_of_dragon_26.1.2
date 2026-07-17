@@ -4,6 +4,7 @@ import com.licht_meilleur.the_end_of_dragon.TheEndOfDragon;
 import com.licht_meilleur.the_end_of_dragon.entity.TheEndOfDragonCollisionEntity;
 import com.licht_meilleur.the_end_of_dragon.entity.TheEndOfDragonCoreEntity;
 import com.licht_meilleur.the_end_of_dragon.entity.TheEndOfDragonDisplayEntity;
+import com.licht_meilleur.the_end_of_dragon.entity.enderman.TedAllyEndermanEntity;
 import com.licht_meilleur.the_end_of_dragon.entity.vfx.TedVfxEntity;
 import com.licht_meilleur.the_end_of_dragon.registry.ModEntities;
 import net.minecraft.core.registries.Registries;
@@ -88,6 +89,22 @@ public final class NeoForgeModEntities {
                             .build(ModEntities.TED_VFX_KEY)
             );
 
+    public static final DeferredHolder<
+            EntityType<?>,
+            EntityType<TedAllyEndermanEntity>
+            > TED_ALLY_ENDERMAN =
+            ENTITY_TYPES.register(
+                    "ted_ally_enderman",
+                    () -> EntityType.Builder.of(
+                                    TedAllyEndermanEntity::new,
+                                    MobCategory.CREATURE
+                            )
+                            .sized(0.6F, 2.9F)
+                            .clientTrackingRange(10)
+                            .updateInterval(2)
+                            .build(ModEntities.TED_ALLY_ENDERMAN_KEY)
+            );
+
     public static void register(IEventBus modBus) {
         ENTITY_TYPES.register(modBus);
     }
@@ -97,7 +114,8 @@ public final class NeoForgeModEntities {
                 THE_END_OF_DRAGON.get(),
                 THE_END_OF_DRAGON_DISPLAY.get(),
                 THE_END_OF_DRAGON_COLLISION.get(),
-                TED_VFX.get()
+                TED_VFX.get(),
+                TED_ALLY_ENDERMAN.get()
         );
     }
 

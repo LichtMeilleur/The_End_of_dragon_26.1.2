@@ -128,6 +128,10 @@ public class TheEndOfDragonCoreEntity extends Monster {
 
     private Vec3 recoveryDiveTarget = null;
 
+    //空中停止防止
+    private Vec3 lastAirSequencePosition = null;
+    private int airSequenceStillTicks = 0;
+
 
 
     private static boolean between(int age, int start, int end) {
@@ -468,6 +472,9 @@ public class TheEndOfDragonCoreEntity extends Monster {
 
         attackStateMachine.tick(serverLevel);
 
+        tickAirSequenceStallRecovery(serverLevel);
+        tickAirSequenceTimeout();
+
         this.tickChildren();
         this.tickAttackVfx();
         this.tickFlyShotRequest(serverLevel);
@@ -486,6 +493,105 @@ public class TheEndOfDragonCoreEntity extends Monster {
         bossBar.setName(
                 net.minecraft.network.chat.Component.translatable("boss.the_end_of_dragon.the_end_of_dragon")
         );
+    }
+
+    private void tickAirSequenceStallRecovery(
+            ServerLevel level
+    ) {
+        DragonState state = this.getDragonState();
+
+        boolean monitoredState = switch (state) {
+            case FLY_START,
+                 FLY_ASCEND,
+                 FIGURE_EIGHT,
+                 FLY_DESCEND -> true;
+
+            default -> false;
+        };
+
+        if (!monitoredState) {
+            this.lastAirSequencePosition = null;
+            this.airSequenceStillTicks = 0;
+            return;
+        }
+
+        Vec3 currentPosition = this.position();
+
+        if (this.lastAirSequencePosition == null) {
+            this.lastAirSequencePosition = currentPosition;
+            this.airSequenceStillTicks = 0;
+            return;
+        }
+
+        double movedSqr =
+                currentPosition.distanceToSqr(
+                        this.lastAirSequencePosition
+                );
+
+        /*
+         * 0.05ブロック未満しか動いていない状態を停止扱い。
+         */
+        if (movedSqr < 0.05D * 0.05D) {
+            this.airSequenceStillTicks++;
+        } else {
+            this.airSequenceStillTicks = 0;
+            this.lastAirSequencePosition = currentPosition;
+        }
+
+        /*
+         * 2秒間ほぼ停止したら、空中シーケンスを破棄して
+         * 安全な着地復帰へ移行する。
+         */
+        if (this.airSequenceStillTicks < 40) {
+            return;
+        }
+
+        System.out.println(
+                "[TED AIR STALL] recovering"
+                        + " state=" + state
+                        + " age=" + this.getDragonStateAgeTicks()
+                        + " pos=" + this.position()
+                        + " movementLocked="
+                        + this.isAttackMovementLocked()
+        );
+
+        this.airSequenceStillTicks = 0;
+        this.lastAirSequencePosition = null;
+
+        this.attackStateMachine.cancelAirSequence();
+
+        this.setAttackMovementLocked(false);
+        this.setDeltaMovement(Vec3.ZERO);
+        this.fallDistance = 0.0F;
+
+        this.startRecoveryDiveSequence();
+    }
+
+    private void tickAirSequenceTimeout() {
+        DragonState state = this.getDragonState();
+        int age = this.getDragonStateAgeTicks();
+
+        int timeout = switch (state) {
+            case FLY_START -> 100;
+            case FLY_ASCEND -> 160;
+            case FIGURE_EIGHT -> 20 * 30;
+            case FLY_DESCEND -> 160;
+            default -> -1;
+        };
+
+        if (timeout < 0 || age <= timeout) {
+            return;
+        }
+
+        System.out.println(
+                "[TED AIR TIMEOUT]"
+                        + " state=" + state
+                        + " age=" + age
+                        + " pos=" + this.position()
+        );
+
+        this.setAttackMovementLocked(false);
+        this.startRecoveryDiveSequence();
     }
 
     private boolean normalSpawnInitialized = false;

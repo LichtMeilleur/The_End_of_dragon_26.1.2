@@ -1,6 +1,7 @@
 package com.licht_meilleur.the_end_of_dragon.fabric.client;
 
 import com.licht_meilleur.the_end_of_dragon.client.LightOfDestructionHudRenderer;
+import com.licht_meilleur.the_end_of_dragon.client.entity.enderman.TedAllyEndermanRenderer;
 import com.licht_meilleur.the_end_of_dragon.client.render.TheEndOfDragonCollisionRenderer;
 import com.licht_meilleur.the_end_of_dragon.client.render.TheEndOfDragonCoreRenderer;
 import com.licht_meilleur.the_end_of_dragon.client.render.TheEndOfDragonDisplayRenderer;
@@ -11,6 +12,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
+import net.fabricmc.fabric.impl.client.rendering.EntityRendererRegistryImpl;
 
 public final class TheEndOfDragonFabricClient implements ClientModInitializer {
 
@@ -37,6 +39,11 @@ public final class TheEndOfDragonFabricClient implements ClientModInitializer {
         EntityRendererRegistry.register(
                 ModEntities.TED_VFX,
                 com.licht_meilleur.the_end_of_dragon.client.render.TedVfxRenderer::new
+        );
+
+        EntityRendererRegistry.register(
+                ModEntities.TED_ALLY_ENDERMAN,
+                TedAllyEndermanRenderer::new
         );
 
 

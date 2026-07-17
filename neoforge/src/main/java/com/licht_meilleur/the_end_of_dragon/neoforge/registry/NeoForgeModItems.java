@@ -71,6 +71,20 @@ public final class NeoForgeModItems {
                     )
             );
 
+    public static final DeferredHolder<Item, Item>
+            ENDERMAN_VILLAGE_GATEWAY =
+            ITEMS.register(
+                    "enderman_village_gateway",
+                    () -> new Item(
+                            new Item.Properties()
+                                    .setId(
+                                            ModItems.ENDERMAN_VILLAGE_GATEWAY_KEY
+                                    )
+                                    .stacksTo(1)
+                                    .fireResistant()
+                    )
+            );
+
     public static void register(IEventBus modBus) {
         ITEMS.register(modBus);
     }
@@ -80,7 +94,8 @@ public final class NeoForgeModItems {
                 THE_END_OF_DRAGON_ICON.get(),
                 THE_END_OF_DRAGON_SPAWN_EGG.get(),
                 THE_END_PIECE.get(),
-                TED_DEBUG_BOW.get()
+                TED_DEBUG_BOW.get(),
+                ENDERMAN_VILLAGE_GATEWAY.get()
         );
     }
 

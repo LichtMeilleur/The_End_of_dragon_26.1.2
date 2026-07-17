@@ -37,10 +37,18 @@ public final class ModItems {
                     Registries.ITEM,
                     TheEndOfDragon.id("ted_debug_bow")
             );
+
+    public static final ResourceKey<Item> ENDERMAN_VILLAGE_GATEWAY_KEY =
+            ResourceKey.create(
+                    Registries.ITEM,
+                    TheEndOfDragon.id("enderman_village_gateway")
+            );
+
     public static Item THE_END_OF_DRAGON_ICON;
     public static Item THE_END_OF_DRAGON_SPAWN_EGG;
     public static Item THE_END_PIECE;
     public static Item TED_DEBUG_BOW;
+    public static Item ENDERMAN_VILLAGE_GATEWAY;
 
     private static boolean fabricRegistered = false;
 
@@ -106,6 +114,19 @@ public final class ModItems {
                                         .stacksTo(1)
                         )
                 );
+        ENDERMAN_VILLAGE_GATEWAY =
+                Registry.register(
+                        BuiltInRegistries.ITEM,
+                        ENDERMAN_VILLAGE_GATEWAY_KEY.identifier(),
+                        new Item(
+                                new Item.Properties()
+                                        .setId(
+                                                ENDERMAN_VILLAGE_GATEWAY_KEY
+                                        )
+                                        .stacksTo(1)
+                                        .fireResistant()
+                        )
+                );
 
         TheEndOfDragon.LOGGER.info(
                 "Registered The End Of Dragon items for Fabric"
@@ -116,12 +137,14 @@ public final class ModItems {
             Item icon,
             Item spawnEgg,
             Item endPiece,
-            Item debugBow
+            Item debugBow,
+            Item endermanVillageGateway
     ) {
         THE_END_OF_DRAGON_ICON = icon;
         THE_END_OF_DRAGON_SPAWN_EGG = spawnEgg;
         THE_END_PIECE = endPiece;
         TED_DEBUG_BOW = debugBow;
+        ENDERMAN_VILLAGE_GATEWAY = endermanVillageGateway;
 
         TheEndOfDragon.LOGGER.info(
                 "Bound NeoForge items to common registry references"

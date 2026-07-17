@@ -4,6 +4,7 @@ import com.licht_meilleur.the_end_of_dragon.TheEndOfDragon;
 import com.licht_meilleur.the_end_of_dragon.entity.TheEndOfDragonCollisionEntity;
 import com.licht_meilleur.the_end_of_dragon.entity.TheEndOfDragonCoreEntity;
 import com.licht_meilleur.the_end_of_dragon.entity.TheEndOfDragonDisplayEntity;
+import com.licht_meilleur.the_end_of_dragon.entity.enderman.TedAllyEndermanEntity;
 import com.licht_meilleur.the_end_of_dragon.entity.vfx.TedVfxEntity;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -38,6 +39,12 @@ public final class ModEntities {
                     TheEndOfDragon.id("ted_vfx")
             );
 
+    public static final ResourceKey<EntityType<?>> TED_ALLY_ENDERMAN_KEY =
+            ResourceKey.create(
+                    Registries.ENTITY_TYPE,
+                    TheEndOfDragon.id("ted_ally_enderman")
+            );
+
     /*
      * 各ローダーの登録処理によって代入される。
      *
@@ -52,6 +59,7 @@ public final class ModEntities {
     public static EntityType<TheEndOfDragonDisplayEntity> THE_END_OF_DRAGON_DISPLAY;
     public static EntityType<TheEndOfDragonCollisionEntity> THE_END_OF_DRAGON_COLLISION;
     public static EntityType<TedVfxEntity> TED_VFX;
+    public static EntityType<TedAllyEndermanEntity> TED_ALLY_ENDERMAN;
 
     private static boolean fabricRegistered = false;
     private static boolean bound = false;
@@ -127,12 +135,33 @@ public final class ModEntities {
                                 .build(TED_VFX_KEY)
                 );
 
+        TED_ALLY_ENDERMAN =
+                Registry.register(
+                        BuiltInRegistries.ENTITY_TYPE,
+                        TED_ALLY_ENDERMAN_KEY.identifier(),
+                        EntityType.Builder.of(
+                                        TedAllyEndermanEntity::new,
+                                        MobCategory.CREATURE
+                                )
+                                .sized(
+                                        0.6F,
+                                        2.9F
+                                )
+                                .clientTrackingRange(10)
+                                .updateInterval(2)
+                                .build(TED_ALLY_ENDERMAN_KEY)
+                );
+
+
+
         bound = true;
 
         TheEndOfDragon.LOGGER.info(
                 "Registered The End Of Dragon entities for Fabric"
         );
     }
+
+
 
     /**
      * NeoForgeのDeferredRegisterで作成されたEntityTypeを
@@ -142,12 +171,14 @@ public final class ModEntities {
             EntityType<TheEndOfDragonCoreEntity> core,
             EntityType<TheEndOfDragonDisplayEntity> display,
             EntityType<TheEndOfDragonCollisionEntity> collision,
-            EntityType<TedVfxEntity> vfx
+            EntityType<TedVfxEntity> vfx,
+            EntityType<TedAllyEndermanEntity> allyEnderman
     ) {
         THE_END_OF_DRAGON = core;
         THE_END_OF_DRAGON_DISPLAY = display;
         THE_END_OF_DRAGON_COLLISION = collision;
         TED_VFX = vfx;
+        TED_ALLY_ENDERMAN = allyEnderman;
 
         bound = true;
 

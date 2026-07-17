@@ -9,7 +9,6 @@ import java.util.EnumSet;
 
 public class DragonAirAttackGoal extends Goal {
     private final TheEndOfDragonCoreEntity dragon;
-    private int cooldown = 120;
 
     private static final int BASE_WEIGHT = 100;
     private static final int WEIGHT_INCREASE = 35;
@@ -41,10 +40,7 @@ public class DragonAirAttackGoal extends Goal {
         if (dragon.isAirborneBoss(level)) return false;
         if (dragon.findBossTarget(level) == null) return false;
 
-        if (cooldown > 0) {
-            cooldown--;
-            return false;
-        }
+
 
         return dragon.tryConsumeAirAttackCooldown();
     }
@@ -67,8 +63,6 @@ public class DragonAirAttackGoal extends Goal {
             return;
         }
 
-        cooldown =
-                220 + dragon.getRandom().nextInt(160);
 
         double targetAbove =
                 target.getEyeY() - dragon.getY();

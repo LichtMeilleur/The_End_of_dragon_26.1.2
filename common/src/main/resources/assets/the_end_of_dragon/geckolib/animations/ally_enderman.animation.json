@@ -441,6 +441,99 @@
 					}
 				}
 			}
+		},
+		"animation.model.recovering": {
+			"loop": "hold_on_last_frame",
+			"animation_length": 1.55,
+			"bones": {
+				"all_body": {
+					"rotation": {
+						"0.0": {
+							"vector": [-90, 0, 0]
+						},
+						"0.5": {
+							"vector": [-90, 0, 0]
+						},
+						"1.0": {
+							"vector": [-90, 0, 0]
+						},
+						"1.5": {
+							"vector": [-2.5, 0, 0]
+						}
+					},
+					"position": {
+						"0.0": {
+							"vector": [0, 2, -14]
+						},
+						"0.5": {
+							"vector": [0, 2, -14]
+						},
+						"1.0": {
+							"vector": [0, 2, -14]
+						},
+						"1.5": {
+							"vector": [0, 1, -1]
+						}
+					}
+				},
+				"upper_body": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"0.5": {
+							"vector": [85, 0, 0]
+						},
+						"1.0": {
+							"vector": [85, 0, 0]
+						},
+						"1.5": {
+							"vector": [-2.5, 0, 0]
+						}
+					}
+				},
+				"left_arm": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"0.5": {
+							"vector": [-54.3517, -10.2123, -7.2468]
+						},
+						"1.5": {
+							"vector": [3.1483, -10.2123, -7.2468]
+						}
+					}
+				},
+				"right_arm": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"0.5": {
+							"vector": [-54.3517, 10.2123, 7.2468]
+						},
+						"1.5": {
+							"vector": [3.1483, 10.2123, 7.2468]
+						}
+					}
+				}
+			}
+		},
+		"animation.model.hand_over": {
+			"loop": true,
+			"bones": {
+				"left_arm": {
+					"rotation": {
+						"vector": [-59.7865, -6.4906, -3.7662]
+					}
+				},
+				"right_arm": {
+					"rotation": {
+						"vector": [-59.7865, 6.4906, 3.7662]
+					}
+				}
+			}
 		}
 	}
 }

@@ -45,8 +45,13 @@ public final class ModCreativeTabs {
                             output.accept(
                                     ModItems.THE_END_OF_DRAGON_SPAWN_EGG
                             );
+                            output.accept(
+                                    ModItems.ENDERMAN_VILLAGE_GATEWAY
+                            );
                         })
                         .build()
+
+
         );
     }
 
