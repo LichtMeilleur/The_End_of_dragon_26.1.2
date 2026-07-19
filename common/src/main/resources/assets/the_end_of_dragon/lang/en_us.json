@@ -3,5 +3,10 @@
   "boss.the_end_of_dragon.the_end_of_dragon": "The End of Dragon",
   "item.the_end_of_dragon.the_end_piece": "The End Piece",
   "item.the_end_of_dragon.the_end_of_dragon_spawn_egg": "The End of Dragon Spawn Egg",
-  "item.the_end_of_dragon.enderman_village_gateway": "Enderman Village Gateway"
+  "item.the_end_of_dragon.enderman_village_gateway": "Enderman Village Gateway",
+  "message.the_end_of_dragon.ally_enderman.help": "H... Help...",
+  "message.the_end_of_dragon.ally_enderman.detected": "A wounded Enderman is calling for help.",
+  "message.the_end_of_dragon.ally_enderman.feed": "Give it food to help it recover.",
+  "message.the_end_of_dragon.ally_enderman.nearby": "You hear a faint cry for help nearby...",
+  "message.the_end_of_dragon.ally_faint_voice": "You hear a faint voice..."
 }

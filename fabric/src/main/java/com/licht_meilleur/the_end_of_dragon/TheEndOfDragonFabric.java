@@ -10,12 +10,15 @@ import com.licht_meilleur.the_end_of_dragon.registry.ModEntities;
 import com.licht_meilleur.the_end_of_dragon.registry.ModItems;
 import com.licht_meilleur.the_end_of_dragon.registry.ModSounds;
 import com.licht_meilleur.the_end_of_dragon.world.EndDragonSpawnHandler;
+import com.licht_meilleur.the_end_of_dragon.world.TedEndermanBattleHandler;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.monster.EnderMan;
 
 public final class TheEndOfDragonFabric implements ModInitializer {
 
@@ -75,6 +78,23 @@ public final class TheEndOfDragonFabric implements ModInitializer {
         CommandRegistrationCallback.EVENT.register(
                 (dispatcher, registryAccess, environment) ->
                         TEDDebugCommands.register(dispatcher)
+        );
+
+        ServerEntityEvents.ENTITY_LOAD.register(
+                (entity, world) -> {
+                    if (!(entity instanceof EnderMan enderman)) {
+                        return;
+                    }
+
+                    if (TedEndermanBattleHandler
+                            .shouldBlockNormalEndermanSpawn(
+                                    world,
+                                    enderman.position()
+                            )) {
+
+                        enderman.discard();
+                    }
+                }
         );
     }
 }

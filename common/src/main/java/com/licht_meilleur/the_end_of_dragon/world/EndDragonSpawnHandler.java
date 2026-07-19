@@ -1,6 +1,7 @@
 package com.licht_meilleur.the_end_of_dragon.world;
 
 import com.licht_meilleur.the_end_of_dragon.entity.DragonSpawnKind;
+import com.licht_meilleur.the_end_of_dragon.entity.TheEndOfDragonCoreEntity;
 import com.licht_meilleur.the_end_of_dragon.registry.ModEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -19,22 +20,65 @@ public final class EndDragonSpawnHandler {
     private static final int SPAWN_DEATH_TIME = 40;
 
     public static void tick(ServerLevel level) {
-        boolean tedAlreadyExists = !level.getEntitiesOfClass(
-                com.licht_meilleur.the_end_of_dragon.entity.TheEndOfDragonCoreEntity.class,
-                new AABB(-512, 0, -512, 512, 256, 512)
-        ).isEmpty();
+        AABB tedSearchArea = new AABB(
+                -512.0D,
+                level.getMinY(),
+                -512.0D,
+                512.0D,
+                level.getMaxY(),
+                512.0D
+        );
 
-        if (tedAlreadyExists) {
+        var existingBosses =
+                level.getEntitiesOfClass(
+                        TheEndOfDragonCoreEntity.class,
+                        tedSearchArea,
+                        boss -> !boss.isRemoved()
+                );
+
+
+
+        /*
+         * 終焉の龍が既に存在する場合、
+         * 新しい終焉の龍は生成しない。
+         *
+         * スポーン停止状態を同期した後にreturnすること。
+         */
+        if (!existingBosses.isEmpty()) {
             return;
         }
 
-        AABB area = new AABB(-256, 0, -256, 256, 256, 256);
+        AABB area = new AABB(
+                -256.0D,
+                level.getMinY(),
+                -256.0D,
+                256.0D,
+                level.getMaxY(),
+                256.0D
+        );
 
-        for (EnderDragon dragon : level.getEntitiesOfClass(EnderDragon.class, area)) {
-            if (dragon.dragonDeathTime < SPAWN_DEATH_TIME) continue;
-            if (!SPAWNED_FOR_DRAGONS.add(dragon.getUUID())) continue;
+        for (EnderDragon dragon :
+                level.getEntitiesOfClass(
+                        EnderDragon.class,
+                        area
+                )) {
 
-            spawn(level, dragon.position());
+            if (dragon.dragonDeathTime
+                    < SPAWN_DEATH_TIME) {
+                continue;
+            }
+
+            if (!SPAWNED_FOR_DRAGONS.add(
+                    dragon.getUUID()
+            )) {
+                continue;
+            }
+
+            spawn(
+                    level,
+                    dragon.position()
+            );
+
             return;
         }
     }
@@ -62,10 +106,7 @@ public final class EndDragonSpawnHandler {
 
             boss.setEnderDragonEventFight(true);
 
-            System.out.println(
-                    "[TED BGM] event spawn flag="
-                            + boss.isEnderDragonEventFight()
-            );
+
 
             boss.startIntroSequence(portalCenter);
         } catch (Throwable t) {

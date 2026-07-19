@@ -7,14 +7,19 @@ import com.geckolib.animation.AnimationController;
 import com.geckolib.animation.RawAnimation;
 import com.geckolib.animation.object.PlayState;
 import com.geckolib.util.GeckoLibUtil;
+import com.licht_meilleur.the_end_of_dragon.entity.enderman.goal.*;
 import com.licht_meilleur.the_end_of_dragon.registry.ModItems;
+import com.licht_meilleur.the_end_of_dragon.world.TedAllyEndermanMessageHandler;
+import com.licht_meilleur.the_end_of_dragon.world.TedBattleWorldState;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AnimationState;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.PathfinderMob;
@@ -48,6 +53,8 @@ public class TedAllyEndermanEntity
                     EntityDataSerializers.INT
             );
 
+
+
     private static final int MAX_FOOD_LEVEL = 20;
     private static final int RESCUE_REQUIRED_FOOD = 8;
 
@@ -56,6 +63,10 @@ public class TedAllyEndermanEntity
 
     private static final int HAND_OVER_GIVE_TICK = 18;
     private static final int HAND_OVER_END_TICK = 45;
+
+
+    private int rescueMessageTicks;
+    private boolean rescueMessagesStarted;
 
     /*
      * RECOVERINGの継続時間。
@@ -97,10 +108,14 @@ public class TedAllyEndermanEntity
 
     private static final RawAnimation HAND_OVER_ANIMATION =
             RawAnimation.begin()
-                    .thenLoop("animation.model.hand_over");
+                    .thenPlayAndHold(
+                            "animation.model.hand_over"
+                    );
 
     private final AnimatableInstanceCache animationCache =
             GeckoLibUtil.createInstanceCache(this);
+
+
 
     /*
      * 状態を切り替えたtick。
@@ -112,6 +127,15 @@ public class TedAllyEndermanEntity
      */
     private int foodHealCooldown = 0;
 
+
+    private int supportAttackCooldown;
+    private int selfEvadeCooldown;
+    private int playerRescueCooldown;
+    private int followWarpCooldown;
+
+    private UUID supportPlayerUuid;
+    private UUID combatDragonUuid;
+
     public TedAllyEndermanEntity(
             EntityType<? extends PathfinderMob> entityType,
             Level level
@@ -120,6 +144,130 @@ public class TedAllyEndermanEntity
 
         this.setPersistenceRequired();
     }
+
+    @Override
+    protected void registerGoals() {
+        super.registerGoals();
+
+        this.goalSelector.addGoal(
+                0,
+                new AllySelfEvadeGoal(this)
+        );
+
+        this.goalSelector.addGoal(
+                1,
+                new AllyRescuePlayerGoal(this)
+        );
+
+        this.goalSelector.addGoal(
+                2,
+                new AllyHitAndAwayGoal(this)
+        );
+
+        this.goalSelector.addGoal(
+                3,
+                new AllyFollowPlayerGoal(this)
+        );
+
+        /*
+        this.goalSelector.addGoal(
+                4,
+                new AllyVillageGuardGoal(this)
+        );
+
+        this.goalSelector.addGoal(
+                5,
+                new AllyVillagePatrolGoal(this)
+        );
+
+         */
+    }
+
+    public boolean canRunSupportAi() {
+        if (!this.isAlive() || this.isRemoved()) {
+            return false;
+        }
+
+        return this.getAllyState() == AllyEndermanState.SUPPORT_IDLE;
+    }
+
+    private void tickSupportCooldowns() {
+        if (this.supportAttackCooldown > 0) {
+            this.supportAttackCooldown--;
+        }
+
+        if (this.selfEvadeCooldown > 0) {
+            this.selfEvadeCooldown--;
+        }
+
+        if (this.playerRescueCooldown > 0) {
+            this.playerRescueCooldown--;
+        }
+
+        if (this.followWarpCooldown > 0) {
+            this.followWarpCooldown--;
+        }
+    }
+
+    public int getSupportAttackCooldown() {
+        return supportAttackCooldown;
+    }
+
+    public void setSupportAttackCooldown(int ticks) {
+        this.supportAttackCooldown =
+                Math.max(0, ticks);
+    }
+
+    public int getSelfEvadeCooldown() {
+        return selfEvadeCooldown;
+    }
+
+    public void setSelfEvadeCooldown(int ticks) {
+        this.selfEvadeCooldown =
+                Math.max(0, ticks);
+    }
+
+    public int getPlayerRescueCooldown() {
+        return playerRescueCooldown;
+    }
+
+    public void setPlayerRescueCooldown(int ticks) {
+        this.playerRescueCooldown =
+                Math.max(0, ticks);
+    }
+
+    public int getFollowWarpCooldown() {
+        return followWarpCooldown;
+    }
+
+    public void setFollowWarpCooldown(int ticks) {
+        this.followWarpCooldown =
+                Math.max(0, ticks);
+    }
+
+
+
+    public int getFoodPoints() {
+        return this.entityData.get(DATA_FOOD_LEVEL);
+    }
+
+    public int getMaxFoodPoints() {
+        return MAX_FOOD_LEVEL;
+    }
+
+    public void setFoodPoints(
+            int foodPoints
+    ) {
+        this.entityData.set(
+                DATA_FOOD_LEVEL,
+                Mth.clamp(
+                        foodPoints,
+                        0,
+                        MAX_FOOD_LEVEL
+                )
+        );
+    }
+
 
     @Override
     protected void defineSynchedData(
@@ -138,39 +286,6 @@ public class TedAllyEndermanEntity
         );
     }
 
-    @Override
-    protected void registerGoals() {
-        /*
-         * WOUNDED中はtick側でNavigationを停止する。
-         * 復活後にだけ、これらのGoalが実質的に機能する。
-         */
-        this.goalSelector.addGoal(
-                0,
-                new FloatGoal(this)
-        );
-
-        this.goalSelector.addGoal(
-                5,
-                new WaterAvoidingRandomStrollGoal(
-                        this,
-                        0.8D
-                )
-        );
-
-        this.goalSelector.addGoal(
-                6,
-                new LookAtPlayerGoal(
-                        this,
-                        Player.class,
-                        12.0F
-                )
-        );
-
-        this.goalSelector.addGoal(
-                7,
-                new RandomLookAroundGoal(this)
-        );
-    }
 
     public static AttributeSupplier.Builder createAttributes() {
         return PathfinderMob.createMobAttributes()
@@ -208,8 +323,12 @@ public class TedAllyEndermanEntity
             return;
         }
 
+
+        tickSupportCooldowns();
+        tickRescueMessages();
         tickState();
         tickFoodHealing();
+        tickPostBattleHandOver();
     }
 
     private void tickState() {
@@ -269,6 +388,69 @@ public class TedAllyEndermanEntity
 
         if (this.getHealth() < minimumHealth) {
             this.setHealth(minimumHealth);
+        }
+
+        if (!(this.level() instanceof ServerLevel serverLevel)) {
+            this.setAllyState(
+                    AllyEndermanState.SUPPORT_IDLE
+            );
+            return;
+        }
+
+        TedBattleWorldState worldState =
+                TedBattleWorldState.get(serverLevel);
+
+        /*
+         * 戦闘中に救助された場合。
+         */
+        if (worldState.isBattleActive()) {
+            worldState.setAllyProgress(
+                    TedBattleWorldState
+                            .TedAllyProgress
+                            .ALLY_ACTIVE
+            );
+
+            this.setAllyState(
+                    AllyEndermanState.SUPPORT_IDLE
+            );
+
+            return;
+        }
+
+        /*
+         * TED討伐後に再び救助された場合。
+         */
+        if (worldState.getAllyProgress()
+                == TedBattleWorldState
+                .TedAllyProgress
+                .WOUNDED_AFTER_BATTLE) {
+
+            worldState.setAllyProgress(
+                    TedBattleWorldState
+                            .TedAllyProgress
+                            .RECOVERED_AFTER_BATTLE
+            );
+
+            Player nearestPlayer =
+                    serverLevel.getNearestPlayer(
+                            this,
+                            64.0D
+                    );
+
+            if (nearestPlayer != null
+                    && nearestPlayer.isAlive()) {
+                this.startHandOver(nearestPlayer);
+            } else {
+                /*
+                 * プレイヤーが近くにいなければ、
+                 * 後のtickで再試行する。
+                 */
+                this.setAllyState(
+                        AllyEndermanState.SUPPORT_IDLE
+                );
+            }
+
+            return;
         }
 
         this.setAllyState(
@@ -684,17 +866,231 @@ public class TedAllyEndermanEntity
     private void giveInvitationItem(
             Player player
     ) {
-        ItemStack invitation =
+        if (!(this.level() instanceof ServerLevel serverLevel)) {
+            return;
+        }
+
+        TedBattleWorldState worldState =
+                TedBattleWorldState.get(serverLevel);
+
+        /*
+         * 二重配布防止。
+         */
+        if (worldState.getAllyProgress()
+                == TedBattleWorldState
+                .TedAllyProgress
+                .ITEM_GIVEN) {
+            return;
+        }
+
+        ItemStack gateway =
                 new ItemStack(
-                        ModItems.ENDER_INVITATION
+                        ModItems.ENDERMAN_VILLAGE_GATEWAY
                 );
 
-        if (!player.getInventory().add(invitation)) {
+        if (!player.getInventory().add(gateway)) {
             player.drop(
-                    invitation,
+                    gateway,
                     false
             );
         }
+
+        worldState.setAllyProgress(
+                TedBattleWorldState
+                        .TedAllyProgress
+                        .ITEM_GIVEN
+        );
+    }
+
+    public void setWoundedForBattle() {
+        this.getNavigation().stop();
+        this.setTarget(null);
+
+        this.setFoodLevel(0);
+
+        this.setHealth(
+                Math.max(
+                        1.0F,
+                        this.getMaxHealth()
+                                * 0.08F
+                )
+        );
+
+        this.setAllyState(
+                AllyEndermanState.WOUNDED
+        );
+
+        this.setDeltaMovement(
+                Vec3.ZERO
+        );
+
+        if (this.level()
+                instanceof ServerLevel serverLevel) {
+
+            TedBattleWorldState worldState =
+                    TedBattleWorldState.get(serverLevel);
+
+            worldState.setAllyProgress(
+                    TedBattleWorldState
+                            .TedAllyProgress
+                            .WOUNDED_DURING_BATTLE
+            );
+        }
+    }
+
+    public void setWoundedAfterBattle() {
+        this.getNavigation().stop();
+        this.setTarget(null);
+
+        this.setFoodLevel(0);
+
+        this.setHealth(
+                Math.max(
+                        1.0F,
+                        this.getMaxHealth()
+                                * 0.08F
+                )
+        );
+
+        this.setDeltaMovement(
+                Vec3.ZERO
+        );
+
+        this.setAllyState(
+                AllyEndermanState.WOUNDED
+        );
+
+        this.rescueMessagesStarted = false;
+        this.rescueMessageTicks = 0;
+
+        if (this.level()
+                instanceof ServerLevel serverLevel) {
+
+            TedBattleWorldState worldState =
+                    TedBattleWorldState.get(serverLevel);
+
+            worldState.setAllyProgress(
+                    TedBattleWorldState
+                            .TedAllyProgress
+                            .WOUNDED_AFTER_BATTLE
+            );
+        }
+    }
+
+    private void tickRescueMessages() {
+        if (!(this.level()
+                instanceof ServerLevel serverLevel)) {
+            return;
+        }
+
+        if (this.getAllyState()
+                != AllyEndermanState.WOUNDED) {
+            return;
+        }
+
+        if (!rescueMessagesStarted) {
+            rescueMessagesStarted = true;
+            rescueMessageTicks = 0;
+        }
+
+        rescueMessageTicks++;
+
+        if (rescueMessageTicks == 1) {
+            TedAllyEndermanMessageHandler
+                    .sendHelpMessage(
+                            serverLevel,
+                            this
+                    );
+        }
+
+        if (rescueMessageTicks == 50) {
+            TedAllyEndermanMessageHandler
+                    .sendDetectedMessage(
+                            serverLevel,
+                            this
+                    );
+        }
+
+        if (rescueMessageTicks == 100) {
+            TedAllyEndermanMessageHandler
+                    .sendFeedMessage(
+                            serverLevel,
+                            this
+                    );
+        }
+    }
+
+    private void tickPostBattleHandOver() {
+        if (!(this.level() instanceof ServerLevel serverLevel)) {
+            return;
+        }
+
+        if (this.getAllyState()
+                != AllyEndermanState.SUPPORT_IDLE) {
+            return;
+        }
+
+        /*
+         * 毎tickプレイヤー検索を行わない。
+         * 1秒に1回だけ確認する。
+         */
+        if (this.tickCount % 20 != 0) {
+            return;
+        }
+
+        TedBattleWorldState worldState =
+                TedBattleWorldState.get(serverLevel);
+
+        if (worldState.getAllyProgress()
+                != TedBattleWorldState
+                .TedAllyProgress
+                .RECOVERED_AFTER_BATTLE) {
+            return;
+        }
+
+        Player nearestPlayer =
+                serverLevel.getNearestPlayer(
+                        this,
+                        64.0D
+                );
+
+        if (nearestPlayer == null
+                || !nearestPlayer.isAlive()) {
+            return;
+        }
+
+        this.startHandOver(nearestPlayer);
+    }
+
+    @Override
+    public void die(
+            DamageSource source
+    ) {
+        if (!this.level().isClientSide()
+                && this.level()
+                instanceof ServerLevel serverLevel) {
+
+            TedBattleWorldState worldState =
+                    TedBattleWorldState.get(serverLevel);
+
+            /*
+             * TED戦闘中に死亡した場合は、
+             * 討伐後再出現の対象として保存する。
+             */
+            if (worldState.isBattleActive()) {
+                worldState.setAllyProgress(
+                        TedBattleWorldState
+                                .TedAllyProgress
+                                .DIED_DURING_BATTLE
+                );
+            }
+        }
+        this.setInvisible(true);
+        this.setInvulnerable(true);
+
+        super.die(source);
+
+        discard();
     }
 
 

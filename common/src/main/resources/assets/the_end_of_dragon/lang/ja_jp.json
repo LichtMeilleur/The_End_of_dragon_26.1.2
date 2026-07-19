@@ -3,5 +3,11 @@
   "boss.the_end_of_dragon.the_end_of_dragon": "終焉の龍",
   "item.the_end_of_dragon.the_end_piece": "終焉の欠片",
   "item.the_end_of_dragon.the_end_of_dragon_spawn_egg": "終焉の龍のスポーンエッグ",
-  "item.the_end_of_dragon.enderman_village_gateway": "エンダーマンの村への門"
+  "item.the_end_of_dragon.enderman_village_gateway": "エンダーマンの村への門",
+  "message.the_end_of_dragon.ally_enderman.help": "タ……スケテ……",
+  "message.the_end_of_dragon.ally_enderman.detected": "瀕死のエンダーマンが助けを求めている",
+  "message.the_end_of_dragon.ally_enderman.feed": "食べ物を与えて回復させよう",
+  "message.the_end_of_dragon.ally_enderman.nearby": "助けを求める声が近くから聞こえる……",
+  "message.the_end_of_dragon.ally_faint_voice": "かすかな声が聞こえる……"
+
 }

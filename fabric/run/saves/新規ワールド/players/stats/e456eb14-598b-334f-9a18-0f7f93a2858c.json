@@ -1,0 +1,31 @@
+{
+  "stats": {
+    "minecraft:custom": {
+      "minecraft:sprint_one_cm": 4053,
+      "minecraft:time_since_rest": 3881,
+      "minecraft:walk_one_cm": 26065,
+      "minecraft:total_world_time": 3894,
+      "minecraft:leave_game": 1,
+      "minecraft:fly_one_cm": 17466,
+      "minecraft:mob_kills": 1,
+      "minecraft:crouch_one_cm": 103,
+      "minecraft:sneak_time": 101,
+      "minecraft:play_time": 3881,
+      "minecraft:jump": 19,
+      "minecraft:time_since_death": 3881
+    },
+    "minecraft:used": {
+      "minecraft:ender_eye": 12,
+      "minecraft:end_portal_frame": 12,
+      "minecraft:ender_pearl": 1
+    },
+    "minecraft:killed": {
+      "minecraft:ender_dragon": 1
+    },
+    "minecraft:picked_up": {
+      "minecraft:ender_pearl": 10,
+      "the_end_of_dragon:the_end_piece": 1
+    }
+  },
+  "DataVersion": 4790
+}

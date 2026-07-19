@@ -5,6 +5,7 @@ import com.licht_meilleur.the_end_of_dragon.entity.beam.TedBeamSpec;
 import com.licht_meilleur.the_end_of_dragon.entity.beam.TedBeamSpecs;
 import com.licht_meilleur.the_end_of_dragon.entity.collision.DragonCollisionBox;
 import com.licht_meilleur.the_end_of_dragon.entity.collision.DragonCollisionPart;
+import com.licht_meilleur.the_end_of_dragon.entity.enderman.TedAllyEndermanEntity;
 import com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonLocatorSampler;
 import com.licht_meilleur.the_end_of_dragon.entity.hitbox.TedBeamHitbox;
 import com.licht_meilleur.the_end_of_dragon.entity.projectile.TedProjectileSpec;
@@ -19,6 +20,8 @@ import com.licht_meilleur.the_end_of_dragon.registry.ModItems;
 import com.licht_meilleur.the_end_of_dragon.registry.ModSounds;
 import com.licht_meilleur.the_end_of_dragon.sound.TedSoundHelper;
 import com.licht_meilleur.the_end_of_dragon.world.EndPortalSealHandler;
+import com.licht_meilleur.the_end_of_dragon.world.TedBattleWorldState;
+import com.licht_meilleur.the_end_of_dragon.world.TedEndermanBattleHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
@@ -642,6 +645,116 @@ public class TheEndOfDragonCoreEntity extends Monster {
             this.crystalFadeStage = 1;
         } else {
             this.crystalFadeStage = 0;
+        }
+    }
+
+    private void prepareAllyAfterBattle(
+            ServerLevel level
+    ) {
+        TedBattleWorldState worldState =
+                TedBattleWorldState.get(level);
+
+        /*
+         * TEDとの戦闘自体は終了。
+         */
+        worldState.setBattleActive(false);
+
+        /*
+         * 討伐後も5分30秒間、
+         * 一般エンダーマンをスポーンさせない。
+         */
+        worldState.suppressEndermanSpawnsFor(
+                level,
+                6600L
+        );
+
+
+        TedBattleWorldState.TedAllyProgress progress =
+                worldState.getAllyProgress();
+
+        /*
+         * 周囲に存在している味方エンダーマンを探す。
+         */
+        AABB searchArea =
+                this.getBoundingBox()
+                        .inflate(
+                                256.0D,
+                                128.0D,
+                                256.0D
+                        );
+
+        TedAllyEndermanEntity ally =
+                level.getEntitiesOfClass(
+                                TedAllyEndermanEntity.class,
+                                searchArea,
+                                entity ->
+                                        !entity.isRemoved()
+                        )
+                        .stream()
+                        .findFirst()
+                        .orElse(null);
+
+        switch (progress) {
+            case ALLY_ACTIVE -> {
+                /*
+                 * 生存して討伐を迎えた場合は、
+                 * その場で村移動アイテムを渡す。
+                 */
+                if (ally != null && ally.isAlive()) {
+                    Player nearestPlayer =
+                            level.getNearestPlayer(
+                                    ally,
+                                    128.0D
+                            );
+
+                    if (nearestPlayer != null
+                            && nearestPlayer.isAlive()) {
+                        ally.startHandOver(
+                                nearestPlayer
+                        );
+                    }
+                }
+            }
+
+            case WOUNDED_DURING_BATTLE -> {
+
+                worldState.setAllyProgress(
+                        TedBattleWorldState
+                                .TedAllyProgress
+                                .WOUNDED_AFTER_BATTLE
+                );
+
+                if (ally != null && ally.isAlive()) {
+
+                    ally.setWoundedAfterBattle();
+
+                } else {
+
+                    TedEndermanBattleHandler
+                            .spawnPostBattleWoundedEnderman(
+                                    level,
+                                    this.position()
+                            );
+                }
+            }
+
+            case DIED_DURING_BATTLE -> {
+
+                worldState.setAllyProgress(
+                        TedBattleWorldState
+                                .TedAllyProgress
+                                .WOUNDED_AFTER_BATTLE
+                );
+
+                TedEndermanBattleHandler
+                        .spawnPostBattleWoundedEnderman(
+                                level,
+                                this.position()
+                        );
+            }
+
+            default -> {
+            }
         }
     }
 
@@ -1399,8 +1512,37 @@ public class TheEndOfDragonCoreEntity extends Monster {
         this.getNavigation().stop();
         this.setDeltaMovement(Vec3.ZERO);
 
-        if (!level().isClientSide() && level() instanceof ServerLevel serverLevel) {
-            EndPortalSealHandler.restorePortal(serverLevel);
+        if (!level().isClientSide()
+                && level() instanceof ServerLevel serverLevel) {
+
+            EndPortalSealHandler.restorePortal(
+                    serverLevel
+            );
+
+            if (this.isEnderDragonEventFight()) {
+                TedBattleWorldState worldState =
+                        TedBattleWorldState.get(
+                                serverLevel
+                        );
+
+                /*
+                 * 戦闘自体は終了。
+                 */
+                worldState.setBattleActive(false);
+
+                /*
+                 * 討伐後も5分30秒間、
+                 * 一般エンダーマンのスポーンを停止する。
+                 */
+                worldState.suppressEndermanSpawnsFor(
+                        serverLevel,
+                        6600L
+                );
+
+                prepareAllyAfterBattle(
+                        serverLevel
+                );
+            }
         }
     }
 
@@ -3186,31 +3328,67 @@ public class TheEndOfDragonCoreEntity extends Monster {
         }
     }
 
-    private void applyIntroSuperLandingImpact(ServerLevel level) {
-        BlockPos base = findPortalDestroyBase(level);
+    private void applyIntroSuperLandingImpact(
+            ServerLevel level
+    ) {
+        BlockPos base =
+                findPortalDestroyBase(level);
 
         int radius = 12;
 
         for (int x = -radius; x <= radius; x++) {
             for (int y = -8; y <= 12; y++) {
                 for (int z = -radius; z <= radius; z++) {
-                    double dist = Math.sqrt(x * x + z * z);
-                    if (dist > radius) continue;
+                    double dist =
+                            Math.sqrt(
+                                    x * x + z * z
+                            );
 
-                    BlockPos pos = base.offset(x, y, z);
-                    var state = level.getBlockState(pos);
+                    if (dist > radius) {
+                        continue;
+                    }
+
+                    BlockPos pos =
+                            base.offset(x, y, z);
+
+                    var state =
+                            level.getBlockState(pos);
 
                     if (state.is(Blocks.BEDROCK)
                             || state.is(Blocks.END_PORTAL)
                             || state.is(Blocks.END_PORTAL_FRAME)) {
-                        level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+
+                        level.setBlock(
+                                pos,
+                                Blocks.AIR.defaultBlockState(),
+                                3
+                        );
                     }
                 }
             }
         }
 
-        spawnSuperLandingSmoke(level, Vec3.atCenterOf(base));
+        Vec3 impactCenter =
+                Vec3.atCenterOf(base);
+
+        spawnSuperLandingSmoke(
+                level,
+                impactCenter
+        );
+
         EndPortalSealHandler.sealPortal(level);
+
+
+        System.out.println(
+                "[TED ENDERMAN EVENT] intro impact reached"
+                        + " center="
+                        + impactCenter
+        );
+
+        TedEndermanBattleHandler.beginBattleEvent(
+                level,
+                impactCenter
+        );
     }
 
     private BlockPos findPortalDestroyBase(ServerLevel level) {

@@ -11,7 +11,9 @@ import com.licht_meilleur.the_end_of_dragon.neoforge.registry.NeoForgeModEntitie
 import com.licht_meilleur.the_end_of_dragon.neoforge.registry.NeoForgeModItems;
 import com.licht_meilleur.the_end_of_dragon.neoforge.registry.NeoForgeModSounds;
 import com.licht_meilleur.the_end_of_dragon.world.EndDragonSpawnHandler;
+import com.licht_meilleur.the_end_of_dragon.world.TedEndermanBattleHandler;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.monster.EnderMan;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
@@ -20,6 +22,7 @@ import net.neoforged.fml.loading.FMLPaths;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 
 @Mod(TheEndOfDragon.MOD_ID)
 public final class TheEndOfDragonNeoForge {
@@ -119,5 +122,29 @@ public final class TheEndOfDragonNeoForge {
             RegisterCommandsEvent event
     ) {
         TEDDebugCommands.register(event.getDispatcher());
+    }
+
+    @SubscribeEvent
+    public void onEntityJoinLevel(
+            EntityJoinLevelEvent event
+    ) {
+        if (!(event.getLevel()
+                instanceof ServerLevel level)) {
+            return;
+        }
+
+        if (!(event.getEntity()
+                instanceof EnderMan enderman)) {
+            return;
+        }
+
+        if (TedEndermanBattleHandler
+                .shouldBlockNormalEndermanSpawn(
+                        level,
+                        enderman.position()
+                )) {
+
+            event.setCanceled(true);
+        }
     }
 }

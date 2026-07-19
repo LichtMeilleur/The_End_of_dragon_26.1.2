@@ -1,0 +1,85 @@
+package com.licht_meilleur.the_end_of_dragon.world;
+
+import com.licht_meilleur.the_end_of_dragon.entity.enderman.TedAllyEndermanEntity;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+
+public final class TedAllyEndermanMessageHandler {
+
+    private static final double MESSAGE_RANGE = 256.0D;
+
+    private TedAllyEndermanMessageHandler() {
+    }
+
+    public static void sendHelpMessage(
+            ServerLevel level,
+            TedAllyEndermanEntity ally
+    ) {
+        sendToNearbyPlayers(
+                level,
+                ally,
+                "message.the_end_of_dragon.ally_enderman.help",
+                false
+        );
+    }
+
+    public static void sendDetectedMessage(
+            ServerLevel level,
+            TedAllyEndermanEntity ally
+    ) {
+        sendToNearbyPlayers(
+                level,
+                ally,
+                "message.the_end_of_dragon.ally_enderman.detected",
+                false
+        );
+    }
+
+    public static void sendFeedMessage(
+            ServerLevel level,
+            TedAllyEndermanEntity ally
+    ) {
+        sendToNearbyPlayers(
+                level,
+                ally,
+                "message.the_end_of_dragon.ally_enderman.feed",
+                false
+        );
+    }
+
+    public static void sendInteractHint(
+            ServerPlayer player
+    ) {
+        player.sendSystemMessage(
+                Component.translatable(
+                        "message.the_end_of_dragon.ally_enderman.interact"
+                ),
+                true
+        );
+    }
+
+    private static void sendToNearbyPlayers(
+            ServerLevel level,
+            TedAllyEndermanEntity ally,
+            String translationKey,
+            boolean actionBar
+    ) {
+        double rangeSqr =
+                MESSAGE_RANGE * MESSAGE_RANGE;
+
+        for (ServerPlayer player : level.players()) {
+            if (player.distanceToSqr(ally)
+                    > rangeSqr) {
+                continue;
+            }
+
+            player.sendSystemMessage(
+                    Component.translatable(
+                            translationKey
+                    ),
+                    actionBar
+            );
+        }
+    }
+}

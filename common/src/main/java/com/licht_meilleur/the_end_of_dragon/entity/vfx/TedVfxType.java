@@ -51,6 +51,14 @@ public enum TedVfxType {
                 "textures/vfx/roar_of_obliteration.png",
                 "light_projectile", // ダミー
                 "animation.model.attack" // ダミー
+    ),
+
+    INTRO_LANDING_IMPACT(
+        "intro_landing_impact",
+                "light_projectile",
+                "textures/vfx/landing_impact.png",
+                "light_projectile",
+                "animation.model.attack"
     );
 
 

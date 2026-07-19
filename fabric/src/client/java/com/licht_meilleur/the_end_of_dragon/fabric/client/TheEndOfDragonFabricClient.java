@@ -1,6 +1,8 @@
 package com.licht_meilleur.the_end_of_dragon.fabric.client;
 
+import com.licht_meilleur.the_end_of_dragon.TheEndOfDragon;
 import com.licht_meilleur.the_end_of_dragon.client.LightOfDestructionHudRenderer;
+import com.licht_meilleur.the_end_of_dragon.client.TedAllyEndermanHud;
 import com.licht_meilleur.the_end_of_dragon.client.entity.enderman.TedAllyEndermanRenderer;
 import com.licht_meilleur.the_end_of_dragon.client.render.TheEndOfDragonCollisionRenderer;
 import com.licht_meilleur.the_end_of_dragon.client.render.TheEndOfDragonCoreRenderer;
@@ -54,9 +56,21 @@ public final class TheEndOfDragonFabricClient implements ClientModInitializer {
                 (graphics, tickCounter) -> LightOfDestructionHudRenderer.render(graphics)
         );
 
+        HudElementRegistry.attachElementBefore(
+                VanillaHudElements.CHAT,
+                TheEndOfDragon.id(
+                        "ally_enderman_hud"
+                ),
+                (graphics, deltaTracker) ->
+                        TedAllyEndermanHud.render(
+                                graphics,
+                                deltaTracker
+                        )
+        );
+
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             LightOfDestructionHudRenderer.clientTick();
-            
+            TedAllyEndermanHud.clientTick();
         });
 
         TedFabricClientNetwork.init();

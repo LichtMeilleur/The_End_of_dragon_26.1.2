@@ -24,6 +24,12 @@ public final class ModSounds {
 
     public static SoundEvent SYUUMATU_NO_LAEVATEIN;
 
+    /*
+     * 瀕死エンダーマンの位置を知らせる
+     * HUD警告用ソナー音。
+     */
+    public static SoundEvent ALLY_ENDERMAN_SONAR;
+
     private static boolean fabricRegistered = false;
 
     public static void registerFabric() {
@@ -33,35 +39,95 @@ public final class ModSounds {
 
         fabricRegistered = true;
 
-        TED_JUDGMENT_RAY = registerFabricSound("ted_judgment_ray");
-        TED_LIGHTING = registerFabricSound("ted_lighting");
-        TED_ORB_CHARGE = registerFabricSound("ted_orb_charge");
-        TED_ORB_SHOOTING = registerFabricSound("ted_orb_shooting");
-        TED_PHOTON_BUSTER = registerFabricSound("ted_photon_buster");
-        TED_PHOTON_BLASTER = registerFabricSound("ted_photon_blaster");
-        TED_RAGNAROK = registerFabricSound("ted_ragnarok");
-        TED_ROAR = registerFabricSound("ted_roar");
-        TED_SHOT = registerFabricSound("ted_shot");
-        TED_TACKLE = registerFabricSound("ted_tackle");
+        TED_JUDGMENT_RAY =
+                registerFabricSound(
+                        "ted_judgment_ray"
+                );
 
-        TED_DEAD = registerFabricSound("ted_dead");
-        TED_JET = registerFabricSound("ted_jet");
+        TED_LIGHTING =
+                registerFabricSound(
+                        "ted_lighting"
+                );
+
+        TED_ORB_CHARGE =
+                registerFabricSound(
+                        "ted_orb_charge"
+                );
+
+        TED_ORB_SHOOTING =
+                registerFabricSound(
+                        "ted_orb_shooting"
+                );
+
+        TED_PHOTON_BUSTER =
+                registerFabricSound(
+                        "ted_photon_buster"
+                );
+
+        TED_PHOTON_BLASTER =
+                registerFabricSound(
+                        "ted_photon_blaster"
+                );
+
+        TED_RAGNAROK =
+                registerFabricSound(
+                        "ted_ragnarok"
+                );
+
+        TED_ROAR =
+                registerFabricSound(
+                        "ted_roar"
+                );
+
+        TED_SHOT =
+                registerFabricSound(
+                        "ted_shot"
+                );
+
+        TED_TACKLE =
+                registerFabricSound(
+                        "ted_tackle"
+                );
+
+        TED_DEAD =
+                registerFabricSound(
+                        "ted_dead"
+                );
+
+        TED_JET =
+                registerFabricSound(
+                        "ted_jet"
+                );
 
         SYUUMATU_NO_LAEVATEIN =
-                registerFabricSound("syuumatu_no_laevatein");
+                registerFabricSound(
+                        "syuumatu_no_laevatein"
+                );
+
+        ALLY_ENDERMAN_SONAR =
+                registerFabricSound(
+                        "sonar"
+                );
 
         TheEndOfDragon.LOGGER.info(
                 "Registered The End Of Dragon sounds for Fabric"
         );
     }
 
-    private static SoundEvent registerFabricSound(String name) {
-        Identifier id = TheEndOfDragon.id(name);
+    private static SoundEvent registerFabricSound(
+            String name
+    ) {
+        Identifier id =
+                TheEndOfDragon.id(
+                        name
+                );
 
         return Registry.register(
                 BuiltInRegistries.SOUND_EVENT,
                 id,
-                SoundEvent.createVariableRangeEvent(id)
+                SoundEvent.createVariableRangeEvent(
+                        id
+                )
         );
     }
 
@@ -78,23 +144,50 @@ public final class ModSounds {
             SoundEvent tackle,
             SoundEvent dead,
             SoundEvent jet,
-            SoundEvent bgm
+            SoundEvent bgm,
+            SoundEvent allyEndermanSonar
     ) {
-        TED_JUDGMENT_RAY = judgmentRay;
-        TED_LIGHTING = lighting;
-        TED_ORB_CHARGE = orbCharge;
-        TED_ORB_SHOOTING = orbShooting;
-        TED_PHOTON_BUSTER = photonBuster;
-        TED_PHOTON_BLASTER = photonBlaster;
-        TED_RAGNAROK = ragnarok;
-        TED_ROAR = roar;
-        TED_SHOT = shot;
-        TED_TACKLE = tackle;
+        TED_JUDGMENT_RAY =
+                judgmentRay;
 
-        TED_DEAD = dead;
-        TED_JET = jet;
+        TED_LIGHTING =
+                lighting;
 
-        SYUUMATU_NO_LAEVATEIN = bgm;
+        TED_ORB_CHARGE =
+                orbCharge;
+
+        TED_ORB_SHOOTING =
+                orbShooting;
+
+        TED_PHOTON_BUSTER =
+                photonBuster;
+
+        TED_PHOTON_BLASTER =
+                photonBlaster;
+
+        TED_RAGNAROK =
+                ragnarok;
+
+        TED_ROAR =
+                roar;
+
+        TED_SHOT =
+                shot;
+
+        TED_TACKLE =
+                tackle;
+
+        TED_DEAD =
+                dead;
+
+        TED_JET =
+                jet;
+
+        SYUUMATU_NO_LAEVATEIN =
+                bgm;
+
+        ALLY_ENDERMAN_SONAR =
+                allyEndermanSonar;
 
         TheEndOfDragon.LOGGER.info(
                 "Bound NeoForge sounds to common registry references"
