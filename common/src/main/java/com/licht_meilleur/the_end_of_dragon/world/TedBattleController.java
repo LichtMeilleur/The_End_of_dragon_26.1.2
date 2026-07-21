@@ -75,4 +75,29 @@ public final class TedBattleController {
                 .get(level)
                 .isBattleActive();
     }
+
+    /*
+     * Endディメンションの定期更新。
+     *
+     * Fabric / NeoForge側のServerLevel tickイベントから
+     * 毎tick呼び出す。
+     */
+    public static void tick(
+            ServerLevel level
+    ) {
+        if (level.dimension() != Level.END) {
+            return;
+        }
+
+        /*
+         * 討伐後に消えた味方エンダーマンを、
+         * プレイヤーがEndへ戻った際に再生成する。
+         *
+         * メソッド内部で20tickに1回へ制限されている。
+         */
+        TedEndermanBattleHandler
+                .tickPostBattleRespawn(
+                        level
+                );
+    }
 }

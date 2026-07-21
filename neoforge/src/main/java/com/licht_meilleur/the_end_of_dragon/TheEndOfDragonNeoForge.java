@@ -11,6 +11,7 @@ import com.licht_meilleur.the_end_of_dragon.neoforge.registry.NeoForgeModEntitie
 import com.licht_meilleur.the_end_of_dragon.neoforge.registry.NeoForgeModItems;
 import com.licht_meilleur.the_end_of_dragon.neoforge.registry.NeoForgeModSounds;
 import com.licht_meilleur.the_end_of_dragon.world.EndDragonSpawnHandler;
+import com.licht_meilleur.the_end_of_dragon.world.TedBattleController;
 import com.licht_meilleur.the_end_of_dragon.world.TedEndermanBattleHandler;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.monster.EnderMan;
@@ -107,13 +108,32 @@ public final class TheEndOfDragonNeoForge {
 
     @SubscribeEvent
     public void onServerTick(
-            net.neoforged.neoforge.event.tick.ServerTickEvent.Post event
+            net.neoforged.neoforge.event.tick
+                    .ServerTickEvent.Post event
     ) {
-        for (ServerLevel level : event.getServer().getAllLevels()) {
-            if (level.dimension() ==
-                    net.minecraft.world.level.Level.END) {
-                EndDragonSpawnHandler.tick(level);
+        for (ServerLevel level :
+                event.getServer().getAllLevels()) {
+
+            if (level.dimension()
+                    != net.minecraft.world.level.Level.END) {
+                continue;
             }
+
+            /*
+             * エンダードラゴン討伐後の
+             * TED出現管理。
+             */
+            EndDragonSpawnHandler.tick(
+                    level
+            );
+
+            /*
+             * 討伐後に消えた味方エンダーマンの
+             * 再生成監視。
+             */
+            TedBattleController.tick(
+                    level
+            );
         }
     }
 

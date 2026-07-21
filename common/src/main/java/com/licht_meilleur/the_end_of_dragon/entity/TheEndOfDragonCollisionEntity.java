@@ -7,6 +7,9 @@ import com.geckolib.animation.object.PlayState;
 import com.licht_meilleur.the_end_of_dragon.entity.collision.DragonCollisionBox;
 import com.licht_meilleur.the_end_of_dragon.entity.collision.DragonCollisionPart;
 import com.licht_meilleur.the_end_of_dragon.entity.collision.DragonCollisionSampler;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.level.Level;
@@ -14,6 +17,7 @@ import net.minecraft.world.phys.AABB;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class TheEndOfDragonCollisionEntity extends TheEndOfDragonEntity {
 
@@ -57,19 +61,56 @@ public class TheEndOfDragonCollisionEntity extends TheEndOfDragonEntity {
     }
 
     @Override
+    public boolean isAttackable() {
+        return true;
+    }
+
+    @Override
+    public boolean isPushable() {
+        return false;
+    }
+
+    @Override
     public boolean hurtServer(
-            net.minecraft.server.level.ServerLevel level,
-            net.minecraft.world.damagesource.DamageSource source,
+            ServerLevel level,
+            DamageSource source,
             float damage
     ) {
-        TheEndOfDragonCoreEntity core = getCore();
+        TheEndOfDragonCoreEntity core =
+                findOwnerCore(level);
 
-        if (core == null || !core.isAlive()) {
+        if (core == null) {
             return false;
         }
 
-        return core.hurtServer(level, source, damage);
+        return core.hurtFromPart(
+                level,
+                source,
+                damage,
+                DragonCollisionPart.UPPER_BODY
+        );
     }
+
+    private TheEndOfDragonCoreEntity findOwnerCore(
+            ServerLevel level
+    ) {
+        UUID ownerUuid = this.getOwnerCoreUuid();
+
+        if (ownerUuid == null) {
+            return null;
+        }
+
+        Entity entity = level.getEntity(ownerUuid);
+
+        if (entity instanceof TheEndOfDragonCoreEntity core
+                && !core.isRemoved()
+                && core.isAlive()) {
+            return core;
+        }
+
+        return null;
+    }
+
 
     private float flightPitch = 0.0F;
 

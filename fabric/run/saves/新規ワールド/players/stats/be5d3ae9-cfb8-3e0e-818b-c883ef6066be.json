@@ -1,0 +1,30 @@
+{
+  "stats": {
+    "minecraft:dropped": {
+      "minecraft:golden_apple": 3
+    },
+    "minecraft:killed": {
+      "minecraft:ender_dragon": 1
+    },
+    "minecraft:used": {
+      "minecraft:ender_eye": 12,
+      "minecraft:end_portal_frame": 13
+    },
+    "minecraft:picked_up": {
+      "minecraft:ender_pearl": 7
+    },
+    "minecraft:custom": {
+      "minecraft:sprint_one_cm": 1779,
+      "minecraft:time_since_rest": 4222,
+      "minecraft:walk_one_cm": 21998,
+      "minecraft:total_world_time": 4222,
+      "minecraft:fly_one_cm": 63977,
+      "minecraft:mob_kills": 1,
+      "minecraft:play_time": 4222,
+      "minecraft:jump": 21,
+      "minecraft:time_since_death": 4222,
+      "minecraft:drop": 3
+    }
+  },
+  "DataVersion": 4790
+}

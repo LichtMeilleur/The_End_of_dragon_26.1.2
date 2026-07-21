@@ -30,7 +30,9 @@ public final class TedConfig {
         } catch (IOException e) {
             values = new Values();
             TheEndOfDragon.LOGGER.error("Failed to load The End of Dragon config", e);
+
         }
+
     }
 
     public static final class Values {
@@ -39,6 +41,11 @@ public final class TedConfig {
 
         public float roarDamage = 6.0F;
         public int roarEquipmentDamage = 40;
+        public java.util.List<String>
+                roarNonDamageableExclusions =
+                new java.util.ArrayList<>();
+
+
 
         public float blasterTackleDamage = 18.0F;
         public float superLandingDamage = 18.0F;
@@ -68,4 +75,6 @@ public final class TedConfig {
 
         public boolean blockBreakEnabled = true;
     }
+
+
 }

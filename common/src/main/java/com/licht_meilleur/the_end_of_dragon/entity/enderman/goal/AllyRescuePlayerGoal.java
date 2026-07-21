@@ -48,7 +48,7 @@ public class AllyRescuePlayerGoal extends Goal {
             return false;
         }
 
-        if (!this.ally.canRunSupportAi()) {
+        if (!this.ally.canRunEmergencySupportAi()) {
             return false;
         }
 

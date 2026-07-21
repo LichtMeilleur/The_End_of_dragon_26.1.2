@@ -85,6 +85,34 @@ public final class NeoForgeModItems {
                     )
             );
 
+    public static final DeferredHolder<Item, Item>
+            ENDERPEAL_GUIDE_BOOK =
+            ITEMS.register(
+                    "enderpeal_guide_book",
+                    () -> new Item(
+                            new Item.Properties()
+                                    .setId(
+                                            ModItems.ENDERPEAL_GUIDE_BOOK_KEY
+                                    )
+                                    .stacksTo(1)
+                                    .fireResistant()
+                    )
+            );
+
+    public static final DeferredHolder<Item, Item>
+            TRUE_ENDERPEAL =
+            ITEMS.register(
+                    "true_enderpeal",
+                    () -> new Item(
+                            new Item.Properties()
+                                    .setId(
+                                            ModItems.TRUE_ENDERPEAL_KEY
+                                    )
+                                    .stacksTo(1)
+                                    .fireResistant()
+                    )
+            );
+
     public static void register(IEventBus modBus) {
         ITEMS.register(modBus);
     }
@@ -95,7 +123,9 @@ public final class NeoForgeModItems {
                 THE_END_OF_DRAGON_SPAWN_EGG.get(),
                 THE_END_PIECE.get(),
                 TED_DEBUG_BOW.get(),
-                ENDERMAN_VILLAGE_GATEWAY.get()
+                ENDERMAN_VILLAGE_GATEWAY.get(),
+                ENDERPEAL_GUIDE_BOOK.get(),
+                TRUE_ENDERPEAL.get()
         );
     }
 

@@ -44,11 +44,26 @@ public final class ModItems {
                     TheEndOfDragon.id("enderman_village_gateway")
             );
 
+    public static final ResourceKey<Item> ENDERPEAL_GUIDE_BOOK_KEY =
+            ResourceKey.create(
+                    Registries.ITEM,
+                    TheEndOfDragon.id("enderpeal_guide_book")
+            );
+
+    public static final ResourceKey<Item> TRUE_ENDERPEAL_KEY =
+            ResourceKey.create(
+                    Registries.ITEM,
+                    TheEndOfDragon.id("true_enderpeal")
+            );
+
     public static Item THE_END_OF_DRAGON_ICON;
     public static Item THE_END_OF_DRAGON_SPAWN_EGG;
     public static Item THE_END_PIECE;
     public static Item TED_DEBUG_BOW;
     public static Item ENDERMAN_VILLAGE_GATEWAY;
+
+    public static Item ENDERPEAL_GUIDE_BOOK;
+    public static Item TRUE_ENDERPEAL;
 
     private static boolean fabricRegistered = false;
 
@@ -128,6 +143,34 @@ public final class ModItems {
                         )
                 );
 
+        ENDERPEAL_GUIDE_BOOK =
+                Registry.register(
+                        BuiltInRegistries.ITEM,
+                        ENDERPEAL_GUIDE_BOOK_KEY.identifier(),
+                        new Item(
+                                new Item.Properties()
+                                        .setId(
+                                                ENDERPEAL_GUIDE_BOOK_KEY
+                                        )
+                                        .stacksTo(1)
+                                        .fireResistant()
+                        )
+                );
+
+        TRUE_ENDERPEAL =
+                Registry.register(
+                        BuiltInRegistries.ITEM,
+                        TRUE_ENDERPEAL_KEY.identifier(),
+                        new Item(
+                                new Item.Properties()
+                                        .setId(
+                                                TRUE_ENDERPEAL_KEY
+                                        )
+                                        .stacksTo(1)
+                                        .fireResistant()
+                        )
+                );
+
         TheEndOfDragon.LOGGER.info(
                 "Registered The End Of Dragon items for Fabric"
         );
@@ -138,13 +181,17 @@ public final class ModItems {
             Item spawnEgg,
             Item endPiece,
             Item debugBow,
-            Item endermanVillageGateway
+            Item endermanVillageGateway,
+            Item enderpealGUIDEBook,
+            Item trueEnderpeal
     ) {
         THE_END_OF_DRAGON_ICON = icon;
         THE_END_OF_DRAGON_SPAWN_EGG = spawnEgg;
         THE_END_PIECE = endPiece;
         TED_DEBUG_BOW = debugBow;
         ENDERMAN_VILLAGE_GATEWAY = endermanVillageGateway;
+        ENDERPEAL_GUIDE_BOOK = enderpealGUIDEBook;
+        TRUE_ENDERPEAL = trueEnderpeal;
 
         TheEndOfDragon.LOGGER.info(
                 "Bound NeoForge items to common registry references"

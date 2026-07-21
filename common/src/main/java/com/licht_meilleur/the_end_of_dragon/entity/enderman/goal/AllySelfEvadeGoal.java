@@ -14,8 +14,6 @@ public class AllySelfEvadeGoal extends Goal {
     private final TedAllyEndermanEntity ally;
 
     private TheEndOfDragonCoreEntity dragon;
-    private int reactedAttackStartTick =
-            Integer.MIN_VALUE;
 
     public AllySelfEvadeGoal(
             TedAllyEndermanEntity ally
@@ -37,12 +35,15 @@ public class AllySelfEvadeGoal extends Goal {
             return false;
         }
 
-        if (!this.ally.canRunSupportAi()) {
+        /*
+         * 通常状態だけでなく、
+         * 攻撃モーション中でも回避可能にする。
+         */
+        if (!this.ally.canRunEmergencySupportAi()) {
             return false;
         }
 
-        if (this.ally.getSelfEvadeCooldown()
-                > 0) {
+        if (this.ally.getSelfEvadeCooldown() > 0) {
             return false;
         }
 
@@ -56,30 +57,24 @@ public class AllySelfEvadeGoal extends Goal {
             return false;
         }
 
-        if (!isDangerWindow(foundDragon)) {
+        DragonState state =
+                foundDragon.getDragonState();
+
+        if (!isDangerState(state)) {
             return false;
         }
-
-        int attackStartTick =
-                foundDragon.tickCount
-                        - foundDragon
-                        .getDragonStateAgeTicks();
-
-        if (attackStartTick
-                == this.reactedAttackStartTick) {
-            return false;
-        }
-
-        this.reactedAttackStartTick =
-                attackStartTick;
 
         float chance =
-                getEvadeChance(
-                        foundDragon.getDragonState()
-                );
+                getEvadeChance(state);
 
-        if (this.ally.getRandom()
-                .nextFloat() > chance) {
+        /*
+         * 失敗した場合はreact済みにしない。
+         *
+         * 次tick以降も危険状態が続いていれば
+         * 再び回避判定を行う。
+         */
+        if (this.ally.getRandom().nextFloat()
+                > chance) {
             return false;
         }
 
@@ -90,6 +85,9 @@ public class AllySelfEvadeGoal extends Goal {
 
     @Override
     public boolean canContinueToUse() {
+        /*
+         * ワープはstart()で即時実行する。
+         */
         return false;
     }
 
@@ -100,9 +98,17 @@ public class AllySelfEvadeGoal extends Goal {
             return;
         }
 
-        if (this.dragon == null) {
+        if (this.dragon == null
+                || !this.dragon.isAlive()
+                || this.dragon.isRemoved()) {
             return;
         }
+
+        DragonState state =
+                this.dragon.getDragonState();
+
+        this.ally.getNavigation().stop();
+        this.ally.setDeltaMovement(Vec3.ZERO);
 
         Vec3 destination =
                 AllyEndermanAiUtil
@@ -111,28 +117,28 @@ public class AllySelfEvadeGoal extends Goal {
                                 level,
                                 this.dragon,
                                 this.ally.position(),
-                                getMinimumEvadeDistance(
-                                        this.dragon
-                                                .getDragonState()
-                                ),
-                                getMaximumEvadeDistance(
-                                        this.dragon
-                                                .getDragonState()
-                                )
+                                getMinimumEvadeDistance(state),
+                                getMaximumEvadeDistance(state)
                         );
 
-        if (AllyEndermanAiUtil.teleportAlly(
+        if (!AllyEndermanAiUtil.teleportAlly(
                 this.ally,
                 level,
                 destination
         )) {
             /*
-             * 連続攻撃へ反応できるよう短め。
+             * ワープ先が見つからなければ、
+             * クールタイムを付けず次tickに再試行する。
              */
-            this.ally.setSelfEvadeCooldown(
-                    10
-            );
+            return;
         }
+
+        /*
+         * 継続攻撃では一定間隔で再びワープできる。
+         */
+        this.ally.setSelfEvadeCooldown(
+                getEvadeCooldown(state)
+        );
     }
 
     @Override
@@ -140,45 +146,20 @@ public class AllySelfEvadeGoal extends Goal {
         this.dragon = null;
     }
 
-    private boolean isDangerWindow(
-            TheEndOfDragonCoreEntity dragon
+    private boolean isDangerState(
+            DragonState state
     ) {
-        DragonState state =
-                dragon.getDragonState();
-
-        int age =
-                dragon.getDragonStateAgeTicks();
-
         return switch (state) {
-            case ROAR_OF_OBLITERATION ->
-                    between(age, 3, 8);
-
-            case PHOTON_BLASTER ->
-                    between(age, 18, 26);
-
-            case PHOTON_BUSTER ->
-                    between(age, 2, 12);
-
-            case BLASTER_TACKLE ->
-                    between(age, 3, 9);
-
-            case ORB_OF_ANNIHILATION ->
-                    between(age, 45, 54);
-
-            case FLAMES_OF_RAGNAROK ->
-                    between(age, 1, 12);
-
-            case JUDGMENT_RAY ->
-                    between(age, 12, 24);
-
-            case TAIL_WHIP ->
-                    between(age, 2, 10);
-
-            case SUPER_LANDING ->
-                    between(age, 1, 18);
-
-            case FLY_SHOT ->
-                    between(age, 1, 5);
+            case ROAR_OF_OBLITERATION,
+                 PHOTON_BLASTER,
+                 PHOTON_BUSTER,
+                 BLASTER_TACKLE,
+                 ORB_OF_ANNIHILATION,
+                 FLAMES_OF_RAGNAROK,
+                 JUDGMENT_RAY,
+                 TAIL_WHIP,
+                 SUPER_LANDING,
+                 FLY_SHOT -> true;
 
             default -> false;
         };
@@ -188,22 +169,53 @@ public class AllySelfEvadeGoal extends Goal {
             DragonState state
     ) {
         return switch (state) {
+            /*
+             * 継続攻撃・広範囲攻撃は必ず逃げる。
+             */
             case PHOTON_BLASTER,
                  PHOTON_BUSTER,
                  FLAMES_OF_RAGNAROK,
                  JUDGMENT_RAY,
-                 SUPER_LANDING ->
-                    0.98F;
+                 SUPER_LANDING,
+                 BLASTER_TACKLE -> 1.0F;
 
-            case ROAR_OF_OBLITERATION ->
-                    0.95F;
+            case ROAR_OF_OBLITERATION -> 0.98F;
+
+            case TAIL_WHIP -> 0.97F;
 
             case ORB_OF_ANNIHILATION,
-                 FLY_SHOT ->
-                    0.90F;
+                 FLY_SHOT -> 0.95F;
 
-            default ->
-                    0.94F;
+            default -> 1.0F;
+        };
+    }
+
+    private int getEvadeCooldown(
+            DragonState state
+    ) {
+        return switch (state) {
+            /*
+             * 長時間継続する攻撃。
+             * 約0.4秒ごとに再回避可能。
+             */
+            case FLAMES_OF_RAGNAROK,
+                 JUDGMENT_RAY,
+                 PHOTON_BLASTER,
+                 PHOTON_BUSTER -> 8;
+
+            /*
+             * 突進や着地の追撃を避ける。
+             */
+            case BLASTER_TACKLE,
+                 SUPER_LANDING,
+                 TAIL_WHIP -> 10;
+
+            case ROAR_OF_OBLITERATION -> 12;
+
+            case ORB_OF_ANNIHILATION,
+                 FLY_SHOT -> 10;
+
+            default -> 10;
         };
     }
 
@@ -211,17 +223,19 @@ public class AllySelfEvadeGoal extends Goal {
             DragonState state
     ) {
         return switch (state) {
-            case ROAR_OF_OBLITERATION ->
-                    34.0D;
+            case ROAR_OF_OBLITERATION -> 42.0D;
 
             case FLAMES_OF_RAGNAROK,
                  PHOTON_BLASTER,
                  PHOTON_BUSTER,
-                 JUDGMENT_RAY ->
-                    22.0D;
+                 JUDGMENT_RAY -> 28.0D;
 
-            default ->
-                    15.0D;
+            case SUPER_LANDING,
+                 BLASTER_TACKLE -> 24.0D;
+
+            case TAIL_WHIP -> 20.0D;
+
+            default -> 18.0D;
         };
     }
 
@@ -229,26 +243,19 @@ public class AllySelfEvadeGoal extends Goal {
             DragonState state
     ) {
         return switch (state) {
-            case ROAR_OF_OBLITERATION ->
-                    46.0D;
+            case ROAR_OF_OBLITERATION -> 56.0D;
 
             case FLAMES_OF_RAGNAROK,
                  PHOTON_BLASTER,
                  PHOTON_BUSTER,
-                 JUDGMENT_RAY ->
-                    32.0D;
+                 JUDGMENT_RAY -> 42.0D;
 
-            default ->
-                    24.0D;
+            case SUPER_LANDING,
+                 BLASTER_TACKLE -> 36.0D;
+
+            case TAIL_WHIP -> 30.0D;
+
+            default -> 28.0D;
         };
-    }
-
-    private static boolean between(
-            int value,
-            int minimum,
-            int maximum
-    ) {
-        return value >= minimum
-                && value <= maximum;
     }
 }

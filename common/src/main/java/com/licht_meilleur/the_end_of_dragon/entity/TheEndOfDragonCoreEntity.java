@@ -1,10 +1,12 @@
 package com.licht_meilleur.the_end_of_dragon.entity;
 
+import com.licht_meilleur.the_end_of_dragon.TheEndOfDragon;
 import com.licht_meilleur.the_end_of_dragon.config.TedConfig;
 import com.licht_meilleur.the_end_of_dragon.entity.beam.TedBeamSpec;
 import com.licht_meilleur.the_end_of_dragon.entity.beam.TedBeamSpecs;
 import com.licht_meilleur.the_end_of_dragon.entity.collision.DragonCollisionBox;
 import com.licht_meilleur.the_end_of_dragon.entity.collision.DragonCollisionPart;
+import com.licht_meilleur.the_end_of_dragon.entity.damage.DragonPartDamageProfile;
 import com.licht_meilleur.the_end_of_dragon.entity.enderman.TedAllyEndermanEntity;
 import com.licht_meilleur.the_end_of_dragon.entity.hitbox.DragonLocatorSampler;
 import com.licht_meilleur.the_end_of_dragon.entity.hitbox.TedBeamHitbox;
@@ -25,9 +27,11 @@ import com.licht_meilleur.the_end_of_dragon.world.TedEndermanBattleHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -43,6 +47,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -435,7 +440,32 @@ public class TheEndOfDragonCoreEntity extends Monster {
             return;
         }
 
-        ServerLevel serverLevel = (ServerLevel) this.level();
+        ServerLevel serverLevel =
+                (ServerLevel) this.level();
+
+        /*
+         * 必ず早期returnより前に更新する。
+         *
+         * RECOVERY_ASCEND / RECOVERY_RETURN中でも、
+         * ドラゴンの現在位置を中心に
+         * 強制ロード範囲を追従させる。
+         */
+        maintainForcedChunks(
+                serverLevel
+        );
+
+        /*
+        if (this.tickCount % 20 == 0) {
+            TheEndOfDragon.LOGGER.info(
+                    "[TED] tick={} state={} age={} pos={}",
+                    this.tickCount,
+                    this.getDragonState(),
+                    this.getDragonStateAgeTicks(),
+                    this.position()
+            );
+        }
+
+         */
 
 
 
@@ -487,10 +517,7 @@ public class TheEndOfDragonCoreEntity extends Monster {
         this.tickFlightJetSound(serverLevel);
 
 
-        if (!this.level().isClientSide() && this.level() instanceof ServerLevel level) {
 
-            maintainForcedChunks(level);
-        }
 
         bossBar.setProgress(this.getHealth() / this.getMaxHealth());
         bossBar.setName(
@@ -549,14 +576,6 @@ public class TheEndOfDragonCoreEntity extends Monster {
             return;
         }
 
-        System.out.println(
-                "[TED AIR STALL] recovering"
-                        + " state=" + state
-                        + " age=" + this.getDragonStateAgeTicks()
-                        + " pos=" + this.position()
-                        + " movementLocked="
-                        + this.isAttackMovementLocked()
-        );
 
         this.airSequenceStillTicks = 0;
         this.lastAirSequencePosition = null;
@@ -586,12 +605,7 @@ public class TheEndOfDragonCoreEntity extends Monster {
             return;
         }
 
-        System.out.println(
-                "[TED AIR TIMEOUT]"
-                        + " state=" + state
-                        + " age=" + age
-                        + " pos=" + this.position()
-        );
+
 
         this.setAttackMovementLocked(false);
         this.startRecoveryDiveSequence();
@@ -654,10 +668,6 @@ public class TheEndOfDragonCoreEntity extends Monster {
         TedBattleWorldState worldState =
                 TedBattleWorldState.get(level);
 
-        /*
-         * TEDとの戦闘自体は終了。
-         */
-        worldState.setBattleActive(false);
 
         /*
          * 討伐後も5分30秒間、
@@ -697,38 +707,71 @@ public class TheEndOfDragonCoreEntity extends Monster {
         switch (progress) {
             case ALLY_ACTIVE -> {
                 /*
-                 * 生存して討伐を迎えた場合は、
-                 * その場で村移動アイテムを渡す。
+                 * 生存したままTED討伐を迎えたため、
+                 * 討伐後の手渡し待機段階へ進める。
                  */
-                if (ally != null && ally.isAlive()) {
-                    Player nearestPlayer =
-                            level.getNearestPlayer(
-                                    ally,
-                                    128.0D
-                            );
+                worldState.setAllyProgress(
+                        TedBattleWorldState
+                                .TedAllyProgress
+                                .RECOVERED_AFTER_BATTLE
+                );
 
-                    if (nearestPlayer != null
-                            && nearestPlayer.isAlive()) {
-                        ally.startHandOver(
-                                nearestPlayer
+                if (ally == null
+                        || !ally.isAlive()) {
+                    /*
+                     * Entityが見つからない場合は、
+                     * 後述の再生成待ちへ進める。
+                     */
+                    worldState.setAllyProgress(
+                            TedBattleWorldState
+                                    .TedAllyProgress
+                                    .RESPAWN_AFTER_BATTLE_PENDING
+                    );
+
+                    return;
+                }
+
+                Player nearestPlayer =
+                        level.getNearestPlayer(
+                                ally,
+                                128.0D
                         );
-                    }
+
+                if (nearestPlayer != null
+                        && nearestPlayer.isAlive()) {
+
+                    ally.startHandOver(
+                            nearestPlayer
+                    );
+
+                } else {
+                    /*
+                     * プレイヤー不在時はSUPPORT_IDLEで待つ。
+                     *
+                     * Entity側のtickPostBattleHandOver()が
+                     * プレイヤー復帰後に再試行する。
+                     */
+                    ally.setAllyState(
+                            com.licht_meilleur.the_end_of_dragon
+                                    .entity.enderman
+                                    .AllyEndermanState
+                                    .SUPPORT_IDLE
+                    );
                 }
             }
 
             case WOUNDED_DURING_BATTLE -> {
-
-                worldState.setAllyProgress(
-                        TedBattleWorldState
-                                .TedAllyProgress
-                                .WOUNDED_AFTER_BATTLE
-                );
-
-                if (ally != null && ally.isAlive()) {
+                if (ally != null
+                        && ally.isAlive()) {
 
                     ally.setWoundedAfterBattle();
 
                 } else {
+                    worldState.setAllyProgress(
+                            TedBattleWorldState
+                                    .TedAllyProgress
+                                    .RESPAWN_AFTER_BATTLE_PENDING
+                    );
 
                     TedEndermanBattleHandler
                             .spawnPostBattleWoundedEnderman(
@@ -739,11 +782,10 @@ public class TheEndOfDragonCoreEntity extends Monster {
             }
 
             case DIED_DURING_BATTLE -> {
-
                 worldState.setAllyProgress(
                         TedBattleWorldState
                                 .TedAllyProgress
-                                .WOUNDED_AFTER_BATTLE
+                                .RESPAWN_AFTER_BATTLE_PENDING
                 );
 
                 TedEndermanBattleHandler
@@ -1091,10 +1133,26 @@ public class TheEndOfDragonCoreEntity extends Monster {
 
     private void maintainForcedChunks(ServerLevel level) {
 
+
+
+
         int cx = Mth.floor(this.getX()) >> 4;
         int cz = Mth.floor(this.getZ()) >> 4;
 
         int radius = 4;
+
+        /*
+        if (this.tickCount % 20 == 0) {
+            TheEndOfDragon.LOGGER.info(
+                    "[TED CHUNK] center=({}, {}) forced={}",
+                    cx,
+                    cz,
+                    this.forcedChunks.size()
+            );
+        }
+
+         */
+
 
         java.util.Set<Long> next = new java.util.HashSet<>();
 
@@ -1528,7 +1586,7 @@ public class TheEndOfDragonCoreEntity extends Monster {
                 /*
                  * 戦闘自体は終了。
                  */
-                worldState.setBattleActive(false);
+                worldState.completeBattle();
 
                 /*
                  * 討伐後も5分30秒間、
@@ -1652,10 +1710,111 @@ public class TheEndOfDragonCoreEntity extends Monster {
                         600.0D * TedConfig.values.healthMultiplier
                 )
                 .add(Attributes.ATTACK_DAMAGE, 20.0D)
-                .add(Attributes.ARMOR, 40.0D)
+                .add(Attributes.ARMOR, 20.0D)
                 .add(Attributes.FOLLOW_RANGE, 128.0D)
                 .add(Attributes.MOVEMENT_SPEED, 0.35D)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 1.0D);
+    }
+
+    public boolean hurtFromPart(
+            ServerLevel level,
+            DamageSource source,
+            float damage,
+            DragonCollisionPart part
+    ) {
+        return applyIncomingDamage(
+                level,
+                source,
+                damage,
+                part
+        );
+    }
+
+    @Override
+    public boolean hurtServer(
+            ServerLevel level,
+            DamageSource source,
+            float damage
+    ) {
+        /*
+         * Core本体へ直接入った攻撃は、
+         * 通常胴体への攻撃として扱う。
+         */
+        return applyIncomingDamage(
+                level,
+                source,
+                damage,
+                DragonCollisionPart.UPPER_BODY
+        );
+    }
+
+    private boolean applyIncomingDamage(
+            ServerLevel level,
+            DamageSource source,
+            float damage,
+            DragonCollisionPart part
+    ) {
+        if (this.getDragonState() == DragonState.DEAD
+                || this.deathSequenceStarted
+                || !this.isAlive()) {
+            return false;
+        }
+
+        /*
+         * 奈落ダメージは受けず、
+         * 緊急復帰へ移行する。
+         */
+        if (source.is(DamageTypes.FELL_OUT_OF_WORLD)) {
+            triggerVoidRecovery(level);
+            return false;
+        }
+
+        /*
+         * 先に異常な高ダメージを軽減する。
+         *
+         * 部位倍率を先に掛けると、
+         * 弱点へ攻撃した結果500以上となり、
+         * 99%軽減へ入る逆転現象が起きる。
+         */
+        float reducedDamage =
+                reduceIncomingBossDamage(damage);
+
+        float partMultiplier =
+                DragonPartDamageProfile
+                        .getMultiplier(
+                                part != null
+                                        ? part
+                                        : DragonCollisionPart.UPPER_BODY
+                        );
+
+        float finalDamage =
+                reducedDamage
+                        * partMultiplier;
+
+        if (finalDamage <= 0.0F) {
+            return false;
+        }
+
+        return super.hurtServer(
+                level,
+                source,
+                finalDamage
+        );
+    }
+
+    private boolean hasRangedWeapon(
+            Player player
+    ) {
+        for (ItemStack stack :
+                player.getInventory().getNonEquipmentItems()) {
+
+            if (stack.is(Items.BOW)
+                    || stack.is(Items.CROSSBOW)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public void startRagnarokSequence() {
@@ -1982,29 +2141,7 @@ public class TheEndOfDragonCoreEntity extends Monster {
         };
     }
 
-    @Override
-    public boolean hurtServer(
-            ServerLevel level,
-            DamageSource source,
-            float damage
-    ) {
-        if (this.getDragonState() == DragonState.DEAD
-                || this.deathSequenceStarted) {
-            return false;
-        }
 
-        /*
-         * 奈落ダメージは受けず、緊急復帰へ移行する。
-         */
-        if (source.is(DamageTypes.FELL_OUT_OF_WORLD)) {
-            triggerVoidRecovery(level);
-            return false;
-        }
-
-        damage = reduceIncomingBossDamage(damage);
-
-        return super.hurtServer(level, source, damage);
-    }
 
     private void tickVoidRecovery(ServerLevel level) {
         if (!this.isAlive()) {
@@ -3945,70 +4082,243 @@ public class TheEndOfDragonCoreEntity extends Monster {
 
 
 
-    private void damageEquipmentByRoar(ServerLevel level, LivingEntity entity, int amount) {
+    private void damageEquipmentByRoar(
+            ServerLevel level,
+            LivingEntity entity,
+            int amount
+    ) {
         for (EquipmentSlot slot : EquipmentSlot.values()) {
-            ItemStack stack = entity.getItemBySlot(slot);
-
             if (!isRoarBreakableEquipmentSlot(slot)) {
                 continue;
             }
+
+            ItemStack stack =
+                    entity.getItemBySlot(slot);
 
             if (!isRoarTargetItem(stack)) {
                 continue;
             }
 
-// 対象装備なら、不可壊・耐久なしも即破壊
-            if (!stack.isDamageableItem()
-                    || stack.has(net.minecraft.core.component.DataComponents.UNBREAKABLE)) {
-                entity.setItemSlot(slot, ItemStack.EMPTY);
+            /*
+             * 明示的な不可壊装備は即時破壊。
+             */
+            if (stack.has(DataComponents.UNBREAKABLE)) {
+                entity.setItemSlot(
+                        slot,
+                        ItemStack.EMPTY
+                );
+
                 continue;
             }
 
-            // 高耐久装備は即破壊
-            if (stack.getMaxDamage() >= 1000) {
-                entity.setItemSlot(slot, ItemStack.EMPTY);
+            /*
+             * 耐久値を持たない装備。
+             *
+             * Configの除外リストに登録されていれば保護。
+             * 登録されていなければ破壊。
+             */
+            if (!stack.isDamageableItem()) {
+                if (isRoarNonDamageableExcluded(stack)) {
+                    continue;
+                }
+
+                entity.setItemSlot(
+                        slot,
+                        ItemStack.EMPTY
+                );
+
                 continue;
             }
 
-            int nextDamage = stack.getDamageValue() + amount;
+            /*
+             * 耐久値を持つ装備は、
+             * 最大耐久値の20％またはConfigの固定値のうち、
+             * 大きい方を耐久ダメージとして使用する。
+             *
+             * これにより高耐久装備も即時破壊ではなく、
+             * おおむね5回で破壊される。
+             */
+            int durabilityDamage =
+                    calculateRoarDurabilityDamage(
+                            stack,
+                            amount
+                    );
+
+            int nextDamage =
+                    stack.getDamageValue()
+                            + durabilityDamage;
 
             if (nextDamage >= stack.getMaxDamage()) {
-                entity.setItemSlot(slot, ItemStack.EMPTY);
+                entity.setItemSlot(
+                        slot,
+                        ItemStack.EMPTY
+                );
             } else {
-                stack.setDamageValue(nextDamage);
+                stack.setDamageValue(
+                        nextDamage
+                );
             }
         }
 
-        for (ItemStack stack : com.licht_meilleur.the_end_of_dragon.compat.TedAccessories.getAccessories(entity)) {
-            damageAccessoryStackByRoar(stack, amount);
+        /*
+         * Accessories / Curios系装備。
+         */
+        for (ItemStack stack :
+                com.licht_meilleur.the_end_of_dragon.compat
+                        .TedAccessories
+                        .getAccessories(entity)) {
+
+            damageAccessoryStackByRoar(
+                    stack,
+                    amount
+            );
         }
     }
 
-    private void damageAccessoryStackByRoar(ItemStack stack, int amount) {
+    private boolean isVanillaItem(
+            ItemStack stack
+    ) {
+        if (stack == null || stack.isEmpty()) {
+            return false;
+        }
+
+        Identifier id =
+                BuiltInRegistries.ITEM
+                        .getKey(stack.getItem());
+
+        return id != null
+                && "minecraft".equals(
+                id.getNamespace()
+        );
+    }
+
+    private void damageAccessoryStackByRoar(
+            ItemStack stack,
+            int amount
+    ) {
         if (!isRoarTargetItem(stack)) {
             return;
         }
 
-        // 耐久なし・不可壊アクセサリーは即破壊
-        if (!stack.isDamageableItem()
-                || stack.has(DataComponents.UNBREAKABLE)) {
-            stack.shrink(1);
+        /*
+         * 明示的な不可壊アクセサリーは即時破壊。
+         */
+        if (stack.has(DataComponents.UNBREAKABLE)) {
+            stack.setCount(0);
             return;
         }
 
-        // 超高耐久も即破壊
-        if (stack.getMaxDamage() >= 1000) {
-            stack.shrink(1);
+        /*
+         * 耐久値を持たないアクセサリー。
+         *
+         * Configの除外対象なら残す。
+         * そうでなければ破壊する。
+         */
+        if (!stack.isDamageableItem()) {
+            if (isRoarNonDamageableExcluded(stack)) {
+                return;
+            }
+
+            stack.setCount(0);
             return;
         }
 
-        int nextDamage = stack.getDamageValue() + amount;
+        /*
+         * 耐久値を持つアクセサリーは、
+         * 最大耐久値に応じた割合ダメージ。
+         */
+        int durabilityDamage =
+                calculateRoarDurabilityDamage(
+                        stack,
+                        amount
+                );
+
+        int nextDamage =
+                stack.getDamageValue()
+                        + durabilityDamage;
 
         if (nextDamage >= stack.getMaxDamage()) {
-            stack.shrink(1);
+            stack.setCount(0);
         } else {
-            stack.setDamageValue(nextDamage);
+            stack.setDamageValue(
+                    nextDamage
+            );
         }
+    }
+
+
+    private int calculateRoarDurabilityDamage(
+            ItemStack stack,
+            int baseAmount
+    ) {
+        if (stack == null
+                || stack.isEmpty()
+                || !stack.isDamageableItem()) {
+            return 0;
+        }
+
+        /*
+         * 最大耐久値の20％。
+         */
+        int proportionalDamage =
+                Math.max(
+                        1,
+                        Math.round(
+                                stack.getMaxDamage()
+                                        * 0.20F
+                        )
+                );
+
+        /*
+         * Configの固定値と20％のうち、
+         * より大きい方を使用。
+         */
+        return Math.max(
+                Math.max(1, baseAmount),
+                proportionalDamage
+        );
+    }
+
+    private boolean isRoarNonDamageableExcluded(
+            ItemStack stack
+    ) {
+        if (stack == null
+                || stack.isEmpty()
+                || stack.isDamageableItem()) {
+            return false;
+        }
+
+        Identifier itemId =
+                BuiltInRegistries.ITEM
+                        .getKey(stack.getItem());
+
+        if (itemId == null) {
+            return false;
+        }
+
+        String fullId =
+                itemId.toString();
+
+        String namespaceWildcard =
+                itemId.getNamespace()
+                        + ":*";
+
+        /*
+         * 個別指定：
+         * ars_nouveau:novice_spell_book
+         *
+         * MOD全体指定：
+         * ars_nouveau:*
+         */
+        return TedConfig.values
+                .roarNonDamageableExclusions
+                .stream()
+                .anyMatch(configuredId ->
+                        fullId.equals(configuredId)
+                                || namespaceWildcard.equals(
+                                configuredId
+                        )
+                );
     }
 
 

@@ -59,6 +59,90 @@ public final class TedAllyEndermanMessageHandler {
         );
     }
 
+    public static void sendFoodRequestMessage(
+            ServerLevel level,
+            TedAllyEndermanEntity ally
+    ) {
+        if (level == null
+                || ally == null
+                || !ally.isAlive()) {
+            return;
+        }
+
+        /*
+         * 周囲64ブロック以内のプレイヤーへ送信。
+         */
+        for (ServerPlayer player :
+                level.getServer()
+                        .getPlayerList()
+                        .getPlayers()) {
+
+            if (player.level() != level) {
+                continue;
+            }
+
+            if (player.distanceToSqr(ally)
+                    > 64.0D * 64.0D) {
+                continue;
+            }
+
+            player.sendSystemMessage(
+                    Component.translatable(
+                            "message.the_end_of_dragon.ally_enderman.request_food"
+                    )
+            );
+        }
+    }
+
+    public static void sendFoodReceivedMessage(
+            ServerLevel level,
+            TedAllyEndermanEntity ally
+    ) {
+        if (level == null
+                || ally == null) {
+            return;
+        }
+
+        for (ServerPlayer player :
+                level.getServer()
+                        .getPlayerList()
+                        .getPlayers()) {
+
+            if (player.level() != level) {
+                continue;
+            }
+
+            if (player.distanceToSqr(ally)
+                    > 64.0D * 64.0D) {
+                continue;
+            }
+
+            player.sendSystemMessage(
+                    Component.translatable(
+                            "message.the_end_of_dragon.ally_enderman.food_received"
+                    )
+            );
+        }
+    }
+
+    public static void sendCombatSupplyMessage(
+            ServerLevel level,
+            TedAllyEndermanEntity ally,
+            ServerPlayer target
+    ) {
+        if (level == null
+                || ally == null
+                || target == null) {
+            return;
+        }
+
+        target.sendSystemMessage(
+                Component.translatable(
+                        "message.the_end_of_dragon.ally_enderman.combat_supply"
+                )
+        );
+    }
+
     private static void sendToNearbyPlayers(
             ServerLevel level,
             TedAllyEndermanEntity ally,

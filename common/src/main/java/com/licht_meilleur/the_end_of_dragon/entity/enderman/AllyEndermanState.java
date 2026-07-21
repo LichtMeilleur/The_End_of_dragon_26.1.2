@@ -7,6 +7,18 @@ public enum AllyEndermanState {
      */
     WOUNDED,
     /*
+     *
+     *
+     *
+     *
+     *
+     *
+     * アイテムを手渡しする状態 討伐後の村の門
+     *
+     *
+     */
+    WAITING_HAND_OVER,
+    /*
     *
     *
     *
@@ -55,6 +67,20 @@ public enum AllyEndermanState {
      * プレイヤー救助ワープ。
      */
     WITH_PLAYER_WARP,
+
+    /*
+    食べ物要求
+     */
+
+    REQUESTING_FOOD,
+    /*
+    食べる
+     */
+    EATING,
+    /*
+    戦闘アイテム渡し
+    */
+    COMBAT_SUPPLY_HAND_OVER,
 
     /*
      * 戦闘不能。

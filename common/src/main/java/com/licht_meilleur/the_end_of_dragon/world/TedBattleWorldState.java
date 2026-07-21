@@ -17,7 +17,7 @@ public final class TedBattleWorldState extends SavedData {
      * 保存項目の構成を変更した場合は、
      * 2、3……と増やしていく。
      */
-    private static final int CURRENT_DATA_VERSION = 1;
+    private static final int CURRENT_DATA_VERSION = 3;
 
     /*
      * 保存されていたデータのバージョン。
@@ -37,12 +37,31 @@ public final class TedBattleWorldState extends SavedData {
      * 通常のスポーンを許可する。
      */
     private boolean battleActive;
-
+    /*
+     * TEDの討伐が完了しているか。
+     *
+     * false:
+     * 戦闘開始前、または戦闘中。
+     *
+     * true:
+     * TED討伐後。
+     *
+     * 門アイテムの手渡しや、
+     * 討伐後エンダーマンの再生成判定に使用する。
+     */
+    private boolean battleCompleted;
     /*
      * 味方エンダーマン救助イベントの進行状況。
      */
     private TedAllyProgress allyProgress;
-
+    /*
+     * プレイヤーへ渡していない
+     * エンダーマン村の門アイテム数。
+     *
+     * 初期値は1。
+     * 配布成功後は0になる。
+     */
+    private int invitationGatewayCount;
     /*
      * enumを文字列として保存するCodec。
      *
@@ -111,6 +130,18 @@ public final class TedBattleWorldState extends SavedData {
                                             TedBattleWorldState
                                                     ::isBattleActive
                                     ),
+                            /*
+                             * TED討伐済みフラグ。
+                             */
+                            Codec.BOOL
+                                    .optionalFieldOf(
+                                            "battle_completed",
+                                            false
+                                    )
+                                    .forGetter(
+                                            TedBattleWorldState
+                                                    ::isBattleCompleted
+                                    ),
 
                             ALLY_PROGRESS_CODEC
                                     .optionalFieldOf(
@@ -130,6 +161,16 @@ public final class TedBattleWorldState extends SavedData {
                                     .forGetter(
                                             TedBattleWorldState
                                                     ::getEndermanSpawnSuppressedUntil
+                                    ),
+
+                            Codec.INT
+                                    .optionalFieldOf(
+                                            "invitation_gateway_count",
+                                            1
+                                    )
+                                    .forGetter(
+                                            TedBattleWorldState
+                                                    ::getInvitationGatewayCount
                                     )
                     ).apply(
                             instance,
@@ -162,8 +203,10 @@ public final class TedBattleWorldState extends SavedData {
         this(
                 CURRENT_DATA_VERSION,
                 false,
+                false,
                 TedAllyProgress.NOT_STARTED,
-                0L
+                0L,
+                1
         );
     }
 
@@ -173,8 +216,10 @@ public final class TedBattleWorldState extends SavedData {
     private TedBattleWorldState(
             int dataVersion,
             boolean battleActive,
+            boolean battleCompleted,
             TedAllyProgress allyProgress,
-            long endermanSpawnSuppressedUntil
+            long endermanSpawnSuppressedUntil,
+            int invitationGatewayCount
     ) {
         this.dataVersion =
                 Math.max(
@@ -185,6 +230,9 @@ public final class TedBattleWorldState extends SavedData {
         this.battleActive =
                 battleActive;
 
+        this.battleCompleted =
+                battleCompleted;
+
         this.allyProgress =
                 allyProgress != null
                         ? allyProgress
@@ -194,6 +242,12 @@ public final class TedBattleWorldState extends SavedData {
                 Math.max(
                         0L,
                         endermanSpawnSuppressedUntil
+                );
+
+        this.invitationGatewayCount =
+                Math.max(
+                        0,
+                        invitationGatewayCount
                 );
 
         migrateDataIfNeeded();
@@ -210,9 +264,7 @@ public final class TedBattleWorldState extends SavedData {
 
         /*
          * バージョン0:
-         *
-         * battle_activeしか保存していなかった時代。
-         * ally_progressはNOT_STARTEDとして扱う。
+         * allyProgress未実装時代。
          */
         if (this.dataVersion < 1) {
             if (this.allyProgress == null) {
@@ -225,29 +277,55 @@ public final class TedBattleWorldState extends SavedData {
         }
 
         /*
-         * 将来CURRENT_DATA_VERSIONが2になった場合は、
-         * この下へ追加する。
+         * バージョン2:
+         * 未配布の村門アイテム数を追加。
          *
-         * 例:
-         *
-         * if (this.dataVersion < 2) {
-         *     新しい項目の初期化処理;
-         *     this.dataVersion = 2;
-         *     changed = true;
-         * }
+         * すでにITEM_GIVENなら0、
+         * それ以外なら未配布として1。
          */
+        if (this.dataVersion < 2) {
+            this.invitationGatewayCount =
+                    this.allyProgress
+                            == TedAllyProgress.ITEM_GIVEN
+                            ? 0
+                            : 1;
 
-        if (this.dataVersion < CURRENT_DATA_VERSION) {
+            this.dataVersion = 2;
+            changed = true;
+        }
+
+        /*
+         * バージョン3:
+         * TED討伐済みフラグを追加。
+         *
+         * 旧SavedDataでは進行状態から推測する。
+         */
+        if (this.dataVersion < 3) {
+            this.battleCompleted =
+                    switch (this.allyProgress) {
+                        case WOUNDED_AFTER_BATTLE,
+                             RECOVERED_AFTER_BATTLE,
+                             ITEM_GIVEN -> true;
+
+                        default -> false;
+                    };
+
+            this.dataVersion = 3;
+            changed = true;
+        }
+
+        /*
+         * 将来バージョンを増やした際の最終補正。
+         */
+        if (this.dataVersion
+                < CURRENT_DATA_VERSION) {
+
             this.dataVersion =
                     CURRENT_DATA_VERSION;
 
             changed = true;
         }
 
-        /*
-         * 変換されたデータを、
-         * 次回ワールド保存時に書き直す。
-         */
         if (changed) {
             setDirty();
         }
@@ -292,6 +370,24 @@ public final class TedBattleWorldState extends SavedData {
         setDirty();
     }
 
+    public boolean isBattleCompleted() {
+        return this.battleCompleted;
+    }
+
+    public void setBattleCompleted(
+            boolean battleCompleted
+    ) {
+        if (this.battleCompleted
+                == battleCompleted) {
+            return;
+        }
+
+        this.battleCompleted =
+                battleCompleted;
+
+        setDirty();
+    }
+
     public TedAllyProgress getAllyProgress() {
         return allyProgress;
     }
@@ -327,11 +423,38 @@ public final class TedBattleWorldState extends SavedData {
             changed = true;
         }
 
+        /*
+         * battleCompletedは一度討伐した事実なので、
+         * 再戦開始時にもfalseへ戻さない。
+         */
+
         if (this.allyProgress
                 == TedAllyProgress.NOT_STARTED) {
+
             this.allyProgress =
                     TedAllyProgress.WOUNDED_DURING_BATTLE;
 
+            changed = true;
+        }
+
+        if (changed) {
+            setDirty();
+        }
+    }
+
+    /*
+     * TED討伐成功時に呼ぶ。
+     */
+    public void completeBattle() {
+        boolean changed = false;
+
+        if (this.battleActive) {
+            this.battleActive = false;
+            changed = true;
+        }
+
+        if (!this.battleCompleted) {
+            this.battleCompleted = true;
             changed = true;
         }
 
@@ -350,6 +473,54 @@ public final class TedBattleWorldState extends SavedData {
     public void endBattle() {
         setBattleActive(false);
     }
+    public int getInvitationGatewayCount() {
+        return this.invitationGatewayCount;
+    }
+
+    public boolean hasInvitationGatewayToGive() {
+        return this.invitationGatewayCount > 0;
+    }
+
+    /*
+     * 未配布数を直接設定する。
+     */
+    public void setInvitationGatewayCount(
+            int count
+    ) {
+        int safeCount =
+                Math.max(
+                        0,
+                        count
+                );
+
+        if (this.invitationGatewayCount
+                == safeCount) {
+            return;
+        }
+
+        this.invitationGatewayCount =
+                safeCount;
+
+        setDirty();
+    }
+
+    /*
+     * 門アイテムを1個配布したことを確定する。
+     *
+     * 残数がない場合はfalse。
+     */
+    public boolean consumeInvitationGateway() {
+        if (this.invitationGatewayCount <= 0) {
+            return false;
+        }
+
+        this.invitationGatewayCount--;
+
+        setDirty();
+
+        return true;
+    }
+
 
     public enum TedAllyProgress {
 
@@ -384,10 +555,18 @@ public final class TedBattleWorldState extends SavedData {
          */
         RECOVERED_AFTER_BATTLE,
 
+
+
         /*
          * 村への招待アイテムを渡し終えた。
          */
-        ITEM_GIVEN
+        ITEM_GIVEN,
+
+        /*
+         * TED討伐後、味方エンダーマンが存在せず、
+         * 瀕死状態で再生成する必要がある。
+         */
+        RESPAWN_AFTER_BATTLE_PENDING,
     }
 
     /*

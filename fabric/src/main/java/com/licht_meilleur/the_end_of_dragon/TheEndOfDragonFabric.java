@@ -10,6 +10,7 @@ import com.licht_meilleur.the_end_of_dragon.registry.ModEntities;
 import com.licht_meilleur.the_end_of_dragon.registry.ModItems;
 import com.licht_meilleur.the_end_of_dragon.registry.ModSounds;
 import com.licht_meilleur.the_end_of_dragon.world.EndDragonSpawnHandler;
+import com.licht_meilleur.the_end_of_dragon.world.TedBattleController;
 import com.licht_meilleur.the_end_of_dragon.world.TedEndermanBattleHandler;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -46,14 +47,34 @@ public final class TheEndOfDragonFabric implements ModInitializer {
                 FabricLoader.getInstance().getConfigDir()
         );
 
-        ServerTickEvents.END_SERVER_TICK.register(server -> {
-            for (ServerLevel level : server.getAllLevels()) {
-                if (level.dimension()
-                        == net.minecraft.world.level.Level.END) {
-                    EndDragonSpawnHandler.tick(level);
+        ServerTickEvents.END_SERVER_TICK.register(
+                server -> {
+                    for (ServerLevel level :
+                            server.getAllLevels()) {
+
+                        if (level.dimension()
+                                != net.minecraft.world.level.Level.END) {
+                            continue;
+                        }
+
+                        /*
+                         * エンダードラゴン討伐後の
+                         * TED出現管理。
+                         */
+                        EndDragonSpawnHandler.tick(
+                                level
+                        );
+
+                        /*
+                         * 討伐後に消えた味方エンダーマンの
+                         * 再生成監視。
+                         */
+                        TedBattleController.tick(
+                                level
+                        );
+                    }
                 }
-            }
-        });
+        );
 
         FabricDefaultAttributeRegistry.register(
                 ModEntities.THE_END_OF_DRAGON,

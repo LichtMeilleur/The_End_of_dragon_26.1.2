@@ -14,5 +14,11 @@ public enum TedAllyProgress {
 
     RECOVERED_AFTER_BATTLE,
 
-    ITEM_GIVEN
+    ITEM_GIVEN,
+
+    /*
+     * TED討伐後、味方エンダーマンが存在せず、
+     * 瀕死状態で再生成する必要がある。
+     */
+    RESPAWN_AFTER_BATTLE_PENDING
 }

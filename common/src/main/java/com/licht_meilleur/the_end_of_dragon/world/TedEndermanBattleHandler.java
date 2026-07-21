@@ -247,6 +247,52 @@ public final class TedEndermanBattleHandler {
         }
     }
 
+    public static void tickPostBattleRespawn(
+            ServerLevel level
+    ) {
+        if (level.getGameTime() % 20L != 0L) {
+            return;
+        }
+
+        TedBattleWorldState worldState =
+                TedBattleWorldState.get(
+                        level
+                );
+
+        if (!worldState.isBattleCompleted()) {
+            return;
+        }
+
+        if (!worldState
+                .hasInvitationGatewayToGive()) {
+            return;
+        }
+
+        if (worldState.getAllyProgress()
+                != TedBattleWorldState
+                .TedAllyProgress
+                .RESPAWN_AFTER_BATTLE_PENDING) {
+            return;
+        }
+
+        Player player =
+                level.players()
+                        .stream()
+                        .filter(Player::isAlive)
+                        .filter(p -> !p.isSpectator())
+                        .findFirst()
+                        .orElse(null);
+
+        if (player == null) {
+            return;
+        }
+
+        spawnPostBattleWoundedEnderman(
+                level,
+                player.position()
+        );
+    }
+
     private static Vec3 findWoundedSpawnPosition(
             ServerLevel level,
             Vec3 center
@@ -417,15 +463,19 @@ public final class TedEndermanBattleHandler {
 
     public static boolean spawnPostBattleWoundedEnderman(
             ServerLevel level,
-            Vec3 fallbackCenter
+            Vec3 referencePosition
     ) {
         TedBattleWorldState state =
                 TedBattleWorldState.get(level);
 
+        /*
+         * このメソッドは、
+         * 討伐後の再生成予約状態からのみ実行する。
+         */
         if (state.getAllyProgress()
                 != TedBattleWorldState
                 .TedAllyProgress
-                .WOUNDED_AFTER_BATTLE) {
+                .RESPAWN_AFTER_BATTLE_PENDING) {
 
             TheEndOfDragon.LOGGER.warn(
                     "Skipped post-battle ally spawn: progress={}",
@@ -435,41 +485,27 @@ public final class TedEndermanBattleHandler {
             return false;
         }
 
-        Player player =
-                level.getNearestPlayer(
-                        fallbackCenter.x,
-                        fallbackCenter.y,
-                        fallbackCenter.z,
-                        256.0D,
-                        false
-                );
-
-        Vec3 searchCenter =
-                player != null
-                        ? player.position()
-                        : fallbackCenter;
-
+        /*
+         * プレイヤー周辺から安全な出現地点を探す。
+         */
         BlockPos spawnPos =
                 findSafePostBattleSpawnPosition(
                         level,
-                        searchCenter
+                        referencePosition
                 );
 
         if (spawnPos == null) {
-            TheEndOfDragon.LOGGER.error(
-                    "Failed to find a safe post-battle ally spawn near {}",
-                    searchCenter
+            TheEndOfDragon.LOGGER.warn(
+                    "Could not find a safe post-battle ally spawn position near {}",
+                    referencePosition
             );
 
+            /*
+             * progressは変更しない。
+             * 次の1秒後の監視で再試行される。
+             */
             return false;
         }
-
-        /*
-         * 対象チャンクを読み込んでから生成する。
-         */
-        level.getChunkAt(
-                spawnPos
-        );
 
         TedAllyEndermanEntity ally =
                 ModEntities.TED_ALLY_ENDERMAN.create(
@@ -479,7 +515,7 @@ public final class TedEndermanBattleHandler {
 
         if (ally == null) {
             TheEndOfDragon.LOGGER.error(
-                    "Failed to create TED ally Enderman entity"
+                    "Failed to create post-battle ally Enderman"
             );
 
             return false;
@@ -489,20 +525,15 @@ public final class TedEndermanBattleHandler {
                 spawnPos.getX() + 0.5D,
                 spawnPos.getY(),
                 spawnPos.getZ() + 0.5D,
-                0.0F,
+                level.getRandom().nextFloat()
+                        * 360.0F,
                 0.0F
         );
 
-        /*
-         * 先にワールドへ追加する。
-         */
         ally.setPersistenceRequired();
-        ally.setWoundedAfterBattle();
 
         boolean added =
-                level.addFreshEntity(
-                        ally
-                );
+                level.addFreshEntity(ally);
 
         if (!added) {
             TheEndOfDragon.LOGGER.error(
@@ -511,27 +542,26 @@ public final class TedEndermanBattleHandler {
             );
 
             ally.discard();
-
             return false;
         }
 
         /*
-         * ワールド追加後に瀕死状態へする。
+         * Entity追加に成功してから瀕死状態へ移行する。
+         *
+         * この処理内でSavedData側も
+         * WOUNDED_AFTER_BATTLEへ進む想定。
          */
         ally.setWoundedAfterBattle();
+
+        spawnWoundedSpawnEffect(
+                level,
+                ally.position()
+        );
 
         TheEndOfDragon.LOGGER.info(
                 "Spawned post-battle wounded ally Enderman at {}",
                 spawnPos
         );
-
-        if (player != null) {
-            player.sendSystemMessage(
-                    Component.translatable(
-                            "message.the_end_of_dragon.ally_faint_voice"
-                    )
-            );
-        }
 
         return true;
     }

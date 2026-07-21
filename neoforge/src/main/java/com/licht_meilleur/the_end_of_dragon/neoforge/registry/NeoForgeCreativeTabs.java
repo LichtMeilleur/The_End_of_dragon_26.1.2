@@ -30,6 +30,8 @@ public final class NeoForgeCreativeTabs {
                                 output.accept(ModItems.THE_END_PIECE);
                                 output.accept(ModItems.THE_END_OF_DRAGON_SPAWN_EGG);
                                 output.accept(ModItems.ENDERMAN_VILLAGE_GATEWAY);
+                                output.accept(ModItems.ENDERPEAL_GUIDE_BOOK);
+                                output.accept(ModItems.TRUE_ENDERPEAL);
                             })
                             .build()
 

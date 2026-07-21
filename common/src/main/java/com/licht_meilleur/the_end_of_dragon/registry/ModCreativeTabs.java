@@ -48,6 +48,12 @@ public final class ModCreativeTabs {
                             output.accept(
                                     ModItems.ENDERMAN_VILLAGE_GATEWAY
                             );
+                            output.accept(
+                                    ModItems.ENDERPEAL_GUIDE_BOOK
+                            );
+                            output.accept(
+                                    ModItems.TRUE_ENDERPEAL
+                            );
                         })
                         .build()
 
