@@ -8,6 +8,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.component.TypedEntityData;
@@ -129,17 +130,28 @@ public final class ModItems {
                                         .stacksTo(1)
                         )
                 );
+        if (ModBlocks.ENDERMAN_VILLAGE_GATEWAY
+                == null) {
+            throw new IllegalStateException(
+                    "ModBlocks must be registered before ModItems"
+            );
+        }
+
         ENDERMAN_VILLAGE_GATEWAY =
                 Registry.register(
                         BuiltInRegistries.ITEM,
-                        ENDERMAN_VILLAGE_GATEWAY_KEY.identifier(),
-                        new Item(
+                        ENDERMAN_VILLAGE_GATEWAY_KEY
+                                .identifier(),
+                        new BlockItem(
+                                ModBlocks
+                                        .ENDERMAN_VILLAGE_GATEWAY,
                                 new Item.Properties()
                                         .setId(
                                                 ENDERMAN_VILLAGE_GATEWAY_KEY
                                         )
                                         .stacksTo(1)
                                         .fireResistant()
+                                        .useBlockDescriptionPrefix()
                         )
                 );
 

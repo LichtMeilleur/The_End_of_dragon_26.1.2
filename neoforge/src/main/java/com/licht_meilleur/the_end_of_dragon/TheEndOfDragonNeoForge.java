@@ -6,15 +6,15 @@ import com.licht_meilleur.the_end_of_dragon.entity.TheEndOfDragonCoreEntity;
 import com.licht_meilleur.the_end_of_dragon.entity.enderman.TedAllyEndermanEntity;
 import com.licht_meilleur.the_end_of_dragon.neoforge.client.TheEndOfDragonNeoForgeClient;
 import com.licht_meilleur.the_end_of_dragon.neoforge.network.TedNeoForgeNetwork;
-import com.licht_meilleur.the_end_of_dragon.neoforge.registry.NeoForgeCreativeTabs;
-import com.licht_meilleur.the_end_of_dragon.neoforge.registry.NeoForgeModEntities;
-import com.licht_meilleur.the_end_of_dragon.neoforge.registry.NeoForgeModItems;
-import com.licht_meilleur.the_end_of_dragon.neoforge.registry.NeoForgeModSounds;
+import com.licht_meilleur.the_end_of_dragon.neoforge.registry.*;
 import com.licht_meilleur.the_end_of_dragon.world.EndDragonSpawnHandler;
 import com.licht_meilleur.the_end_of_dragon.world.TedBattleController;
 import com.licht_meilleur.the_end_of_dragon.world.TedEndermanBattleHandler;
+import com.licht_meilleur.the_end_of_dragon.world.enderman.TedEndermanFriendship;
+import com.licht_meilleur.the_end_of_dragon.world.village.TedVillageGatewayManager;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.monster.EnderMan;
+import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
@@ -29,6 +29,9 @@ import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 public final class TheEndOfDragonNeoForge {
 
     public TheEndOfDragonNeoForge(IEventBus modBus) {
+        NeoForgeModBlocks.register(modBus);
+        NeoForgeModBlockEntities.register(modBus);
+
         NeoForgeModEntities.register(modBus);
         NeoForgeModSounds.register(modBus);
         NeoForgeModItems.register(modBus);
@@ -67,6 +70,8 @@ public final class TheEndOfDragonNeoForge {
             /*
              * DeferredRegister完了後にCommon側へ値を渡す。
              */
+            NeoForgeModBlocks.bindCommonReferences();
+            NeoForgeModBlockEntities.bindCommonReferences();
             NeoForgeModEntities.bindCommonReferences();
             NeoForgeModSounds.bindCommonReferences();
             NeoForgeModItems.bindCommonReferences();
@@ -114,6 +119,16 @@ public final class TheEndOfDragonNeoForge {
         for (ServerLevel level :
                 event.getServer().getAllLevels()) {
 
+
+            TedVillageGatewayManager.tick(
+                    level
+            );
+
+            TedEndermanFriendship.tick(
+                    level
+            );
+
+
             if (level.dimension()
                     != net.minecraft.world.level.Level.END) {
                 continue;
@@ -134,6 +149,8 @@ public final class TheEndOfDragonNeoForge {
             TedBattleController.tick(
                     level
             );
+
+
         }
     }
 

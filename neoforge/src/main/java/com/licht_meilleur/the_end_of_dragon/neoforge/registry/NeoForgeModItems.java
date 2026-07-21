@@ -6,6 +6,7 @@ import com.licht_meilleur.the_end_of_dragon.registry.ModItems;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.component.TypedEntityData;
@@ -75,13 +76,18 @@ public final class NeoForgeModItems {
             ENDERMAN_VILLAGE_GATEWAY =
             ITEMS.register(
                     "enderman_village_gateway",
-                    () -> new Item(
+                    () -> new BlockItem(
+                            NeoForgeModBlocks
+                                    .ENDERMAN_VILLAGE_GATEWAY
+                                    .get(),
                             new Item.Properties()
                                     .setId(
-                                            ModItems.ENDERMAN_VILLAGE_GATEWAY_KEY
+                                            ModItems
+                                                    .ENDERMAN_VILLAGE_GATEWAY_KEY
                                     )
                                     .stacksTo(1)
                                     .fireResistant()
+                                    .useBlockDescriptionPrefix()
                     )
             );
 

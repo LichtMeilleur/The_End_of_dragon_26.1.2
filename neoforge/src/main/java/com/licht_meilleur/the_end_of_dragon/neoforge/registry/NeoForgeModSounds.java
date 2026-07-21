@@ -55,6 +55,9 @@ public final class NeoForgeModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> SYUUMATU_NO_LAEVATEIN =
             register("syuumatu_no_laevatein");
 
+    public static final DeferredHolder<SoundEvent, SoundEvent> ALLY_ENDERMAN_SONAR =
+            register("sonar");
+
     private static DeferredHolder<SoundEvent, SoundEvent> register(
             String name
     ) {
@@ -84,7 +87,8 @@ public final class NeoForgeModSounds {
                 TED_TACKLE.get(),
                 TED_DEAD.get(),
                 TED_JET.get(),
-                SYUUMATU_NO_LAEVATEIN.get()
+                SYUUMATU_NO_LAEVATEIN.get(),
+                ALLY_ENDERMAN_SONAR.get()
         );
     }
 

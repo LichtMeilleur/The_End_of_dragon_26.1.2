@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "com.licht_meilleur.the_end_of_dragon.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "MobTargetMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

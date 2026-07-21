@@ -5,23 +5,30 @@ import com.licht_meilleur.the_end_of_dragon.config.TedConfig;
 import com.licht_meilleur.the_end_of_dragon.entity.TheEndOfDragonCoreEntity;
 import com.licht_meilleur.the_end_of_dragon.entity.enderman.TedAllyEndermanEntity;
 import com.licht_meilleur.the_end_of_dragon.fabric.network.TedFabricNetwork;
-import com.licht_meilleur.the_end_of_dragon.registry.ModCreativeTabs;
-import com.licht_meilleur.the_end_of_dragon.registry.ModEntities;
-import com.licht_meilleur.the_end_of_dragon.registry.ModItems;
-import com.licht_meilleur.the_end_of_dragon.registry.ModSounds;
+import com.licht_meilleur.the_end_of_dragon.registry.*;
 import com.licht_meilleur.the_end_of_dragon.world.EndDragonSpawnHandler;
 import com.licht_meilleur.the_end_of_dragon.world.TedBattleController;
 import com.licht_meilleur.the_end_of_dragon.world.TedEndermanBattleHandler;
+import com.licht_meilleur.the_end_of_dragon.world.block.entity.EndermanVillageGatewayBlockEntity;
+import com.licht_meilleur.the_end_of_dragon.world.enderman.TedEndermanFriendship;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.monster.EnderMan;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 
 public final class TheEndOfDragonFabric implements ModInitializer {
+
+    private static BlockEntityType<
+                EndermanVillageGatewayBlockEntity>
+            endermanVillageGatewayBlockEntityType;
 
     @Override
     public void onInitialize() {
@@ -31,10 +38,34 @@ public final class TheEndOfDragonFabric implements ModInitializer {
          * Spawn EggがEntityTypeを参照するため、
          * Entity → Sound → Itemの順で登録する。
          */
+
+        ModBlocks.registerFabric();
+
+        /*
+         * Fabricでのみ必要なBlockEntityType生成。
+         */
+        endermanVillageGatewayBlockEntityType =
+                Registry.register(
+                        BuiltInRegistries.BLOCK_ENTITY_TYPE,
+                        ModBlockEntities
+                                .ENDERMAN_VILLAGE_GATEWAY_KEY
+                                .identifier(),
+                        FabricBlockEntityTypeBuilder.create(
+                                EndermanVillageGatewayBlockEntity::new,
+                                ModBlocks.ENDERMAN_VILLAGE_GATEWAY,
+                                ModBlocks.ENDERMAN_VILLAGE_RETURN_GATEWAY
+                        ).build()
+                );
+
+        ModBlockEntities.bindFabric(
+                endermanVillageGatewayBlockEntityType
+        );
+
         ModEntities.registerFabric();
         ModSounds.registerFabric();
         ModItems.registerFabric();
         ModCreativeTabs.registerFabric();
+
 
         /*
          * Registry以外のCommon初期化。
@@ -64,6 +95,8 @@ public final class TheEndOfDragonFabric implements ModInitializer {
                         EndDragonSpawnHandler.tick(
                                 level
                         );
+
+                        TedEndermanFriendship.tick(level);
 
                         /*
                          * 討伐後に消えた味方エンダーマンの

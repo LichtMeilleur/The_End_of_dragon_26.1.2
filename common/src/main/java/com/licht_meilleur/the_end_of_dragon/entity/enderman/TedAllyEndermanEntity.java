@@ -784,19 +784,71 @@ public class TedAllyEndermanEntity
     }
 
     public void showInvitationGatewayInHand() {
+        /*
+         * 旧実装でMAIN_HANDに残った門を削除する。
+         *
+         * 食料が入っている場合は消さない。
+         */
+        ItemStack mainHand =
+                this.getItemInHand(
+                        InteractionHand.MAIN_HAND
+                );
+
+        if (mainHand.is(
+                ModItems.ENDERMAN_VILLAGE_GATEWAY
+        )) {
+            this.setItemInHand(
+                    InteractionHand.MAIN_HAND,
+                    ItemStack.EMPTY
+            );
+        }
+
+        /*
+         * 門は専用表示用としてOFF_HANDへ入れる。
+         */
         this.setItemInHand(
-                InteractionHand.MAIN_HAND,
+                InteractionHand.OFF_HAND,
                 new ItemStack(
                         ModItems.ENDERMAN_VILLAGE_GATEWAY
                 )
         );
     }
 
-    public void clearDisplayedHandItem() {
+    public void clearDisplayedFood() {
         this.setItemInHand(
                 InteractionHand.MAIN_HAND,
                 ItemStack.EMPTY
         );
+    }
+
+    public void clearDisplayedInvitationGateway() {
+        ItemStack mainHand =
+                this.getItemInHand(
+                        InteractionHand.MAIN_HAND
+                );
+
+        if (mainHand.is(
+                ModItems.ENDERMAN_VILLAGE_GATEWAY
+        )) {
+            this.setItemInHand(
+                    InteractionHand.MAIN_HAND,
+                    ItemStack.EMPTY
+            );
+        }
+
+        ItemStack offHand =
+                this.getItemInHand(
+                        InteractionHand.OFF_HAND
+                );
+
+        if (offHand.is(
+                ModItems.ENDERMAN_VILLAGE_GATEWAY
+        )) {
+            this.setItemInHand(
+                    InteractionHand.OFF_HAND,
+                    ItemStack.EMPTY
+            );
+        }
     }
 
 
@@ -913,12 +965,12 @@ public class TedAllyEndermanEntity
         /*
          * チャンク再読み込み後も門表示を復元する。
          */
-        ItemStack mainHand =
+        ItemStack displayedGateway =
                 this.getItemInHand(
-                        InteractionHand.MAIN_HAND
+                        InteractionHand.OFF_HAND
                 );
 
-        if (!mainHand.is(
+        if (!displayedGateway.is(
                 ModItems.ENDERMAN_VILLAGE_GATEWAY
         )) {
             showInvitationGatewayInHand();
@@ -1563,7 +1615,7 @@ public class TedAllyEndermanEntity
                     showInvitationGatewayInHand();
 
                 } else {
-                    clearDisplayedHandItem();
+                    clearDisplayedInvitationGateway();
                 }
             }
         }
@@ -1937,7 +1989,7 @@ public class TedAllyEndermanEntity
         /*
          * 配布完了後は右手表示を消す。
          */
-        clearDisplayedHandItem();
+        clearDisplayedInvitationGateway();
 
         this.setAllyState(
                 AllyEndermanState.SUPPORT_IDLE

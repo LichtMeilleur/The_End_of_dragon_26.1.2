@@ -487,7 +487,7 @@ public class AllyRequestFoodGoal extends Goal {
         /*
          * 消費したので手の表示を消す。
          */
-        this.ally.clearDisplayedHandItem();
+        this.ally.clearDisplayedFood();
 
         if (consumedFood == null) {
             this.pendingNutrition = 0;
@@ -579,7 +579,7 @@ public class AllyRequestFoodGoal extends Goal {
         /*
          * Goal中断時にも食料表示を残さない。
          */
-        this.ally.clearDisplayedHandItem();
+        this.ally.clearDisplayedFood();
 
         if (this.ally.isAlive()
                 && !this.ally.isRemoved()) {

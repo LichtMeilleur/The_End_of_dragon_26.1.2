@@ -4,6 +4,7 @@ import com.licht_meilleur.the_end_of_dragon.TheEndOfDragon;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.saveddata.SavedData;
@@ -17,7 +18,7 @@ public final class TedBattleWorldState extends SavedData {
      * 保存項目の構成を変更した場合は、
      * 2、3……と増やしていく。
      */
-    private static final int CURRENT_DATA_VERSION = 3;
+    private static final int CURRENT_DATA_VERSION = 4;
 
     /*
      * 保存されていたデータのバージョン。
@@ -62,6 +63,19 @@ public final class TedBattleWorldState extends SavedData {
      * 配布成功後は0になる。
      */
     private int invitationGatewayCount;
+    /*
+     * ワールド内に設置されている門Aの情報。
+     *
+     * 門Bからの帰還先として使用する。
+     */
+
+    private boolean returnGatewayRegistered = false;
+
+    private String returnGatewayDimensionId =
+            "";
+
+    private BlockPos returnGatewayPosition =
+            BlockPos.ZERO;
     /*
      * enumを文字列として保存するCodec。
      *
@@ -171,6 +185,58 @@ public final class TedBattleWorldState extends SavedData {
                                     .forGetter(
                                             TedBattleWorldState
                                                     ::getInvitationGatewayCount
+                                    ),
+                            Codec.BOOL
+                                    .optionalFieldOf(
+                                            "return_gateway_registered",
+                                            false
+                                    )
+                                    .forGetter(
+                                            TedBattleWorldState
+                                                    ::hasRegisteredReturnGateway
+                                    ),
+
+                            Codec.STRING
+                                    .optionalFieldOf(
+                                            "return_gateway_dimension",
+                                            ""
+                                    )
+                                    .forGetter(
+                                            TedBattleWorldState
+                                                    ::getReturnGatewayDimensionId
+                                    ),
+
+                            Codec.INT
+                                    .optionalFieldOf(
+                                            "return_gateway_x",
+                                            0
+                                    )
+                                    .forGetter(
+                                            state ->
+                                                    state.returnGatewayPosition
+                                                            .getX()
+                                    ),
+
+                            Codec.INT
+                                    .optionalFieldOf(
+                                            "return_gateway_y",
+                                            64
+                                    )
+                                    .forGetter(
+                                            state ->
+                                                    state.returnGatewayPosition
+                                                            .getY()
+                                    ),
+
+                            Codec.INT
+                                    .optionalFieldOf(
+                                            "return_gateway_z",
+                                            0
+                                    )
+                                    .forGetter(
+                                            state ->
+                                                    state.returnGatewayPosition
+                                                            .getZ()
                                     )
                     ).apply(
                             instance,
@@ -206,7 +272,12 @@ public final class TedBattleWorldState extends SavedData {
                 false,
                 TedAllyProgress.NOT_STARTED,
                 0L,
-                1
+                1,
+                false,
+                "",
+                0,
+                64,
+                0
         );
     }
 
@@ -219,7 +290,12 @@ public final class TedBattleWorldState extends SavedData {
             boolean battleCompleted,
             TedAllyProgress allyProgress,
             long endermanSpawnSuppressedUntil,
-            int invitationGatewayCount
+            int invitationGatewayCount,
+            boolean returnGatewayRegistered,
+            String returnGatewayDimensionId,
+            int returnGatewayX,
+            int returnGatewayY,
+            int returnGatewayZ
     ) {
         this.dataVersion =
                 Math.max(
@@ -248,6 +324,21 @@ public final class TedBattleWorldState extends SavedData {
                 Math.max(
                         0,
                         invitationGatewayCount
+                );
+
+        this.returnGatewayRegistered =
+                returnGatewayRegistered;
+
+        this.returnGatewayDimensionId =
+                returnGatewayDimensionId != null
+                        ? returnGatewayDimensionId
+                        : "";
+
+        this.returnGatewayPosition =
+                new BlockPos(
+                        returnGatewayX,
+                        returnGatewayY,
+                        returnGatewayZ
                 );
 
         migrateDataIfNeeded();
@@ -311,6 +402,28 @@ public final class TedBattleWorldState extends SavedData {
                     };
 
             this.dataVersion = 3;
+            changed = true;
+        }
+
+        /*
+         * バージョン4:
+         * 村から戻るための門Aの位置を追加。
+         */
+        if (this.dataVersion < 4) {
+            this.returnGatewayRegistered =
+                    false;
+
+            this.returnGatewayDimensionId =
+                    "";
+
+            this.returnGatewayPosition =
+                    new BlockPos(
+                            0,
+                            64,
+                            0
+                    );
+
+            this.dataVersion = 4;
             changed = true;
         }
 
@@ -577,6 +690,10 @@ public final class TedBattleWorldState extends SavedData {
      */
     private long endermanSpawnSuppressedUntil;
 
+
+
+
+
     public long getEndermanSpawnSuppressedUntil() {
         return endermanSpawnSuppressedUntil;
     }
@@ -640,4 +757,96 @@ public final class TedBattleWorldState extends SavedData {
                         - level.getGameTime()
         );
     }
+    public boolean hasRegisteredReturnGateway() {
+        return this.returnGatewayRegistered
+                && this.returnGatewayDimensionId != null
+                && !this.returnGatewayDimensionId.isBlank();
+    }
+
+    public String getReturnGatewayDimensionId() {
+        return this.returnGatewayDimensionId;
+    }
+
+    public BlockPos getReturnGatewayPosition() {
+        return this.returnGatewayPosition;
+    }
+
+    /*
+     * 門Aの設置位置を登録する。
+     *
+     * 門アイテムは一品物なので、
+     * 新しい位置が登録された場合は上書きする。
+     */
+    public void registerReturnGateway(
+            ServerLevel level,
+            BlockPos position
+    ) {
+        if (level == null
+                || position == null) {
+            return;
+        }
+
+        this.returnGatewayRegistered =
+                true;
+
+        this.returnGatewayDimensionId =
+                level.dimension()
+                        .identifier()
+                        .toString();
+
+        this.returnGatewayPosition =
+                position.immutable();
+
+        setDirty();
+    }
+
+    /*
+     * 指定された門が現在登録中の門Aなら、
+     * 帰還先登録を解除する。
+     */
+    public void unregisterReturnGateway(
+            ServerLevel level,
+            BlockPos position
+    ) {
+        if (!hasRegisteredReturnGateway()
+                || level == null
+                || position == null) {
+            return;
+        }
+
+        String dimensionId =
+                level.dimension()
+                        .identifier()
+                        .toString();
+
+        if (!this.returnGatewayDimensionId
+                .equals(dimensionId)) {
+            return;
+        }
+
+        if (!this.returnGatewayPosition
+                .equals(position)) {
+            return;
+        }
+
+        clearReturnGateway();
+    }
+
+    public void clearReturnGateway() {
+        this.returnGatewayRegistered =
+                false;
+
+        this.returnGatewayDimensionId =
+                "";
+
+        this.returnGatewayPosition =
+                new BlockPos(
+                        0,
+                        64,
+                        0
+                );
+
+        setDirty();
+    }
+
 }

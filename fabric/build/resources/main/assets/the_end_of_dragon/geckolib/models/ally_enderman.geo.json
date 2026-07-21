@@ -212,6 +212,11 @@
 					"pivot": [-2.5, 8.7, 1]
 				},
 				{
+					"name": "InvitationItem",
+					"parent": "upper_body",
+					"pivot": [0, 16, -10]
+				},
+				{
 					"name": "down_body",
 					"parent": "all_body",
 					"pivot": [0, 0, 0]

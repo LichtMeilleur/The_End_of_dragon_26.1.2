@@ -39,11 +39,11 @@ public class TedAllyEndermanRenderer<
          * 左手は使わないのでnull。
          */
         this.getRenderLayers().add(
-                new ItemInHandGeoLayer<>(
+                new TedInvitationItemLayer<>(
                         context,
                         this,
                         "RightHandItem",
-                        null
+                        "InvitationItem"
                 )
         );
     }
