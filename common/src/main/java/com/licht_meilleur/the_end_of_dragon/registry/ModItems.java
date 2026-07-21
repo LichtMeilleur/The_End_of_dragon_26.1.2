@@ -2,6 +2,7 @@ package com.licht_meilleur.the_end_of_dragon.registry;
 
 import com.licht_meilleur.the_end_of_dragon.TheEndOfDragon;
 import com.licht_meilleur.the_end_of_dragon.item.TedDebugBowItem;
+import com.licht_meilleur.the_end_of_dragon.item.TrueEnderPearlItem;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -45,16 +46,53 @@ public final class ModItems {
                     TheEndOfDragon.id("enderman_village_gateway")
             );
 
-    public static final ResourceKey<Item> ENDERPEAL_GUIDE_BOOK_KEY =
+    public static final ResourceKey<Item>
+            ENDER_PEARL_GUIDE_BOOK_KEY =
             ResourceKey.create(
                     Registries.ITEM,
-                    TheEndOfDragon.id("enderpeal_guide_book")
+                    TheEndOfDragon.id("ender_pearl_guide_book")
             );
 
-    public static final ResourceKey<Item> TRUE_ENDERPEAL_KEY =
+    public static final ResourceKey<Item>
+            ENDER_PEARL_APPLICATION_BOOK_KEY =
             ResourceKey.create(
                     Registries.ITEM,
-                    TheEndOfDragon.id("true_enderpeal")
+                    TheEndOfDragon.id(
+                            "ender_pearl_application_book"
+                    )
+            );
+
+    public static final ResourceKey<Item>
+            ENDER_PEARL_ADVANCED_BOOK_KEY =
+            ResourceKey.create(
+                    Registries.ITEM,
+                    TheEndOfDragon.id(
+                            "ender_pearl_advanced_book"
+                    )
+            );
+
+    public static final ResourceKey<Item>
+            ENDER_PEARL_MASTERY_BOOK_KEY =
+            ResourceKey.create(
+                    Registries.ITEM,
+                    TheEndOfDragon.id(
+                            "ender_pearl_mastery_book"
+                    )
+            );
+
+    public static final ResourceKey<Item>
+            ENDER_PEARL_SECRET_BOOK_KEY =
+            ResourceKey.create(
+                    Registries.ITEM,
+                    TheEndOfDragon.id(
+                            "ender_pearl_secret_book"
+                    )
+            );
+
+    public static final ResourceKey<Item> TRUE_ENDER_PEARL_KEY =
+            ResourceKey.create(
+                    Registries.ITEM,
+                    TheEndOfDragon.id("true_ender_pearl")
             );
 
     public static Item THE_END_OF_DRAGON_ICON;
@@ -63,8 +101,13 @@ public final class ModItems {
     public static Item TED_DEBUG_BOW;
     public static Item ENDERMAN_VILLAGE_GATEWAY;
 
-    public static Item ENDERPEAL_GUIDE_BOOK;
-    public static Item TRUE_ENDERPEAL;
+    public static Item ENDER_PEARL_GUIDE_BOOK;
+    public static Item ENDER_PEARL_APPLICATION_BOOK;
+    public static Item ENDER_PEARL_ADVANCED_BOOK;
+    public static Item ENDER_PEARL_MASTERY_BOOK;
+    public static Item ENDER_PEARL_SECRET_BOOK;
+
+    public static Item TRUE_ENDER_PEARL;
 
     private static boolean fabricRegistered = false;
 
@@ -155,31 +198,103 @@ public final class ModItems {
                         )
                 );
 
-        ENDERPEAL_GUIDE_BOOK =
+        ENDER_PEARL_GUIDE_BOOK =
                 Registry.register(
                         BuiltInRegistries.ITEM,
-                        ENDERPEAL_GUIDE_BOOK_KEY.identifier(),
+                        ENDER_PEARL_GUIDE_BOOK_KEY.identifier(),
                         new Item(
                                 new Item.Properties()
                                         .setId(
-                                                ENDERPEAL_GUIDE_BOOK_KEY
+                                                ENDER_PEARL_GUIDE_BOOK_KEY
                                         )
                                         .stacksTo(1)
                                         .fireResistant()
                         )
                 );
 
-        TRUE_ENDERPEAL =
+        ENDER_PEARL_APPLICATION_BOOK =
                 Registry.register(
                         BuiltInRegistries.ITEM,
-                        TRUE_ENDERPEAL_KEY.identifier(),
+                        ENDER_PEARL_APPLICATION_BOOK_KEY
+                                .identifier(),
                         new Item(
                                 new Item.Properties()
                                         .setId(
-                                                TRUE_ENDERPEAL_KEY
+                                                ENDER_PEARL_APPLICATION_BOOK_KEY
                                         )
                                         .stacksTo(1)
                                         .fireResistant()
+                        )
+                );
+
+        ENDER_PEARL_ADVANCED_BOOK =
+                Registry.register(
+                        BuiltInRegistries.ITEM,
+                        ENDER_PEARL_ADVANCED_BOOK_KEY
+                                .identifier(),
+                        new Item(
+                                new Item.Properties()
+                                        .setId(
+                                                ENDER_PEARL_ADVANCED_BOOK_KEY
+                                        )
+                                        .stacksTo(1)
+                                        .fireResistant()
+                        )
+                );
+
+        ENDER_PEARL_MASTERY_BOOK =
+                Registry.register(
+                        BuiltInRegistries.ITEM,
+                        ENDER_PEARL_MASTERY_BOOK_KEY
+                                .identifier(),
+                        new Item(
+                                new Item.Properties()
+                                        .setId(
+                                                ENDER_PEARL_MASTERY_BOOK_KEY
+                                        )
+                                        .stacksTo(1)
+                                        .fireResistant()
+                        )
+                );
+
+        ENDER_PEARL_SECRET_BOOK =
+                Registry.register(
+                        BuiltInRegistries.ITEM,
+                        ENDER_PEARL_SECRET_BOOK_KEY
+                                .identifier(),
+                        new Item(
+                                new Item.Properties()
+                                        .setId(
+                                                ENDER_PEARL_SECRET_BOOK_KEY
+                                        )
+                                        .stacksTo(1)
+                                        .fireResistant()
+                        )
+                );
+
+        TRUE_ENDER_PEARL =
+                Registry.register(
+                        BuiltInRegistries.ITEM,
+                        TRUE_ENDER_PEARL_KEY
+                                .identifier(),
+                        new TrueEnderPearlItem(
+                                new Item.Properties()
+                                        .setId(
+                                                TRUE_ENDER_PEARL_KEY
+                                        )
+                                        .stacksTo(1)
+                                        .fireResistant()
+                                        .component(
+                                                ModDataComponents
+                                                        .TRUE_ENDER_PEARL_LEVEL,
+                                                1
+                                        )
+                                        .component(
+                                                DataComponents.ITEM_MODEL,
+                                                TheEndOfDragon.id(
+                                                        "true_ender_pearl_1"
+                                                )
+                                        )
                         )
                 );
 
@@ -194,16 +309,45 @@ public final class ModItems {
             Item endPiece,
             Item debugBow,
             Item endermanVillageGateway,
-            Item enderpealGUIDEBook,
-            Item trueEnderpeal
+            Item enderPearlGuideBook,
+            Item enderPearlApplicationBook,
+            Item enderPearlAdvancedBook,
+            Item enderPearlMasteryBook,
+            Item enderPearlSecretBook,
+            Item trueEnderPearl
     ) {
-        THE_END_OF_DRAGON_ICON = icon;
-        THE_END_OF_DRAGON_SPAWN_EGG = spawnEgg;
-        THE_END_PIECE = endPiece;
-        TED_DEBUG_BOW = debugBow;
-        ENDERMAN_VILLAGE_GATEWAY = endermanVillageGateway;
-        ENDERPEAL_GUIDE_BOOK = enderpealGUIDEBook;
-        TRUE_ENDERPEAL = trueEnderpeal;
+        THE_END_OF_DRAGON_ICON =
+                icon;
+
+        THE_END_OF_DRAGON_SPAWN_EGG =
+                spawnEgg;
+
+        THE_END_PIECE =
+                endPiece;
+
+        TED_DEBUG_BOW =
+                debugBow;
+
+        ENDERMAN_VILLAGE_GATEWAY =
+                endermanVillageGateway;
+
+        ENDER_PEARL_GUIDE_BOOK =
+                enderPearlGuideBook;
+
+        ENDER_PEARL_APPLICATION_BOOK =
+                enderPearlApplicationBook;
+
+        ENDER_PEARL_ADVANCED_BOOK =
+                enderPearlAdvancedBook;
+
+        ENDER_PEARL_MASTERY_BOOK =
+                enderPearlMasteryBook;
+
+        ENDER_PEARL_SECRET_BOOK =
+                enderPearlSecretBook;
+
+        TRUE_ENDER_PEARL =
+                trueEnderPearl;
 
         TheEndOfDragon.LOGGER.info(
                 "Bound NeoForge items to common registry references"

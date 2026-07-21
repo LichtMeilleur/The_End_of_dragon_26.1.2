@@ -117,6 +117,10 @@ public class EndermanVillageGatewayBlock
         );
     }
 
+    protected boolean registersAsReturnDestination() {
+        return true;
+    }
+
     @Override
     public void setPlacedBy(
             Level level,
@@ -133,29 +137,24 @@ public class EndermanVillageGatewayBlock
                 stack
         );
 
-        if (!(level
-                instanceof ServerLevel serverLevel)) {
+        if (!registersAsReturnDestination()) {
             return;
         }
 
-        /*
-         * 討伐状態はEndディメンション側の
-         * TedBattleWorldStateへ保存する。
-         */
+        if (!(level instanceof ServerLevel serverLevel)) {
+            return;
+        }
+
         ServerLevel endLevel =
                 serverLevel.getServer()
-                        .getLevel(
-                                Level.END
-                        );
+                        .getLevel(Level.END);
 
         if (endLevel == null) {
             return;
         }
 
         TedBattleWorldState worldState =
-                TedBattleWorldState.get(
-                        endLevel
-                );
+                TedBattleWorldState.get(endLevel);
 
         worldState.registerReturnGateway(
                 serverLevel,
@@ -165,8 +164,7 @@ public class EndermanVillageGatewayBlock
         TheEndOfDragon.LOGGER.info(
                 "Registered village gateway A at {} in {}",
                 pos,
-                serverLevel.dimension()
-                        .identifier()
+                serverLevel.dimension().identifier()
         );
     }
 
@@ -177,8 +175,8 @@ public class EndermanVillageGatewayBlock
             BlockState state,
             Player player
     ) {
-        if (level
-                instanceof ServerLevel serverLevel) {
+        if (registersAsReturnDestination()
+                && level instanceof ServerLevel serverLevel) {
 
             unregisterGatewayPosition(
                     serverLevel,

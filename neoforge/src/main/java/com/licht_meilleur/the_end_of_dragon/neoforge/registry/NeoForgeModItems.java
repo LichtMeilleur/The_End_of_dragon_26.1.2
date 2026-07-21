@@ -2,6 +2,8 @@ package com.licht_meilleur.the_end_of_dragon.neoforge.registry;
 
 import com.licht_meilleur.the_end_of_dragon.TheEndOfDragon;
 import com.licht_meilleur.the_end_of_dragon.item.TedDebugBowItem;
+import com.licht_meilleur.the_end_of_dragon.item.TrueEnderPearlItem;
+import com.licht_meilleur.the_end_of_dragon.registry.ModDataComponents;
 import com.licht_meilleur.the_end_of_dragon.registry.ModItems;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
@@ -92,13 +94,13 @@ public final class NeoForgeModItems {
             );
 
     public static final DeferredHolder<Item, Item>
-            ENDERPEAL_GUIDE_BOOK =
+            ENDER_PEARL_GUIDE_BOOK =
             ITEMS.register(
-                    "enderpeal_guide_book",
+                    "ender_pearl_guide_book",
                     () -> new Item(
                             new Item.Properties()
                                     .setId(
-                                            ModItems.ENDERPEAL_GUIDE_BOOK_KEY
+                                            ModItems.ENDER_PEARL_GUIDE_BOOK_KEY
                                     )
                                     .stacksTo(1)
                                     .fireResistant()
@@ -106,17 +108,92 @@ public final class NeoForgeModItems {
             );
 
     public static final DeferredHolder<Item, Item>
-            TRUE_ENDERPEAL =
+            ENDER_PEARL_APPLICATION_BOOK =
             ITEMS.register(
-                    "true_enderpeal",
+                    "ender_pearl_application_book",
                     () -> new Item(
                             new Item.Properties()
                                     .setId(
-                                            ModItems.TRUE_ENDERPEAL_KEY
+                                            ModItems
+                                                    .ENDER_PEARL_APPLICATION_BOOK_KEY
                                     )
                                     .stacksTo(1)
                                     .fireResistant()
                     )
+            );
+
+    public static final DeferredHolder<Item, Item>
+            ENDER_PEARL_ADVANCED_BOOK =
+            ITEMS.register(
+                    "ender_pearl_advanced_book",
+                    () -> new Item(
+                            new Item.Properties()
+                                    .setId(
+                                            ModItems
+                                                    .ENDER_PEARL_ADVANCED_BOOK_KEY
+                                    )
+                                    .stacksTo(1)
+                                    .fireResistant()
+                    )
+            );
+
+    public static final DeferredHolder<Item, Item>
+            ENDER_PEARL_MASTERY_BOOK =
+            ITEMS.register(
+                    "ender_pearl_mastery_book",
+                    () -> new Item(
+                            new Item.Properties()
+                                    .setId(
+                                            ModItems
+                                                    .ENDER_PEARL_MASTERY_BOOK_KEY
+                                    )
+                                    .stacksTo(1)
+                                    .fireResistant()
+                    )
+            );
+
+    public static final DeferredHolder<Item, Item>
+            ENDER_PEARL_SECRET_BOOK =
+            ITEMS.register(
+                    "ender_pearl_secret_book",
+                    () -> new Item(
+                            new Item.Properties()
+                                    .setId(
+                                            ModItems
+                                                    .ENDER_PEARL_SECRET_BOOK_KEY
+                                    )
+                                    .stacksTo(1)
+                                    .fireResistant()
+                    )
+            );
+
+    public static final DeferredHolder<
+            Item,
+            TrueEnderPearlItem>
+            TRUE_ENDER_PEARL =
+            ITEMS.register(
+                    "true_ender_pearl",
+                    () ->
+                            new TrueEnderPearlItem(
+                                    new Item.Properties()
+                                            .setId(
+                                                    ModItems
+                                                            .TRUE_ENDER_PEARL_KEY
+                                            )
+                                            .stacksTo(1)
+                                            .fireResistant()
+                                            .component(
+                                                    ModDataComponents
+                                                            .TRUE_ENDER_PEARL_LEVEL,
+                                                    1
+                                            )
+                                            .component(
+                                                    DataComponents.ITEM_MODEL,
+                                                    TheEndOfDragon.id(
+                                                            "true_ender_pearl_1"
+                                                    )
+                                            )
+                            )
             );
 
     public static void register(IEventBus modBus) {
@@ -130,8 +207,12 @@ public final class NeoForgeModItems {
                 THE_END_PIECE.get(),
                 TED_DEBUG_BOW.get(),
                 ENDERMAN_VILLAGE_GATEWAY.get(),
-                ENDERPEAL_GUIDE_BOOK.get(),
-                TRUE_ENDERPEAL.get()
+                ENDER_PEARL_GUIDE_BOOK.get(),
+                ENDER_PEARL_APPLICATION_BOOK.get(),
+                ENDER_PEARL_ADVANCED_BOOK.get(),
+                ENDER_PEARL_MASTERY_BOOK.get(),
+                ENDER_PEARL_SECRET_BOOK.get(),
+                TRUE_ENDER_PEARL.get()
         );
     }
 

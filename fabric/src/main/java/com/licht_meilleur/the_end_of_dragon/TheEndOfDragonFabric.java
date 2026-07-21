@@ -11,6 +11,7 @@ import com.licht_meilleur.the_end_of_dragon.world.TedBattleController;
 import com.licht_meilleur.the_end_of_dragon.world.TedEndermanBattleHandler;
 import com.licht_meilleur.the_end_of_dragon.world.block.entity.EndermanVillageGatewayBlockEntity;
 import com.licht_meilleur.the_end_of_dragon.world.enderman.TedEndermanFriendship;
+import com.licht_meilleur.the_end_of_dragon.world.village.TedVillageGatewayManager;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
@@ -22,6 +23,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.monster.EnderMan;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
 public final class TheEndOfDragonFabric implements ModInitializer {
@@ -40,7 +42,7 @@ public final class TheEndOfDragonFabric implements ModInitializer {
          */
 
         ModBlocks.registerFabric();
-
+        ModDataComponents.registerFabric();
         /*
          * Fabricでのみ必要なBlockEntityType生成。
          */
@@ -64,6 +66,7 @@ public final class TheEndOfDragonFabric implements ModInitializer {
         ModEntities.registerFabric();
         ModSounds.registerFabric();
         ModItems.registerFabric();
+        ModRecipeSerializers.registerFabric();
         ModCreativeTabs.registerFabric();
 
 
@@ -83,25 +86,23 @@ public final class TheEndOfDragonFabric implements ModInitializer {
                     for (ServerLevel level :
                             server.getAllLevels()) {
 
-                        if (level.dimension()
-                                != net.minecraft.world.level.Level.END) {
+                        TedVillageGatewayManager.tick(
+                                level
+                        );
+
+                        TedEndermanFriendship.tick(
+                                level
+                        );
+
+                        if (!level.dimension()
+                                .equals(Level.END)) {
                             continue;
                         }
 
-                        /*
-                         * エンダードラゴン討伐後の
-                         * TED出現管理。
-                         */
                         EndDragonSpawnHandler.tick(
                                 level
                         );
 
-                        TedEndermanFriendship.tick(level);
-
-                        /*
-                         * 討伐後に消えた味方エンダーマンの
-                         * 再生成監視。
-                         */
                         TedBattleController.tick(
                                 level
                         );

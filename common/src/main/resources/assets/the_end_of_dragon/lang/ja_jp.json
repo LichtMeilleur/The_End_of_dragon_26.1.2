@@ -8,6 +8,23 @@
   "item.the_end_of_dragon.the_end_piece": "終焉の欠片",
   "item.the_end_of_dragon.the_end_of_dragon_spawn_egg": "終焉の龍のスポーンエッグ",
   "item.the_end_of_dragon.enderman_village_gateway": "エンダーマンの村への門",
+  "item.the_end_of_dragon.ender_pearl_guide_book": "エンダーパール指南書",
+  "item.the_end_of_dragon.ender_pearl_application_book": "エンダーパール応用書",
+  "item.the_end_of_dragon.ender_pearl_advanced_book": "エンダーパール上級書",
+  "item.the_end_of_dragon.ender_pearl_mastery_book": "エンダーパール熟達書",
+  "item.the_end_of_dragon.ender_pearl_secret_book": "エンダーパール極意書",
+
+  "item.the_end_of_dragon.true_ender_pearl": "真のエンダーパール",
+
+  "tooltip.the_end_of_dragon.true_ender_pearl.level": "ランク %s",
+  "tooltip.the_end_of_dragon.true_ender_pearl.unlocked": "能力",
+
+  "tooltip.the_end_of_dragon.true_ender_pearl.ability.teleport": "視線方向へ瞬間移動",
+  "tooltip.the_end_of_dragon.true_ender_pearl.ability.offhand": "オフハンドから使用可能",
+  "tooltip.the_end_of_dragon.true_ender_pearl.ability.carry_players": "スニーク使用で周囲のプレイヤーも転送",
+  "tooltip.the_end_of_dragon.true_ender_pearl.ability.no_fall_damage": "落下ダメージを無効化",
+  "tooltip.the_end_of_dragon.true_ender_pearl.ability.no_cooldown": "クールタイムなし",
+
   "message.the_end_of_dragon.ally_enderman.help": "タ……スケテ……",
   "message.the_end_of_dragon.ally_enderman.detected": "瀕死のエンダーマンが助けを求めている",
   "message.the_end_of_dragon.ally_enderman.feed": "食べ物を与えて回復させよう",

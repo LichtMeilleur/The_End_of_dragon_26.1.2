@@ -2,7 +2,8 @@ package com.licht_meilleur.the_end_of_dragon.neoforge.registry;
 
 import com.licht_meilleur.the_end_of_dragon.TheEndOfDragon;
 import com.licht_meilleur.the_end_of_dragon.registry.ModBlockEntities;
-import com.licht_meilleur.the_end_of_dragon.world.block.entity.EndermanVillageGatewayBlockEntity;
+import com.licht_meilleur.the_end_of_dragon.world.block.entity
+        .EndermanVillageGatewayBlockEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.IEventBus;
@@ -32,8 +33,12 @@ public final class NeoForgeModBlockEntities {
                             false,
                             NeoForgeModBlocks
                                     .ENDERMAN_VILLAGE_GATEWAY
+                                    .get(),
+                            NeoForgeModBlocks
+                                    .ENDERMAN_VILLAGE_RETURN_GATEWAY
                                     .get()
                     )
+
             );
 
     public static void register(

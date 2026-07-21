@@ -1,22 +1,11 @@
 {
-  "type": "minecraft:the_end",
+  "type": "the_end_of_dragon:enderman_village",
   "generator": {
-    "type": "minecraft:flat",
-    "settings": {
-      "biome": "minecraft:the_end",
-      "features": false,
-      "lakes": false,
-      "layers": [
-        {
-          "height": 1,
-          "block": "minecraft:bedrock"
-        },
-        {
-          "height": 63,
-          "block": "minecraft:end_stone"
-        }
-      ],
-      "structure_overrides": []
-    }
+    "type": "minecraft:noise",
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "the_end_of_dragon:enderman_village"
+    },
+    "settings": "the_end_of_dragon:enderman_village"
   }
 }

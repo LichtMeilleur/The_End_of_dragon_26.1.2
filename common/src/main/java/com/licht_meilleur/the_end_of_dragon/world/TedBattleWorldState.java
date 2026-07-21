@@ -370,9 +370,6 @@ public final class TedBattleWorldState extends SavedData {
         /*
          * バージョン2:
          * 未配布の村門アイテム数を追加。
-         *
-         * すでにITEM_GIVENなら0、
-         * それ以外なら未配布として1。
          */
         if (this.dataVersion < 2) {
             this.invitationGatewayCount =
@@ -388,8 +385,6 @@ public final class TedBattleWorldState extends SavedData {
         /*
          * バージョン3:
          * TED討伐済みフラグを追加。
-         *
-         * 旧SavedDataでは進行状態から推測する。
          */
         if (this.dataVersion < 3) {
             this.battleCompleted =
@@ -407,7 +402,7 @@ public final class TedBattleWorldState extends SavedData {
 
         /*
          * バージョン4:
-         * 村から戻るための門Aの位置を追加。
+         * 村から戻るための門A情報を追加。
          */
         if (this.dataVersion < 4) {
             this.returnGatewayRegistered =
@@ -427,12 +422,7 @@ public final class TedBattleWorldState extends SavedData {
             changed = true;
         }
 
-        /*
-         * 将来バージョンを増やした際の最終補正。
-         */
-        if (this.dataVersion
-                < CURRENT_DATA_VERSION) {
-
+        if (this.dataVersion < CURRENT_DATA_VERSION) {
             this.dataVersion =
                     CURRENT_DATA_VERSION;
 

@@ -15,8 +15,10 @@ public final class TedVillageGatewayManager {
         /*
          * 村ディメンション以外では処理しない。
          */
-        if (level.dimension()
-                != TedDimensions.ENDERMAN_VILLAGE) {
+        if (!level.dimension()
+                .equals(
+                        TedDimensions.ENDERMAN_VILLAGE
+                )) {
             return;
         }
 

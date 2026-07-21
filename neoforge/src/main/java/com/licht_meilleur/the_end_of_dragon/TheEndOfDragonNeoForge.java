@@ -29,12 +29,17 @@ import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 public final class TheEndOfDragonNeoForge {
 
     public TheEndOfDragonNeoForge(IEventBus modBus) {
+        NeoForgeModDataComponents.register(modBus);
+
         NeoForgeModBlocks.register(modBus);
         NeoForgeModBlockEntities.register(modBus);
 
         NeoForgeModEntities.register(modBus);
         NeoForgeModSounds.register(modBus);
         NeoForgeModItems.register(modBus);
+        NeoForgeModRecipeSerializers.register(
+                modBus
+        );
         NeoForgeCreativeTabs.register(modBus);
 
         TheEndOfDragon.init();
@@ -70,11 +75,16 @@ public final class TheEndOfDragonNeoForge {
             /*
              * DeferredRegister完了後にCommon側へ値を渡す。
              */
+
+            NeoForgeModDataComponents
+                    .bindCommonReferences();
             NeoForgeModBlocks.bindCommonReferences();
             NeoForgeModBlockEntities.bindCommonReferences();
             NeoForgeModEntities.bindCommonReferences();
             NeoForgeModSounds.bindCommonReferences();
             NeoForgeModItems.bindCommonReferences();
+            NeoForgeModRecipeSerializers
+                    .bindCommonReferences();
             NeoForgeCreativeTabs.bindCommon();
 
             TheEndOfDragon.LOGGER.info(
@@ -119,38 +129,36 @@ public final class TheEndOfDragonNeoForge {
         for (ServerLevel level :
                 event.getServer().getAllLevels()) {
 
-
+            /*
+             * 村ディメンション内の
+             * 帰還門Bを監視・復元する。
+             */
             TedVillageGatewayManager.tick(
                     level
             );
 
+            /*
+             * 一般エンダーマンの友好化処理。
+             */
             TedEndermanFriendship.tick(
                     level
             );
 
-
-            if (level.dimension()
-                    != net.minecraft.world.level.Level.END) {
+            /*
+             * 以下はEndディメンション専用。
+             */
+            if (!level.dimension()
+                    .equals(Level.END)) {
                 continue;
             }
 
-            /*
-             * エンダードラゴン討伐後の
-             * TED出現管理。
-             */
             EndDragonSpawnHandler.tick(
                     level
             );
 
-            /*
-             * 討伐後に消えた味方エンダーマンの
-             * 再生成監視。
-             */
             TedBattleController.tick(
                     level
             );
-
-
         }
     }
 

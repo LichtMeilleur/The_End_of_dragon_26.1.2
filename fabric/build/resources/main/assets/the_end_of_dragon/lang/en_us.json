@@ -8,6 +8,23 @@
   "item.the_end_of_dragon.the_end_piece": "The End Piece",
   "item.the_end_of_dragon.the_end_of_dragon_spawn_egg": "The End of Dragon Spawn Egg",
   "item.the_end_of_dragon.enderman_village_gateway": "Enderman Village Gateway",
+  "item.the_end_of_dragon.ender_pearl_guide_book": "Ender Pearl Guidebook",
+  "item.the_end_of_dragon.ender_pearl_application_book": "Ender Pearl Applications",
+  "item.the_end_of_dragon.ender_pearl_advanced_book": "Advanced Ender Pearl Manual",
+  "item.the_end_of_dragon.ender_pearl_mastery_book": "Ender Pearl Mastery",
+  "item.the_end_of_dragon.ender_pearl_secret_book": "Ender Pearl Secrets",
+
+  "item.the_end_of_dragon.true_ender_pearl": "True Ender Pearl",
+
+  "tooltip.the_end_of_dragon.true_ender_pearl.level": "Rank %s",
+  "tooltip.the_end_of_dragon.true_ender_pearl.unlocked": "Abilities",
+
+  "tooltip.the_end_of_dragon.true_ender_pearl.ability.teleport": "Teleport toward the crosshair",
+  "tooltip.the_end_of_dragon.true_ender_pearl.ability.offhand": "Can be used from the offhand",
+  "tooltip.the_end_of_dragon.true_ender_pearl.ability.carry_players": "Sneak-use to teleport nearby players",
+  "tooltip.the_end_of_dragon.true_ender_pearl.ability.no_fall_damage": "Prevents fall damage",
+  "tooltip.the_end_of_dragon.true_ender_pearl.ability.no_cooldown": "No cooldown",
+
   "message.the_end_of_dragon.ally_enderman.help": "H... Help...",
   "message.the_end_of_dragon.ally_enderman.detected": "A wounded Enderman is calling for help.",
   "message.the_end_of_dragon.ally_enderman.feed": "Give it food to help it recover.",
