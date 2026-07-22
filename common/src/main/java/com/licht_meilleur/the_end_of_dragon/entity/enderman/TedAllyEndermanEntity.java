@@ -261,18 +261,46 @@ public class TedAllyEndermanEntity
                 5,
                 new AllyFollowPlayerGoal(this)
         );
+
+        this.goalSelector.addGoal(
+                6,
+                new WaterAvoidingRandomStrollGoal(
+                        this,
+                        0.65D,
+                        0.001F
+                )
+        );
+
+        this.goalSelector.addGoal(
+                7,
+                new LookAtPlayerGoal(
+                        this,
+                        Player.class,
+                        10.0F
+                )
+        );
+
+        this.goalSelector.addGoal(
+                8,
+                new RandomLookAroundGoal(this)
+        );
     }
 
     public boolean canRunSupportAi() {
-        if (!this.isAlive() || this.isRemoved()) {
+        if (!this.isAlive()
+                || this.isRemoved()
+                || !this.isStoryAlly()) {
             return false;
         }
 
-        return this.getAllyState() == AllyEndermanState.SUPPORT_IDLE;
+        return this.getAllyState()
+                == AllyEndermanState.SUPPORT_IDLE;
     }
 
     public boolean canRunEmergencySupportAi() {
-        if (!this.isAlive() || this.isRemoved()) {
+        if (!this.isAlive()
+                || this.isRemoved()
+                || !this.isStoryAlly()) {
             return false;
         }
 

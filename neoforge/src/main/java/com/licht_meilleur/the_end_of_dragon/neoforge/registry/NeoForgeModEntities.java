@@ -5,6 +5,8 @@ import com.licht_meilleur.the_end_of_dragon.entity.TheEndOfDragonCollisionEntity
 import com.licht_meilleur.the_end_of_dragon.entity.TheEndOfDragonCoreEntity;
 import com.licht_meilleur.the_end_of_dragon.entity.TheEndOfDragonDisplayEntity;
 import com.licht_meilleur.the_end_of_dragon.entity.enderman.TedAllyEndermanEntity;
+import com.licht_meilleur.the_end_of_dragon.entity.enderman.village.TedElderEndermanEntity;
+import com.licht_meilleur.the_end_of_dragon.entity.enderman.village.TedTechEndermanEntity;
 import com.licht_meilleur.the_end_of_dragon.entity.vfx.TedVfxEntity;
 import com.licht_meilleur.the_end_of_dragon.registry.ModEntities;
 import net.minecraft.core.registries.Registries;
@@ -105,6 +107,38 @@ public final class NeoForgeModEntities {
                             .build(ModEntities.TED_ALLY_ENDERMAN_KEY)
             );
 
+    public static final DeferredHolder<
+            EntityType<?>,
+            EntityType<TedElderEndermanEntity>
+            > TED_ELDER_ENDERMAN =
+            ENTITY_TYPES.register(
+                    "ted_elder_enderman",
+                    () -> EntityType.Builder.of(
+                                    TedElderEndermanEntity::new,
+                                    MobCategory.CREATURE
+                            )
+                            .sized(0.6F, 2.9F)
+                            .clientTrackingRange(10)
+                            .updateInterval(2)
+                            .build(ModEntities.TED_ELDER_ENDERMAN_KEY)
+            );
+
+    public static final DeferredHolder<
+            EntityType<?>,
+            EntityType<TedTechEndermanEntity>
+            > TED_TECH_ENDERMAN =
+            ENTITY_TYPES.register(
+                    "ted_tech_enderman",
+                    () -> EntityType.Builder.of(
+                                    TedTechEndermanEntity::new,
+                                    MobCategory.CREATURE
+                            )
+                            .sized(0.6F, 2.9F)
+                            .clientTrackingRange(10)
+                            .updateInterval(2)
+                            .build(ModEntities.TED_TECH_ENDERMAN_KEY)
+            );
+
     public static void register(IEventBus modBus) {
         ENTITY_TYPES.register(modBus);
     }
@@ -115,7 +149,9 @@ public final class NeoForgeModEntities {
                 THE_END_OF_DRAGON_DISPLAY.get(),
                 THE_END_OF_DRAGON_COLLISION.get(),
                 TED_VFX.get(),
-                TED_ALLY_ENDERMAN.get()
+                TED_ALLY_ENDERMAN.get(),
+                TED_ELDER_ENDERMAN.get(),
+                TED_TECH_ENDERMAN.get()
         );
     }
 

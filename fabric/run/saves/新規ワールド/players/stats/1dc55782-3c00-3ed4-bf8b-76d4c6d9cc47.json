@@ -1,0 +1,24 @@
+{
+  "stats": {
+    "minecraft:picked_up": {
+      "minecraft:wheat_seeds": 1
+    },
+    "minecraft:used": {
+      "minecraft:bone_meal": 8,
+      "minecraft:mangrove_propagule": 1
+    },
+    "minecraft:custom": {
+      "minecraft:time_since_rest": 1070,
+      "minecraft:walk_one_cm": 982,
+      "minecraft:total_world_time": 1098,
+      "minecraft:leave_game": 1,
+      "minecraft:fly_one_cm": 1317,
+      "minecraft:walk_on_water_one_cm": 888,
+      "minecraft:sneak_time": 7,
+      "minecraft:play_time": 1070,
+      "minecraft:jump": 3,
+      "minecraft:time_since_death": 1070
+    }
+  },
+  "DataVersion": 4790
+}

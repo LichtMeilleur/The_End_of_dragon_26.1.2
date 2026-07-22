@@ -4,6 +4,8 @@ import com.licht_meilleur.the_end_of_dragon.command.TEDDebugCommands;
 import com.licht_meilleur.the_end_of_dragon.config.TedConfig;
 import com.licht_meilleur.the_end_of_dragon.entity.TheEndOfDragonCoreEntity;
 import com.licht_meilleur.the_end_of_dragon.entity.enderman.TedAllyEndermanEntity;
+import com.licht_meilleur.the_end_of_dragon.entity.enderman.village.TedElderEndermanEntity;
+import com.licht_meilleur.the_end_of_dragon.entity.enderman.village.TedTechEndermanEntity;
 import com.licht_meilleur.the_end_of_dragon.fabric.network.TedFabricNetwork;
 import com.licht_meilleur.the_end_of_dragon.registry.*;
 import com.licht_meilleur.the_end_of_dragon.world.EndDragonSpawnHandler;
@@ -12,6 +14,7 @@ import com.licht_meilleur.the_end_of_dragon.world.TedEndermanBattleHandler;
 import com.licht_meilleur.the_end_of_dragon.world.block.entity.EndermanVillageGatewayBlockEntity;
 import com.licht_meilleur.the_end_of_dragon.world.enderman.TedEndermanFriendship;
 import com.licht_meilleur.the_end_of_dragon.world.village.TedVillageGatewayManager;
+import com.licht_meilleur.the_end_of_dragon.world.village.TedVillageResidentManager;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
@@ -90,6 +93,10 @@ public final class TheEndOfDragonFabric implements ModInitializer {
                                 level
                         );
 
+                        TedVillageResidentManager.tick(
+                                level
+                        );
+
                         TedEndermanFriendship.tick(
                                 level
                         );
@@ -128,6 +135,16 @@ public final class TheEndOfDragonFabric implements ModInitializer {
         FabricDefaultAttributeRegistry.register(
                 ModEntities.TED_ALLY_ENDERMAN,
                 TedAllyEndermanEntity.createAttributes().build()
+        );
+
+        FabricDefaultAttributeRegistry.register(
+                ModEntities.TED_ELDER_ENDERMAN,
+                TedElderEndermanEntity.createAttributes().build()
+        );
+
+        FabricDefaultAttributeRegistry.register(
+                ModEntities.TED_TECH_ENDERMAN,
+                TedTechEndermanEntity.createAttributes().build()
         );
 
         CommandRegistrationCallback.EVENT.register(

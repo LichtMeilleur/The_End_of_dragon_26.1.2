@@ -32,6 +32,13 @@
   "message.the_end_of_dragon.ally_faint_voice": "かすかな声が聞こえる……",
   "message.the_end_of_dragon.ally_enderman.request_food": "<エンダーマン> タベモノ、クダサイ",
   "message.the_end_of_dragon.ally_enderman.food_received": "<エンダーマン> アリガトウ",
-  "message.the_end_of_dragon.ally_enderman.combat_supply": "<エンダーマン> コレ、ツカッテ"
+  "message.the_end_of_dragon.ally_enderman.combat_supply": "<エンダーマン> コレ、ツカッテ",
+
+
+  "entity.the_end_of_dragon.ally_elder_enderman": "エンダーマンの長老",
+  "message.the_end_of_dragon.elder.not_ready": "<長老> マダ、ハナスベキトキデハナイ",
+
+  "entity.the_end_of_dragon.ally_tech_enderman": "エンダーマンの技術屋",
+  "message.the_end_of_dragon.technician.not_ready": "<技術屋> ジュンビチュウ、マタキテ"
 
 }

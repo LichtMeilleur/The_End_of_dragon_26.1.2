@@ -18,7 +18,7 @@ public final class TedVillageWorldState
      * 保存項目の意味や構造を変更したら増やす。
      */
     private static final int CURRENT_DATA_VERSION =
-            2;
+            3;
 
     private int dataVersion;
     /*
@@ -50,6 +50,28 @@ public final class TedVillageWorldState
      * 1以降は将来追加。
      */
     private int villageQuestStage;
+
+
+    private BlockPos elderSpawnPosition =
+            BlockPos.ZERO;
+
+    private BlockPos technicianSpawnPosition =
+            BlockPos.ZERO;
+
+    private BlockPos allyHomePosition =
+            BlockPos.ZERO;
+
+    public BlockPos getElderSpawnPosition() {
+        return elderSpawnPosition;
+    }
+
+    public BlockPos getTechnicianSpawnPosition() {
+        return technicianSpawnPosition;
+    }
+
+    public BlockPos getAllyHomePosition() {
+        return allyHomePosition;
+    }
 
     private static final Codec<
             TedVillageWorldState> CODEC =
@@ -160,6 +182,37 @@ public final class TedVillageWorldState
                                                     state ->
                                                             state.returnGatewayPosition
                                                                     .getZ()
+                                            ),
+
+
+                                    BlockPos.CODEC
+                                            .optionalFieldOf(
+                                                    "elder_spawn_position",
+                                                    BlockPos.ZERO
+                                            )
+                                            .forGetter(
+                                                    state ->
+                                                            state.elderSpawnPosition
+                                            ),
+
+                                    BlockPos.CODEC
+                                            .optionalFieldOf(
+                                                    "technician_spawn_position",
+                                                    BlockPos.ZERO
+                                            )
+                                            .forGetter(
+                                                    state ->
+                                                            state.technicianSpawnPosition
+                                            ),
+
+                                    BlockPos.CODEC
+                                            .optionalFieldOf(
+                                                    "ally_home_position",
+                                                    BlockPos.ZERO
+                                            )
+                                            .forGetter(
+                                                    state ->
+                                                            state.allyHomePosition
                                             )
                             ).apply(
                                     instance,
@@ -193,9 +246,11 @@ public final class TedVillageWorldState
                 0,
                 0,
                 64,
-                0
+                0,
+                BlockPos.ZERO,
+                BlockPos.ZERO,
+                BlockPos.ZERO
         );
-
     }
 
     /*
@@ -211,7 +266,10 @@ public final class TedVillageWorldState
             int villageQuestStage,
             int returnGatewayX,
             int returnGatewayY,
-            int returnGatewayZ
+            int returnGatewayZ,
+            BlockPos elderSpawnPosition,
+            BlockPos technicianSpawnPosition,
+            BlockPos allyHomePosition
     ) {
         this.dataVersion =
                 Math.max(
@@ -244,7 +302,20 @@ public final class TedVillageWorldState
                         returnGatewayY,
                         returnGatewayZ
                 );
+        this.elderSpawnPosition =
+                elderSpawnPosition == null
+                        ? BlockPos.ZERO
+                        : elderSpawnPosition.immutable();
 
+        this.technicianSpawnPosition =
+                technicianSpawnPosition == null
+                        ? BlockPos.ZERO
+                        : technicianSpawnPosition.immutable();
+
+        this.allyHomePosition =
+                allyHomePosition == null
+                        ? BlockPos.ZERO
+                        : allyHomePosition.immutable();
 
 
         migrateDataIfNeeded();
@@ -300,6 +371,19 @@ public final class TedVillageWorldState
                     );
 
             version = 2;
+        }
+
+        if (version < 3) {
+            this.elderSpawnPosition =
+                    BlockPos.ZERO;
+
+            this.technicianSpawnPosition =
+                    BlockPos.ZERO;
+
+            this.allyHomePosition =
+                    BlockPos.ZERO;
+
+            version = 3;
         }
 
         this.dataVersion =
@@ -395,6 +479,15 @@ public final class TedVillageWorldState
         this.villageQuestStage =
                 0;
 
+        this.elderSpawnPosition =
+                BlockPos.ZERO;
+
+        this.technicianSpawnPosition =
+                BlockPos.ZERO;
+
+        this.allyHomePosition =
+                BlockPos.ZERO;
+
         this.setDirty();
     }
 
@@ -419,6 +512,29 @@ public final class TedVillageWorldState
 
         this.returnGatewayPosition =
                 safePosition;
+
+        this.setDirty();
+    }
+
+    public void setResidentPositions(
+            BlockPos elderSpawnPosition,
+            BlockPos technicianSpawnPosition,
+            BlockPos allyHomePosition
+    ) {
+        if (elderSpawnPosition == null
+                || technicianSpawnPosition == null
+                || allyHomePosition == null) {
+            return;
+        }
+
+        this.elderSpawnPosition =
+                elderSpawnPosition.immutable();
+
+        this.technicianSpawnPosition =
+                technicianSpawnPosition.immutable();
+
+        this.allyHomePosition =
+                allyHomePosition.immutable();
 
         this.setDirty();
     }

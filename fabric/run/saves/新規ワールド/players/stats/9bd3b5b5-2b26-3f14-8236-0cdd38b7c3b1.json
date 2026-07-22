@@ -1,0 +1,23 @@
+{
+  "stats": {
+    "minecraft:used": {
+      "minecraft:water_bucket": 12,
+      "minecraft:redstone_block": 1,
+      "minecraft:stripped_oak_log": 1,
+      "minecraft:purple_wool": 68
+    },
+    "minecraft:custom": {
+      "minecraft:time_since_rest": 5538,
+      "minecraft:walk_one_cm": 7744,
+      "minecraft:total_world_time": 5769,
+      "minecraft:leave_game": 1,
+      "minecraft:fly_one_cm": 7956,
+      "minecraft:walk_on_water_one_cm": 1160,
+      "minecraft:sneak_time": 79,
+      "minecraft:play_time": 5538,
+      "minecraft:jump": 6,
+      "minecraft:time_since_death": 5538
+    }
+  },
+  "DataVersion": 4790
+}

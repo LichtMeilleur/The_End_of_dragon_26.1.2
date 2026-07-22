@@ -24,6 +24,15 @@ public final class TedVillageStructurePlacer {
     private static final String SURFACE_ANCHOR_NAME =
             "ted:surface_anchor";
 
+    private static final String ELDER_SPAWN_NAME =
+            "ted:elder_spawn";
+
+    private static final String TECHNICIAN_SPAWN_NAME =
+            "ted:technician_spawn";
+
+    private static final String ALLY_HOME_NAME =
+            "ted:ally_home";
+
     /*
      * 村の基準XZ。
      *
@@ -115,6 +124,15 @@ public final class TedVillageStructurePlacer {
         int successfullyPlaced =
                 0;
 
+        BlockPos elderSpawnPosition =
+                null;
+
+        BlockPos technicianSpawnPosition =
+                null;
+
+        BlockPos allyHomePosition =
+                null;
+
         for (VillagePiece piece : PIECES) {
             BlockPos targetSurfaceAnchor =
                     villageCenter.offset(
@@ -123,15 +141,36 @@ public final class TedVillageStructurePlacer {
                             piece.offsetZ()
                     );
 
-            boolean placed =
+            PlacedVillagePiece placedPiece =
                     placeAtSurfaceAnchor(
                             level,
                             piece,
                             targetSurfaceAnchor
                     );
 
-            if (placed) {
-                successfullyPlaced++;
+            if (!placedPiece.placed()) {
+                continue;
+            }
+
+            successfullyPlaced++;
+
+            /*
+             * 住民マーカーは、それぞれのNBT内に
+             * 存在する場合だけ取得する。
+             */
+            if (placedPiece.elderSpawnPosition() != null) {
+                elderSpawnPosition =
+                        placedPiece.elderSpawnPosition();
+            }
+
+            if (placedPiece.technicianSpawnPosition() != null) {
+                technicianSpawnPosition =
+                        placedPiece.technicianSpawnPosition();
+            }
+
+            if (placedPiece.allyHomePosition() != null) {
+                allyHomePosition =
+                        placedPiece.allyHomePosition();
             }
         }
 
@@ -161,6 +200,24 @@ public final class TedVillageStructurePlacer {
                 returnGatewayPos
         );
 
+        if (elderSpawnPosition == null
+                || technicianSpawnPosition == null
+                || allyHomePosition == null) {
+
+            TheEndOfDragon.LOGGER.error(
+                    "Village resident markers are missing: elder={}, technician={}, ally={}",
+                    elderSpawnPosition,
+                    technicianSpawnPosition,
+                    allyHomePosition
+            );
+        } else {
+            villageState.setResidentPositions(
+                    elderSpawnPosition,
+                    technicianSpawnPosition,
+                    allyHomePosition
+            );
+        }
+
         /*
          * 村中央へ到着させる。
          *少しずらす
@@ -183,7 +240,7 @@ public final class TedVillageStructurePlacer {
      * NBT内のsurface_anhorを、
      * 指定した地表座標へ合わせて配置する。
      */
-    private static boolean placeAtSurfaceAnchor(
+    private static PlacedVillagePiece placeAtSurfaceAnchor(
             ServerLevel level,
             VillagePiece piece,
             BlockPos targetSurfaceAnchor
@@ -206,7 +263,7 @@ public final class TedVillageStructurePlacer {
                     templateId
             );
 
-            return false;
+            return PlacedVillagePiece.failed();
         }
 
         StructureTemplate template =
@@ -221,40 +278,55 @@ public final class TedVillageStructurePlacer {
                                 false
                         );
 
-        BlockPos localAnchor =
-                findSurfaceAnchor(
+        BlockPos localSurfaceAnchor =
+                findMarker(
                         template,
-                        settings
+                        settings,
+                        SURFACE_ANCHOR_NAME
                 );
 
-        if (localAnchor == null) {
+        if (localSurfaceAnchor == null) {
             TheEndOfDragon.LOGGER.error(
                     "Structure {} has no jigsaw marker named {}",
                     templateId,
                     SURFACE_ANCHOR_NAME
             );
 
-            return false;
+            return PlacedVillagePiece.failed();
         }
 
-        /*
-         * NBT内部のanchor座標がtargetSurfaceAnchorへ
-         * 来るように、構造物原点を逆算する。
-         *
-         * 現段階ではRotation.NONEなので、
-         * 単純な座標減算で一致する。
-         */
         BlockPos structureOrigin =
                 targetSurfaceAnchor.subtract(
-                        localAnchor
+                        localSurfaceAnchor
                 );
 
-        /*
-         * 配置予定チャンクをロードする。
-         */
         level.getChunk(
                 structureOrigin
         );
+
+        /*
+         * 配置前に各住民マーカーのローカル座標を取得する。
+         */
+        BlockPos localElderSpawn =
+                findMarker(
+                        template,
+                        settings,
+                        ELDER_SPAWN_NAME
+                );
+
+        BlockPos localTechnicianSpawn =
+                findMarker(
+                        template,
+                        settings,
+                        TECHNICIAN_SPAWN_NAME
+                );
+
+        BlockPos localAllyHome =
+                findMarker(
+                        template,
+                        settings,
+                        ALLY_HOME_NAME
+                );
 
         boolean placed =
                 template.placeInWorld(
@@ -273,26 +345,54 @@ public final class TedVillageStructurePlacer {
                     structureOrigin
             );
 
-            return false;
+            return PlacedVillagePiece.failed();
         }
 
         /*
-         * 配置後、目印として使ったジグソーブロックを消す。
+         * マーカーのワールド座標を求める。
          */
-        BlockPos placedAnchorPos =
-                structureOrigin.offset(
-                        localAnchor
+        BlockPos elderSpawnPosition =
+                toWorldPosition(
+                        structureOrigin,
+                        localElderSpawn
                 );
 
-        if (level.getBlockState(
-                placedAnchorPos
-        ).is(Blocks.JIGSAW)) {
-            level.setBlock(
-                    placedAnchorPos,
-                    Blocks.AIR.defaultBlockState(),
-                    3
-            );
-        }
+        BlockPos technicianSpawnPosition =
+                toWorldPosition(
+                        structureOrigin,
+                        localTechnicianSpawn
+                );
+
+        BlockPos allyHomePosition =
+                toWorldPosition(
+                        structureOrigin,
+                        localAllyHome
+                );
+
+        /*
+         * 配置後、使用したジグソーマーカーを削除する。
+         */
+        removeJigsawMarker(
+                level,
+                structureOrigin.offset(
+                        localSurfaceAnchor
+                )
+        );
+
+        removeJigsawMarker(
+                level,
+                elderSpawnPosition
+        );
+
+        removeJigsawMarker(
+                level,
+                technicianSpawnPosition
+        );
+
+        removeJigsawMarker(
+                level,
+                allyHomePosition
+        );
 
         TheEndOfDragon.LOGGER.info(
                 "Placed village structure {} with anchor at {}",
@@ -300,16 +400,22 @@ public final class TedVillageStructurePlacer {
                 targetSurfaceAnchor
         );
 
-        return true;
+        return new PlacedVillagePiece(
+                true,
+                elderSpawnPosition,
+                technicianSpawnPosition,
+                allyHomePosition
+        );
     }
 
     /**
      * StructureTemplate内から、
      * name=ted:surface_anhor のジグソーを探す。
      */
-    private static BlockPos findSurfaceAnchor(
+    private static BlockPos findMarker(
             StructureTemplate template,
-            StructurePlaceSettings settings
+            StructurePlaceSettings settings,
+            String markerName
     ) {
         List<StructureTemplate.StructureBlockInfo>
                 jigsawBlocks =
@@ -326,15 +432,15 @@ public final class TedVillageStructurePlacer {
                 continue;
             }
 
-            String markerName =
+            String foundName =
                     info.nbt()
                             .getString(
                                     "name"
                             )
                             .orElse("");
 
-            if (!SURFACE_ANCHOR_NAME.equals(
-                    markerName
+            if (!markerName.equals(
+                    foundName
             )) {
                 continue;
             }
@@ -343,6 +449,42 @@ public final class TedVillageStructurePlacer {
         }
 
         return null;
+    }
+
+    private static BlockPos toWorldPosition(
+            BlockPos structureOrigin,
+            BlockPos localPosition
+    ) {
+        if (localPosition == null) {
+            return null;
+        }
+
+        return structureOrigin.offset(
+                localPosition
+        );
+    }
+
+    private static void removeJigsawMarker(
+            ServerLevel level,
+            BlockPos position
+    ) {
+        if (position == null) {
+            return;
+        }
+
+        if (!level.getBlockState(
+                position
+        ).is(
+                Blocks.JIGSAW
+        )) {
+            return;
+        }
+
+        level.setBlock(
+                position,
+                Blocks.AIR.defaultBlockState(),
+                3
+        );
     }
 
     private static int getSurfaceY(
@@ -446,6 +588,22 @@ public final class TedVillageStructurePlacer {
             int offsetZ,
             Rotation rotation
     ) {
+    }
+
+    private record PlacedVillagePiece(
+            boolean placed,
+            BlockPos elderSpawnPosition,
+            BlockPos technicianSpawnPosition,
+            BlockPos allyHomePosition
+    ) {
+        private static PlacedVillagePiece failed() {
+            return new PlacedVillagePiece(
+                    false,
+                    null,
+                    null,
+                    null
+            );
+        }
     }
 
     private TedVillageStructurePlacer() {

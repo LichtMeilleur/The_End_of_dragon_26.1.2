@@ -4,6 +4,8 @@ import com.licht_meilleur.the_end_of_dragon.command.TEDDebugCommands;
 import com.licht_meilleur.the_end_of_dragon.config.TedConfig;
 import com.licht_meilleur.the_end_of_dragon.entity.TheEndOfDragonCoreEntity;
 import com.licht_meilleur.the_end_of_dragon.entity.enderman.TedAllyEndermanEntity;
+import com.licht_meilleur.the_end_of_dragon.entity.enderman.village.TedElderEndermanEntity;
+import com.licht_meilleur.the_end_of_dragon.entity.enderman.village.TedTechEndermanEntity;
 import com.licht_meilleur.the_end_of_dragon.neoforge.client.TheEndOfDragonNeoForgeClient;
 import com.licht_meilleur.the_end_of_dragon.neoforge.network.TedNeoForgeNetwork;
 import com.licht_meilleur.the_end_of_dragon.neoforge.registry.*;
@@ -12,6 +14,7 @@ import com.licht_meilleur.the_end_of_dragon.world.TedBattleController;
 import com.licht_meilleur.the_end_of_dragon.world.TedEndermanBattleHandler;
 import com.licht_meilleur.the_end_of_dragon.world.enderman.TedEndermanFriendship;
 import com.licht_meilleur.the_end_of_dragon.world.village.TedVillageGatewayManager;
+import com.licht_meilleur.the_end_of_dragon.world.village.TedVillageResidentManager;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.monster.EnderMan;
 import net.minecraft.world.level.Level;
@@ -119,6 +122,16 @@ public final class TheEndOfDragonNeoForge {
                 NeoForgeModEntities.TED_ALLY_ENDERMAN.get(),
                 TedAllyEndermanEntity.createAttributes().build()
         );
+
+        event.put(
+                NeoForgeModEntities.TED_ELDER_ENDERMAN.get(),
+                TedElderEndermanEntity.createAttributes().build()
+        );
+
+        event.put(
+                NeoForgeModEntities.TED_TECH_ENDERMAN.get(),
+                TedTechEndermanEntity.createAttributes().build()
+        );
     }
 
     @SubscribeEvent
@@ -134,6 +147,10 @@ public final class TheEndOfDragonNeoForge {
              * 帰還門Bを監視・復元する。
              */
             TedVillageGatewayManager.tick(
+                    level
+            );
+
+            TedVillageResidentManager.tick(
                     level
             );
 

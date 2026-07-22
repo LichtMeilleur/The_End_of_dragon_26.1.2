@@ -1,4 +1,3 @@
-/summon the_end_of_dragon:ted_ally_enderman
 /ted spawn
 /ted kill
 /ted bow
@@ -48,3 +47,4 @@
 /gamemode survival
 /give Player527 minecraft:ender_pearl
 /gamemode survival
+/gamemode creative

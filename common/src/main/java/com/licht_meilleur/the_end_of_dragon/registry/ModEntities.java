@@ -5,6 +5,8 @@ import com.licht_meilleur.the_end_of_dragon.entity.TheEndOfDragonCollisionEntity
 import com.licht_meilleur.the_end_of_dragon.entity.TheEndOfDragonCoreEntity;
 import com.licht_meilleur.the_end_of_dragon.entity.TheEndOfDragonDisplayEntity;
 import com.licht_meilleur.the_end_of_dragon.entity.enderman.TedAllyEndermanEntity;
+import com.licht_meilleur.the_end_of_dragon.entity.enderman.village.TedElderEndermanEntity;
+import com.licht_meilleur.the_end_of_dragon.entity.enderman.village.TedTechEndermanEntity;
 import com.licht_meilleur.the_end_of_dragon.entity.vfx.TedVfxEntity;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -44,6 +46,16 @@ public final class ModEntities {
                     Registries.ENTITY_TYPE,
                     TheEndOfDragon.id("ted_ally_enderman")
             );
+    public static final ResourceKey<EntityType<?>> TED_ELDER_ENDERMAN_KEY =
+            ResourceKey.create(
+                    Registries.ENTITY_TYPE,
+                    TheEndOfDragon.id("ted_elder_enderman")
+            );
+    public static final ResourceKey<EntityType<?>> TED_TECH_ENDERMAN_KEY =
+            ResourceKey.create(
+                    Registries.ENTITY_TYPE,
+                    TheEndOfDragon.id("ted_tech_enderman")
+            );
 
     /*
      * 各ローダーの登録処理によって代入される。
@@ -60,6 +72,8 @@ public final class ModEntities {
     public static EntityType<TheEndOfDragonCollisionEntity> THE_END_OF_DRAGON_COLLISION;
     public static EntityType<TedVfxEntity> TED_VFX;
     public static EntityType<TedAllyEndermanEntity> TED_ALLY_ENDERMAN;
+    public static EntityType<TedElderEndermanEntity> TED_ELDER_ENDERMAN;
+    public static EntityType<TedTechEndermanEntity> TED_TECH_ENDERMAN;
 
     private static boolean fabricRegistered = false;
     private static boolean bound = false;
@@ -152,6 +166,40 @@ public final class ModEntities {
                                 .build(TED_ALLY_ENDERMAN_KEY)
                 );
 
+        TED_ELDER_ENDERMAN =
+                Registry.register(
+                        BuiltInRegistries.ENTITY_TYPE,
+                        TED_ELDER_ENDERMAN_KEY.identifier(),
+                        EntityType.Builder.of(
+                                        TedElderEndermanEntity::new,
+                                        MobCategory.CREATURE
+                                )
+                                .sized(
+                                        0.6F,
+                                        2.9F
+                                )
+                                .clientTrackingRange(10)
+                                .updateInterval(2)
+                                .build(TED_ELDER_ENDERMAN_KEY)
+                );
+
+        TED_TECH_ENDERMAN =
+                Registry.register(
+                        BuiltInRegistries.ENTITY_TYPE,
+                        TED_TECH_ENDERMAN_KEY.identifier(),
+                        EntityType.Builder.of(
+                                        TedTechEndermanEntity::new,
+                                        MobCategory.CREATURE
+                                )
+                                .sized(
+                                        0.6F,
+                                        2.9F
+                                )
+                                .clientTrackingRange(10)
+                                .updateInterval(2)
+                                .build(TED_TECH_ENDERMAN_KEY)
+                );
+
 
 
         bound = true;
@@ -172,13 +220,17 @@ public final class ModEntities {
             EntityType<TheEndOfDragonDisplayEntity> display,
             EntityType<TheEndOfDragonCollisionEntity> collision,
             EntityType<TedVfxEntity> vfx,
-            EntityType<TedAllyEndermanEntity> allyEnderman
+            EntityType<TedAllyEndermanEntity> allyEnderman,
+            EntityType<TedElderEndermanEntity> elderEnderman,
+            EntityType<TedTechEndermanEntity> techEnderman
     ) {
         THE_END_OF_DRAGON = core;
         THE_END_OF_DRAGON_DISPLAY = display;
         THE_END_OF_DRAGON_COLLISION = collision;
         TED_VFX = vfx;
         TED_ALLY_ENDERMAN = allyEnderman;
+        TED_ELDER_ENDERMAN = elderEnderman;
+        TED_TECH_ENDERMAN = techEnderman;
 
         bound = true;
 
