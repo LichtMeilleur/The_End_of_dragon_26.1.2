@@ -9,6 +9,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.SpawnEggItem;
@@ -95,6 +96,62 @@ public final class ModItems {
                     TheEndOfDragon.id("true_ender_pearl")
             );
 
+    public static final ResourceKey<Item> RECHORUS_MELON_KEY =
+            ResourceKey.create(
+                    Registries.ITEM,
+                    TheEndOfDragon.id("rechorus_melon")
+            );
+
+    public static final ResourceKey<Item> RECHORUS_MELON_CUT_KEY =
+            ResourceKey.create(
+                    Registries.ITEM,
+                    TheEndOfDragon.id("rechorus_melon_cut")
+            );
+
+    public static final ResourceKey<Item>
+            RECHORUS_MELON_SEED_KEY =
+            ResourceKey.create(
+                    Registries.ITEM,
+                    TheEndOfDragon.id("rechorus_melon_seed")
+            );
+
+    public static final ResourceKey<Item>
+            RECHORUS_MELON_SEED_PROTOTYPE_KEY =
+            ResourceKey.create(
+                    Registries.ITEM,
+                    TheEndOfDragon.id(
+                            "rechorus_melon_seed_prototype"
+                    )
+            );
+
+    public static final ResourceKey<Item>
+            RECHORUS_PLANT_CORE_KEY =
+            ResourceKey.create(
+                    Registries.ITEM,
+                    TheEndOfDragon.id("rechorus_plant_core")
+            );
+
+    public static final ResourceKey<Item>
+            RECHORUS_PLANT_SEED_KEY =
+            ResourceKey.create(
+                    Registries.ITEM,
+                    TheEndOfDragon.id("rechorus_plant_seed")
+            );
+
+    public static final ResourceKey<Item>
+            WATER_TRANSFER_MACHINE_A_KEY =
+            ResourceKey.create(
+                    Registries.ITEM,
+                    TheEndOfDragon.id("water_transfer_machine_a")
+            );
+
+    public static final ResourceKey<Item>
+            WATER_TRANSFER_MACHINE_B_KEY =
+            ResourceKey.create(
+                    Registries.ITEM,
+                    TheEndOfDragon.id("water_transfer_machine_b")
+            );
+
     public static Item THE_END_OF_DRAGON_ICON;
     public static Item THE_END_OF_DRAGON_SPAWN_EGG;
     public static Item THE_END_PIECE;
@@ -108,6 +165,17 @@ public final class ModItems {
     public static Item ENDER_PEARL_SECRET_BOOK;
 
     public static Item TRUE_ENDER_PEARL;
+
+    public static Item RECHORUS_MELON;
+    public static Item RECHORUS_MELON_CUT;
+    public static Item RECHORUS_MELON_SEED;
+    public static Item RECHORUS_MELON_SEED_PROTOTYPE;
+
+    public static Item RECHORUS_PLANT_CORE;
+    public static Item RECHORUS_PLANT_SEED;
+
+    public static Item WATER_TRANSFER_MACHINE_A;
+    public static Item WATER_TRANSFER_MACHINE_B;
 
     private static boolean fabricRegistered = false;
 
@@ -298,6 +366,108 @@ public final class ModItems {
                         )
                 );
 
+        RECHORUS_MELON =
+                Registry.register(
+                        BuiltInRegistries.ITEM,
+                        RECHORUS_MELON_KEY.identifier(),
+                        new BlockItem(
+                                ModBlocks.RECHORUS_MELON,
+                                new Item.Properties()
+                                        .setId(RECHORUS_MELON_KEY)
+                                        .useBlockDescriptionPrefix()
+                        )
+                );
+
+        RECHORUS_MELON_CUT =
+                Registry.register(
+                        BuiltInRegistries.ITEM,
+                        RECHORUS_MELON_CUT_KEY.identifier(),
+                        new Item(
+                                new Item.Properties()
+                                        .setId(RECHORUS_MELON_CUT_KEY)
+                                        .food(
+                                                new FoodProperties.Builder()
+                                                        .nutrition(2)
+                                                        .saturationModifier(0.3F)
+                                                        .build()
+                                        )
+                        )
+                );
+
+        RECHORUS_MELON_SEED =
+                Registry.register(
+                        BuiltInRegistries.ITEM,
+                        RECHORUS_MELON_SEED_KEY.identifier(),
+                        new Item(
+                                new Item.Properties()
+                                        .setId(RECHORUS_MELON_SEED_KEY)
+                        )
+                );
+
+        RECHORUS_MELON_SEED_PROTOTYPE =
+                Registry.register(
+                        BuiltInRegistries.ITEM,
+                        RECHORUS_MELON_SEED_PROTOTYPE_KEY
+                                .identifier(),
+                        new Item(
+                                new Item.Properties()
+                                        .setId(
+                                                RECHORUS_MELON_SEED_PROTOTYPE_KEY
+                                        )
+                        )
+                );
+
+        RECHORUS_PLANT_CORE =
+                Registry.register(
+                        BuiltInRegistries.ITEM,
+                        RECHORUS_PLANT_CORE_KEY.identifier(),
+                        new BlockItem(
+                                ModBlocks.RECHORUS_PLANT_CORE,
+                                new Item.Properties()
+                                        .setId(RECHORUS_PLANT_CORE_KEY)
+                                        .fireResistant()
+                                        .useBlockDescriptionPrefix()
+                        )
+                );
+
+        RECHORUS_PLANT_SEED =
+                Registry.register(
+                        BuiltInRegistries.ITEM,
+                        RECHORUS_PLANT_SEED_KEY.identifier(),
+                        new Item(
+                                new Item.Properties()
+                                        .setId(RECHORUS_PLANT_SEED_KEY)
+                        )
+                );
+
+        WATER_TRANSFER_MACHINE_A =
+                Registry.register(
+                        BuiltInRegistries.ITEM,
+                        WATER_TRANSFER_MACHINE_A_KEY.identifier(),
+                        new BlockItem(
+                                ModBlocks.WATER_TRANSFER_MACHINE_A,
+                                new Item.Properties()
+                                        .setId(WATER_TRANSFER_MACHINE_A_KEY)
+                                        .stacksTo(1)
+                                        .fireResistant()
+                                        .useBlockDescriptionPrefix()
+                        )
+                );
+
+        WATER_TRANSFER_MACHINE_B =
+                Registry.register(
+                        BuiltInRegistries.ITEM,
+                        WATER_TRANSFER_MACHINE_B_KEY.identifier(),
+                        new BlockItem(
+                                ModBlocks.WATER_TRANSFER_MACHINE_B,
+                                new Item.Properties()
+                                        .setId(WATER_TRANSFER_MACHINE_B_KEY)
+                                        .stacksTo(1)
+                                        .fireResistant()
+                                        .useBlockDescriptionPrefix()
+                        )
+                );
+
         TheEndOfDragon.LOGGER.info(
                 "Registered The End Of Dragon items for Fabric"
         );
@@ -314,7 +484,15 @@ public final class ModItems {
             Item enderPearlAdvancedBook,
             Item enderPearlMasteryBook,
             Item enderPearlSecretBook,
-            Item trueEnderPearl
+            Item trueEnderPearl,
+            Item rechorusMelon,
+            Item rechorusMelonCut,
+            Item rechorusMelonSeed,
+            Item rechorusMelonSeedPrototype,
+            Item rechorusPlantCore,
+            Item rechorusPlantSeed,
+            Item waterTransferMachineA,
+            Item waterTransferMachineB
     ) {
         THE_END_OF_DRAGON_ICON =
                 icon;
@@ -348,6 +526,30 @@ public final class ModItems {
 
         TRUE_ENDER_PEARL =
                 trueEnderPearl;
+
+        RECHORUS_MELON =
+                rechorusMelon;
+
+        RECHORUS_MELON_CUT =
+                rechorusMelonCut;
+
+        RECHORUS_MELON_SEED =
+                rechorusMelonSeed;
+
+        RECHORUS_MELON_SEED_PROTOTYPE =
+                rechorusMelonSeedPrototype;
+
+        RECHORUS_PLANT_CORE =
+                rechorusPlantCore;
+
+        RECHORUS_PLANT_SEED =
+                rechorusPlantSeed;
+
+        WATER_TRANSFER_MACHINE_A =
+                waterTransferMachineA;
+
+        WATER_TRANSFER_MACHINE_B =
+                waterTransferMachineB;
 
         TheEndOfDragon.LOGGER.info(
                 "Bound NeoForge items to common registry references"

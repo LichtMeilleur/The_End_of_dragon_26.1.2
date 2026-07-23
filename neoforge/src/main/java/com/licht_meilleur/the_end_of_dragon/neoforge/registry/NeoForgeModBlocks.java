@@ -72,6 +72,74 @@ public final class NeoForgeModBlocks {
                     )
             );
 
+    public static final DeferredHolder<Block, Block>
+            RECHORUS_MELON =
+            BLOCKS.register(
+                    "rechorus_melon",
+                    () -> new Block(
+                            BlockBehaviour.Properties
+                                    .of()
+                                    .setId(
+                                            ModBlocks.RECHORUS_MELON_KEY
+                                    )
+                                    .strength(1.0F)
+                                    .sound(SoundType.WOOD)
+                    )
+            );
+
+    public static final DeferredHolder<Block, Block>
+            RECHORUS_PLANT_CORE =
+            BLOCKS.register(
+                    "rechorus_plant_core",
+                    () -> new Block(
+                            BlockBehaviour.Properties
+                                    .of()
+                                    .setId(
+                                            ModBlocks.RECHORUS_PLANT_CORE_KEY
+                                    )
+                                    .strength(2.0F, 6.0F)
+                                    .sound(SoundType.WOOD)
+                                    .lightLevel(state -> 5)
+                                    .noOcclusion()
+                    )
+            );
+
+    public static final DeferredHolder<Block, Block>
+            WATER_TRANSFER_MACHINE_A =
+            BLOCKS.register(
+                    "water_transfer_machine_a",
+                    () -> new Block(
+                            BlockBehaviour.Properties
+                                    .of()
+                                    .setId(
+                                            ModBlocks
+                                                    .WATER_TRANSFER_MACHINE_A_KEY
+                                    )
+                                    .strength(3.0F, 12.0F)
+                                    .sound(SoundType.METAL)
+                                    .lightLevel(state -> 4)
+                                    .noOcclusion()
+                    )
+            );
+
+    public static final DeferredHolder<Block, Block>
+            WATER_TRANSFER_MACHINE_B =
+            BLOCKS.register(
+                    "water_transfer_machine_b",
+                    () -> new Block(
+                            BlockBehaviour.Properties
+                                    .of()
+                                    .setId(
+                                            ModBlocks
+                                                    .WATER_TRANSFER_MACHINE_B_KEY
+                                    )
+                                    .strength(3.0F, 12.0F)
+                                    .sound(SoundType.METAL)
+                                    .lightLevel(state -> 4)
+                                    .noOcclusion()
+                    )
+            );
+
     public static void register(
             IEventBus modBus
     ) {
@@ -81,7 +149,11 @@ public final class NeoForgeModBlocks {
     public static void bindCommonReferences() {
         ModBlocks.bindNeoForge(
                 ENDERMAN_VILLAGE_GATEWAY.get(),
-                ENDERMAN_VILLAGE_RETURN_GATEWAY.get()
+                ENDERMAN_VILLAGE_RETURN_GATEWAY.get(),
+                RECHORUS_MELON.get(),
+                RECHORUS_PLANT_CORE.get(),
+                WATER_TRANSFER_MACHINE_A.get(),
+                WATER_TRANSFER_MACHINE_B.get()
         );
     }
 

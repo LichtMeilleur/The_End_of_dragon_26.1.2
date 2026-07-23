@@ -8,6 +8,7 @@ import com.licht_meilleur.the_end_of_dragon.registry.ModItems;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.SpawnEggItem;
@@ -194,6 +195,128 @@ public final class NeoForgeModItems {
                                                     )
                                             )
                             )
+
+
+            );
+
+    public static final DeferredHolder<Item, Item>
+            RECHORUS_MELON =
+            ITEMS.register(
+                    "rechorus_melon",
+                    () -> new BlockItem(
+                            NeoForgeModBlocks.RECHORUS_MELON.get(),
+                            new Item.Properties()
+                                    .setId(ModItems.RECHORUS_MELON_KEY)
+                                    .useBlockDescriptionPrefix()
+                    )
+            );
+
+    public static final DeferredHolder<Item, Item>
+            RECHORUS_MELON_CUT =
+            ITEMS.register(
+                    "rechorus_melon_cut",
+                    () -> new Item(
+                            new Item.Properties()
+                                    .setId(
+                                            ModItems.RECHORUS_MELON_CUT_KEY
+                                    )
+                                    .food(
+                                            new FoodProperties.Builder()
+                                                    .nutrition(2)
+                                                    .saturationModifier(0.3F)
+                                                    .build()
+                                    )
+                    )
+            );
+
+    public static final DeferredHolder<Item, Item>
+            RECHORUS_MELON_SEED =
+            ITEMS.register(
+                    "rechorus_melon_seed",
+                    () -> new Item(
+                            new Item.Properties()
+                                    .setId(
+                                            ModItems.RECHORUS_MELON_SEED_KEY
+                                    )
+                    )
+            );
+
+    public static final DeferredHolder<Item, Item>
+            RECHORUS_MELON_SEED_PROTOTYPE =
+            ITEMS.register(
+                    "rechorus_melon_seed_prototype",
+                    () -> new Item(
+                            new Item.Properties()
+                                    .setId(
+                                            ModItems
+                                                    .RECHORUS_MELON_SEED_PROTOTYPE_KEY
+                                    )
+                    )
+            );
+
+    public static final DeferredHolder<Item, Item>
+            RECHORUS_PLANT_CORE =
+            ITEMS.register(
+                    "rechorus_plant_core",
+                    () -> new BlockItem(
+                            NeoForgeModBlocks
+                                    .RECHORUS_PLANT_CORE
+                                    .get(),
+                            new Item.Properties()
+                                    .setId(
+                                            ModItems.RECHORUS_PLANT_CORE_KEY
+                                    )
+                                    .fireResistant()
+                                    .useBlockDescriptionPrefix()
+                    )
+            );
+
+    public static final DeferredHolder<Item, Item>
+            RECHORUS_PLANT_SEED =
+            ITEMS.register(
+                    "rechorus_plant_seed",
+                    () -> new Item(
+                            new Item.Properties()
+                                    .setId(
+                                            ModItems.RECHORUS_PLANT_SEED_KEY
+                                    )
+                    )
+            );
+
+    public static final DeferredHolder<Item, Item>
+            WATER_TRANSFER_MACHINE_A =
+            ITEMS.register(
+                    "water_transfer_machine_a",
+                    () -> new BlockItem(
+                            NeoForgeModBlocks
+                                    .WATER_TRANSFER_MACHINE_A
+                                    .get(),
+                            new Item.Properties()
+                                    .setId(
+                                            ModItems.WATER_TRANSFER_MACHINE_A_KEY
+                                    )
+                                    .stacksTo(1)
+                                    .fireResistant()
+                                    .useBlockDescriptionPrefix()
+                    )
+            );
+
+    public static final DeferredHolder<Item, Item>
+            WATER_TRANSFER_MACHINE_B =
+            ITEMS.register(
+                    "water_transfer_machine_b",
+                    () -> new BlockItem(
+                            NeoForgeModBlocks
+                                    .WATER_TRANSFER_MACHINE_B
+                                    .get(),
+                            new Item.Properties()
+                                    .setId(
+                                            ModItems.WATER_TRANSFER_MACHINE_B_KEY
+                                    )
+                                    .stacksTo(1)
+                                    .fireResistant()
+                                    .useBlockDescriptionPrefix()
+                    )
             );
 
     public static void register(IEventBus modBus) {
@@ -212,7 +335,15 @@ public final class NeoForgeModItems {
                 ENDER_PEARL_ADVANCED_BOOK.get(),
                 ENDER_PEARL_MASTERY_BOOK.get(),
                 ENDER_PEARL_SECRET_BOOK.get(),
-                TRUE_ENDER_PEARL.get()
+                TRUE_ENDER_PEARL.get(),
+                RECHORUS_MELON.get(),
+                RECHORUS_MELON_CUT.get(),
+                RECHORUS_MELON_SEED.get(),
+                RECHORUS_MELON_SEED_PROTOTYPE.get(),
+                RECHORUS_PLANT_CORE.get(),
+                RECHORUS_PLANT_SEED.get(),
+                WATER_TRANSFER_MACHINE_A.get(),
+                WATER_TRANSFER_MACHINE_B.get()
         );
     }
 

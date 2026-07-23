@@ -3,8 +3,8 @@
 	"credit": "Made with Blockbench",
 	"texture_size": [64, 64],
 	"textures": {
-		"0": "rechorus_root",
-		"particle": "rechorus_root"
+		"0": "the_end_of_dragon:block/rechorus_root",
+		"particle": "the_end_of_dragon:block/rechorus_root"
 	},
 	"elements": [
 		{
