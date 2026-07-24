@@ -13,8 +13,10 @@ import com.licht_meilleur.the_end_of_dragon.world.EndDragonSpawnHandler;
 import com.licht_meilleur.the_end_of_dragon.world.TedBattleController;
 import com.licht_meilleur.the_end_of_dragon.world.TedEndermanBattleHandler;
 import com.licht_meilleur.the_end_of_dragon.world.enderman.TedEndermanFriendship;
+import com.licht_meilleur.the_end_of_dragon.world.village.TedRechorusFacilityManager;
 import com.licht_meilleur.the_end_of_dragon.world.village.TedVillageGatewayManager;
 import com.licht_meilleur.the_end_of_dragon.world.village.TedVillageResidentManager;
+import com.licht_meilleur.the_end_of_dragon.world.village.quest.TedVillageQuestRegistry;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.monster.EnderMan;
 import net.minecraft.world.level.Level;
@@ -90,6 +92,13 @@ public final class TheEndOfDragonNeoForge {
                     .bindCommonReferences();
             NeoForgeCreativeTabs.bindCommon();
 
+            /*
+             * ModItemsのCommon参照が確定してから
+             * クエストを構築する。
+             */
+            TedVillageQuestRegistry
+                    .bootstrap();
+
             TheEndOfDragon.LOGGER.info(
                     "The End Of Dragon NeoForge common setup completed"
             );
@@ -151,6 +160,10 @@ public final class TheEndOfDragonNeoForge {
             );
 
             TedVillageResidentManager.tick(
+                    level
+            );
+
+            TedRechorusFacilityManager.tick(
                     level
             );
 

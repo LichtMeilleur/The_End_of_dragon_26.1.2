@@ -39,6 +39,43 @@
   "message.the_end_of_dragon.elder.not_ready": "<長老> マダ、ハナスベキトキデハナイ",
 
   "entity.the_end_of_dragon.ally_tech_enderman": "エンダーマンの技術屋",
-  "message.the_end_of_dragon.technician.not_ready": "<技術屋> ジュンビチュウ、マタキテ"
+  "message.the_end_of_dragon.technician.not_ready": "<技術屋> ジュンビチュウ、マタキテ",
+
+
+  "message.the_end_of_dragon.technician.locked": "チョウロウ　カラ　ハナシ　キイテ。",
+  "message.the_end_of_dragon.technician.preparing": "<技術屋> ジュンビチュウ、マタキテ",
+
+  "message.the_end_of_dragon.quest.submit_hint": "スニークしながら右クリックすると、納品・達成確認を行います。",
+
+  "message.the_end_of_dragon.quest.submit_hint": "依頼書から納品・達成確認を行えます。",
+
+  "quest.the_end_of_dragon.water_transfer.title": "水転送装置の開発",
+  "quest.the_end_of_dragon.water_transfer.description": "ワタシタチ　ミズ　アブナイ。アンゼンナ　ミズ　ホシイ。\nキミタチノ　セカイカラ　ミズヲ　ハコブ　キカイ　ツクリタイ。\nソノタメノ　ソザイ　アツメテホシイ。",
+
+  "quest.the_end_of_dragon.rechorus_melon.title": "リコーラスメロンの試作",
+  "quest.the_end_of_dragon.rechorus_melon.description": "キミタチノ　セカイノ　ミドリノ　オオキナ　クダモノ　シラベタイ。\nコーラスノミ　ト　ソノ　クダモノノ　タネ　ホシイ。",
+
+  "quest.the_end_of_dragon.rechorus_seed.title": "成功した種",
+  "quest.the_end_of_dragon.rechorus_seed.description": "タメシニ　ツクッタ　タネ。\nキミタチノ　セカイデ　ソダテテホシイ。\nカワッタ　ミガ　デキタラ　タネヲ　トドケテホシイ。",
+
+  "quest.the_end_of_dragon.rechorus_plant.title": "リコーラスプラントの試作",
+  "quest.the_end_of_dragon.rechorus_plant.description": "リコーラスメロン　ダメ　ダッタ。アンゼンナ　ミズ　ツクレル。ダケド　タクサン　ツクルノ　ムカナイ。\nミズヲ　タクサン　スウ　キ　ホシイ。ミズニ　ハエル　キ　サガシテホシイ。",
+
+  "quest.the_end_of_dragon.facility.title": "果汁水施設の建設",
+  "quest.the_end_of_dragon.facility.description": "コーラスノ　キノモト　ト　トランスファーキカイヲ　シテイノ　バショニ　セッチ　シテホシイ。",
+
+  "message.the_end_of_dragon.quest.none": "現在の依頼はありません。",
+  "message.the_end_of_dragon.quest.incomplete": "まだ依頼の条件を満たしていません。",
+  "message.the_end_of_dragon.quest.completed": "%s を達成しました。",
+  "message.the_end_of_dragon.quest.ready": "必要な条件を満たしています。",
+  "message.the_end_of_dragon.quest.not_ready": "まだ必要な条件を満たしていません。",
+
+  "gui.the_end_of_dragon.quest.submit": "納品する",
+  "gui.the_end_of_dragon.quest.check": "確認する",
+  "gui.the_end_of_dragon.quest.accept": "受注する",
+
+  "gui.the_end_of_dragon.quest_list.title": "依頼一覧",
+  "gui.the_end_of_dragon.quest_list.empty": "現在の依頼はありません。"
+
 
 }

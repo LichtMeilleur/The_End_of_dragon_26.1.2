@@ -13,8 +13,10 @@ import com.licht_meilleur.the_end_of_dragon.world.TedBattleController;
 import com.licht_meilleur.the_end_of_dragon.world.TedEndermanBattleHandler;
 import com.licht_meilleur.the_end_of_dragon.world.block.entity.EndermanVillageGatewayBlockEntity;
 import com.licht_meilleur.the_end_of_dragon.world.enderman.TedEndermanFriendship;
+import com.licht_meilleur.the_end_of_dragon.world.village.TedRechorusFacilityManager;
 import com.licht_meilleur.the_end_of_dragon.world.village.TedVillageGatewayManager;
 import com.licht_meilleur.the_end_of_dragon.world.village.TedVillageResidentManager;
+import com.licht_meilleur.the_end_of_dragon.world.village.quest.TedVillageQuestRegistry;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
@@ -71,6 +73,7 @@ public final class TheEndOfDragonFabric implements ModInitializer {
         ModItems.registerFabric();
         ModRecipeSerializers.registerFabric();
         ModCreativeTabs.registerFabric();
+        TedVillageQuestRegistry.bootstrap();
 
 
         /*
@@ -94,6 +97,10 @@ public final class TheEndOfDragonFabric implements ModInitializer {
                         );
 
                         TedVillageResidentManager.tick(
+                                level
+                        );
+
+                        TedRechorusFacilityManager.tick(
                                 level
                         );
 

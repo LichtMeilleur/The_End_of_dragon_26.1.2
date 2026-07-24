@@ -33,6 +33,18 @@ public final class TedVillageStructurePlacer {
     private static final String ALLY_HOME_NAME =
             "ted:ally_home";
 
+    private static final String
+            RECHORUS_FACILITY_ANCHOR_NAME =
+            "ted:rechorus_facility_anchor";
+
+    private static final String
+            WATER_TRANSFER_MACHINE_B_SLOT_NAME =
+            "ted:water_transfer_machine_b_slot";
+
+    private static final String
+            RECHORUS_PLANT_CORE_SLOT_NAME =
+            "ted:rechorus_plant_core_slot";
+
     /*
      * 村の基準XZ。
      *
@@ -96,7 +108,15 @@ public final class TedVillageStructurePlacer {
                             -30,
                             30,
                             Rotation.NONE
+                    ),
+                    new VillagePiece(
+                            "rechorus_facility",
+                            0,
+                            48,
+                            Rotation.NONE
                     )
+
+
             );
 
     /**
@@ -131,6 +151,15 @@ public final class TedVillageStructurePlacer {
                 null;
 
         BlockPos allyHomePosition =
+                null;
+
+        BlockPos rechorusFacilityAnchorPosition =
+                null;
+
+        BlockPos waterTransferMachineBSlotPosition =
+                null;
+
+        BlockPos rechorusPlantCoreSlotPosition =
                 null;
 
         for (VillagePiece piece : PIECES) {
@@ -171,6 +200,33 @@ public final class TedVillageStructurePlacer {
             if (placedPiece.allyHomePosition() != null) {
                 allyHomePosition =
                         placedPiece.allyHomePosition();
+            }
+
+            if (placedPiece
+                    .rechorusFacilityAnchorPosition()
+                    != null) {
+
+                rechorusFacilityAnchorPosition =
+                        placedPiece
+                                .rechorusFacilityAnchorPosition();
+            }
+
+            if (placedPiece
+                    .waterTransferMachineBSlotPosition()
+                    != null) {
+
+                waterTransferMachineBSlotPosition =
+                        placedPiece
+                                .waterTransferMachineBSlotPosition();
+            }
+
+            if (placedPiece
+                    .rechorusPlantCoreSlotPosition()
+                    != null) {
+
+                rechorusPlantCoreSlotPosition =
+                        placedPiece
+                                .rechorusPlantCoreSlotPosition();
             }
         }
 
@@ -215,6 +271,24 @@ public final class TedVillageStructurePlacer {
                     elderSpawnPosition,
                     technicianSpawnPosition,
                     allyHomePosition
+            );
+        }
+
+        if (rechorusFacilityAnchorPosition == null
+                || waterTransferMachineBSlotPosition == null
+                || rechorusPlantCoreSlotPosition == null) {
+
+            TheEndOfDragon.LOGGER.error(
+                    "Rechorus facility markers are missing: anchor={}, machineB={}, core={}",
+                    rechorusFacilityAnchorPosition,
+                    waterTransferMachineBSlotPosition,
+                    rechorusPlantCoreSlotPosition
+            );
+        } else {
+            villageState.setRechorusFacilityPositions(
+                    rechorusFacilityAnchorPosition,
+                    waterTransferMachineBSlotPosition,
+                    rechorusPlantCoreSlotPosition
             );
         }
 
@@ -338,6 +412,27 @@ public final class TedVillageStructurePlacer {
                         2
                 );
 
+        BlockPos localRechorusFacilityAnchor =
+                findMarker(
+                        template,
+                        settings,
+                        RECHORUS_FACILITY_ANCHOR_NAME
+                );
+
+        BlockPos localWaterTransferMachineBSlot =
+                findMarker(
+                        template,
+                        settings,
+                        WATER_TRANSFER_MACHINE_B_SLOT_NAME
+                );
+
+        BlockPos localRechorusPlantCoreSlot =
+                findMarker(
+                        template,
+                        settings,
+                        RECHORUS_PLANT_CORE_SLOT_NAME
+                );
+
         if (!placed) {
             TheEndOfDragon.LOGGER.error(
                     "Failed to place structure {} at {}",
@@ -369,6 +464,24 @@ public final class TedVillageStructurePlacer {
                         localAllyHome
                 );
 
+        BlockPos rechorusFacilityAnchorPosition =
+                toWorldPosition(
+                        structureOrigin,
+                        localRechorusFacilityAnchor
+                );
+
+        BlockPos waterTransferMachineBSlotPosition =
+                toWorldPosition(
+                        structureOrigin,
+                        localWaterTransferMachineBSlot
+                );
+
+        BlockPos rechorusPlantCoreSlotPosition =
+                toWorldPosition(
+                        structureOrigin,
+                        localRechorusPlantCoreSlot
+                );
+
         /*
          * 配置後、使用したジグソーマーカーを削除する。
          */
@@ -394,6 +507,21 @@ public final class TedVillageStructurePlacer {
                 allyHomePosition
         );
 
+        removeJigsawMarker(
+                level,
+                rechorusFacilityAnchorPosition
+        );
+
+        removeJigsawMarker(
+                level,
+                waterTransferMachineBSlotPosition
+        );
+
+        removeJigsawMarker(
+                level,
+                rechorusPlantCoreSlotPosition
+        );
+
         TheEndOfDragon.LOGGER.info(
                 "Placed village structure {} with anchor at {}",
                 templateId,
@@ -404,7 +532,10 @@ public final class TedVillageStructurePlacer {
                 true,
                 elderSpawnPosition,
                 technicianSpawnPosition,
-                allyHomePosition
+                allyHomePosition,
+                rechorusFacilityAnchorPosition,
+                waterTransferMachineBSlotPosition,
+                rechorusPlantCoreSlotPosition
         );
     }
 
@@ -594,11 +725,17 @@ public final class TedVillageStructurePlacer {
             boolean placed,
             BlockPos elderSpawnPosition,
             BlockPos technicianSpawnPosition,
-            BlockPos allyHomePosition
+            BlockPos allyHomePosition,
+            BlockPos rechorusFacilityAnchorPosition,
+            BlockPos waterTransferMachineBSlotPosition,
+            BlockPos rechorusPlantCoreSlotPosition
     ) {
         private static PlacedVillagePiece failed() {
             return new PlacedVillagePiece(
                     false,
+                    null,
+                    null,
+                    null,
                     null,
                     null,
                     null

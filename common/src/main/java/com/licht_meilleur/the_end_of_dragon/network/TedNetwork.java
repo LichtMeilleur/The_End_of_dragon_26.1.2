@@ -10,7 +10,28 @@ public final class TedNetwork {
                 // ローダー側の初期化前は何もしない
             };
 
+    private static QuestSender questSender =
+            (player, questId, completable) -> {
+                /*
+                 * ローダー側初期化前は何もしない。
+                 */
+            };
+
+    private static QuestListSender questListSender =
+            (player, quests) -> {
+            };
+
     private TedNetwork() {
+    }
+
+    public static void setQuestSender(
+            QuestSender implementation
+    ) {
+        questSender =
+                Objects.requireNonNull(
+                        implementation,
+                        "TED quest network sender"
+                );
     }
 
     public static void setSender(Sender implementation) {
@@ -38,11 +59,76 @@ public final class TedNetwork {
         );
     }
 
+    public static void sendOpenQuestLetter(
+            ServerPlayer player,
+            String questId,
+            boolean completable
+    ) {
+        if (player == null
+                || questId == null
+                || questId.isBlank()) {
+            return;
+        }
+
+        questSender.send(
+                player,
+                questId,
+                completable
+        );
+    }
+
+    public static void setQuestListSender(
+            QuestListSender implementation
+    ) {
+        questListSender =
+                Objects.requireNonNull(
+                        implementation,
+                        "TED quest list sender"
+                );
+    }
+
     @FunctionalInterface
     public interface Sender {
         void send(
                 ServerPlayer player,
                 TedBgmCommand command
+        );
+    }
+
+    @FunctionalInterface
+    public interface QuestSender {
+
+        void send(
+                ServerPlayer player,
+                String questId,
+                boolean completable
+        );
+    }
+
+    public static void sendOpenQuestList(
+            ServerPlayer player,
+            java.util.List<
+                    TedQuestListEntryData> quests
+    ) {
+        if (player == null) {
+            return;
+        }
+
+        questListSender.send(
+                player,
+                quests == null
+                        ? java.util.List.of()
+                        : java.util.List.copyOf(quests)
+        );
+    }
+
+    @FunctionalInterface
+    public interface QuestListSender {
+
+        void send(
+                ServerPlayer player,
+                java.util.List<
+                        TedQuestListEntryData> quests
         );
     }
 }

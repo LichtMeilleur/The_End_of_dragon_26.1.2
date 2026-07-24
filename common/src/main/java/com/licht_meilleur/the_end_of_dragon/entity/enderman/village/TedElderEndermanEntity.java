@@ -1,6 +1,9 @@
 package com.licht_meilleur.the_end_of_dragon.entity.enderman.village;
 
-import net.minecraft.network.chat.Component;
+import com.licht_meilleur.the_end_of_dragon.world.village.quest.TedQuestNpc;
+import com.licht_meilleur.the_end_of_dragon.world.village.quest
+        .TedVillageQuestManager;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -16,7 +19,10 @@ public final class TedElderEndermanEntity
             EntityType<? extends PathfinderMob> entityType,
             Level level
     ) {
-        super(entityType, level);
+        super(
+                entityType,
+                level
+        );
     }
 
     @Override
@@ -24,22 +30,23 @@ public final class TedElderEndermanEntity
             Player player,
             InteractionHand hand
     ) {
+        if (hand != InteractionHand.MAIN_HAND) {
+            return InteractionResult.PASS;
+        }
+
         if (!(player instanceof ServerPlayer serverPlayer)) {
             return InteractionResult.SUCCESS;
         }
 
-        /*
-         * 現段階ではクエストUI未実装なので、
-         * 会話だけ表示する。
-         *
-         * 後からここを
-         * TedQuestManager.openQuest(...)
-         * に置き換えられる。
-         */
-        serverPlayer.sendSystemMessage(
-                Component.translatable(
-                        "message.the_end_of_dragon.elder.not_ready"
-                )
+        if (!(this.level()
+                instanceof ServerLevel villageLevel)) {
+            return InteractionResult.PASS;
+        }
+
+        TedVillageQuestManager.openQuestList(
+                serverPlayer,
+                villageLevel,
+                TedQuestNpc.ELDER
         );
 
         return InteractionResult.SUCCESS;

@@ -53,9 +53,6 @@ public final class TedVillageResidentManager {
             return;
         }
 
-        /*
-         * 毎秒確認。
-         */
         if (level.getGameTime() % 20L != 0L) {
             return;
         }
@@ -66,6 +63,19 @@ public final class TedVillageResidentManager {
         if (!villageState.isVillageGenerated()) {
             return;
         }
+
+        /*
+         * 村が無人なら、未ロード住民を
+         * 不在扱いして再生成しない。
+         */
+        if (level.players().isEmpty()) {
+            return;
+        }
+
+        /*
+         * 過去に増殖した個体を整理。
+         */
+        removeDuplicateResidents(level);
 
         ensureElder(level);
         ensureTechnician(level);
@@ -318,6 +328,84 @@ public final class TedVillageResidentManager {
                         entity.isAlive()
                                 && !entity.isRemoved()
         ).isEmpty();
+    }
+
+    private static void removeDuplicateResidents(
+            ServerLevel level
+    ) {
+        removeDuplicateEntities(
+                level,
+                TedElderEndermanEntity.class,
+                ELDER_POSITION
+        );
+
+        removeDuplicateEntities(
+                level,
+                TedTechEndermanEntity.class,
+                TECHNICIAN_POSITION
+        );
+    }
+
+    private static <
+            T extends net.minecraft.world.entity.Entity>
+    void removeDuplicateEntities(
+            ServerLevel level,
+            Class<T> entityClass,
+            BlockPos preferredPosition
+    ) {
+        AABB area =
+                new AABB(
+                        -256.0D,
+                        level.getMinY(),
+                        -256.0D,
+                        256.0D,
+                        level.getMaxY(),
+                        256.0D
+                );
+
+        java.util.List<T> entities =
+                level.getEntitiesOfClass(
+                        entityClass,
+                        area,
+                        entity ->
+                                entity.isAlive()
+                                        && !entity.isRemoved()
+                );
+
+        if (entities.size() <= 1) {
+            return;
+        }
+
+        /*
+         * 本来の配置座標に一番近い個体を残す。
+         */
+        T keeper =
+                entities.stream()
+                        .min(
+                                java.util.Comparator
+                                        .comparingDouble(
+                                                entity ->
+                                                        entity.distanceToSqr(
+                                                                preferredPosition
+                                                                        .getCenter()
+                                                        )
+                                        )
+                        )
+                        .orElse(null);
+
+        for (T entity : entities) {
+            if (entity == keeper) {
+                continue;
+            }
+
+            entity.discard();
+        }
+
+        TheEndOfDragon.LOGGER.warn(
+                "Removed {} duplicate village residents of type {}",
+                entities.size() - 1,
+                entityClass.getSimpleName()
+        );
     }
 
     private TedVillageResidentManager() {

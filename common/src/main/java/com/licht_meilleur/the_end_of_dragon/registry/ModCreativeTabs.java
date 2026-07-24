@@ -66,6 +66,30 @@ public final class ModCreativeTabs {
                             output.accept(
                                     ModItems.TRUE_ENDER_PEARL
                             );
+                            output.accept(
+                                    ModItems.RECHORUS_MELON
+                            );
+                            output.accept(
+                                    ModItems.RECHORUS_MELON_CUT
+                            );
+                            output.accept(
+                                    ModItems.RECHORUS_MELON_SEED_PROTOTYPE
+                            );
+                            output.accept(
+                                    ModItems.RECHORUS_MELON_SEED
+                            );
+                            output.accept(
+                                    ModItems.RECHORUS_PLANT_CORE
+                            );
+                            output.accept(
+                                    ModItems.RECHORUS_PLANT_SEED
+                            );
+                            output.accept(
+                                    ModItems.WATER_TRANSFER_MACHINE_A
+                            );
+                            output.accept(
+                                    ModItems.WATER_TRANSFER_MACHINE_B
+                            );
                         })
                         .build()
 

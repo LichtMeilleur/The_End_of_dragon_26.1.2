@@ -18,7 +18,7 @@ public final class TedVillageWorldState
      * 保存項目の意味や構造を変更したら増やす。
      */
     private static final int CURRENT_DATA_VERSION =
-            3;
+            4;
 
     private int dataVersion;
     /*
@@ -61,6 +61,35 @@ public final class TedVillageWorldState
     private BlockPos allyHomePosition =
             BlockPos.ZERO;
 
+    /*
+     * リコーラス果汁水施設の管理基準位置。
+     */
+    private BlockPos rechorusFacilityAnchorPosition =
+            BlockPos.ZERO;
+
+    /*
+     * 水転送装置Bの指定設置位置。
+     */
+    private BlockPos waterTransferMachineBSlotPosition =
+            BlockPos.ZERO;
+
+    /*
+     * リコーラスプラントコアの指定設置位置。
+     *
+     * rechorus_tree.nbt内の
+     * ted:rechorus_coreをこの座標へ重ねる。
+     */
+    private BlockPos rechorusPlantCoreSlotPosition =
+            BlockPos.ZERO;
+
+    private boolean rechorusFacilityMarkersSaved;
+
+    private boolean waterTransferMachineBInstalled;
+
+    private boolean rechorusPlantCoreInstalled;
+
+    private boolean rechorusPlantBuilt;
+
     public BlockPos getElderSpawnPosition() {
         return elderSpawnPosition;
     }
@@ -73,8 +102,7 @@ public final class TedVillageWorldState
         return allyHomePosition;
     }
 
-    private static final Codec<
-            TedVillageWorldState> CODEC =
+    private static final Codec<TedVillageWorldState> CODEC =
             RecordCodecBuilder.create(
                     instance ->
                             instance.group(
@@ -84,8 +112,8 @@ public final class TedVillageWorldState
                                                     0
                                             )
                                             .forGetter(
-                                                    state ->
-                                                            state.dataVersion
+                                                    TedVillageWorldState
+                                                            ::getDataVersion
                                             ),
 
                                     Codec.BOOL
@@ -98,37 +126,18 @@ public final class TedVillageWorldState
                                                             ::isVillageGenerated
                                             ),
 
-                                    Codec.INT
+                                    BlockPos.CODEC
                                             .optionalFieldOf(
-                                                    "arrival_x",
-                                                    0
+                                                    "arrival_position",
+                                                    new BlockPos(
+                                                            0,
+                                                            64,
+                                                            0
+                                                    )
                                             )
                                             .forGetter(
-                                                    state ->
-                                                            state.arrivalPosition
-                                                                    .getX()
-                                            ),
-
-                                    Codec.INT
-                                            .optionalFieldOf(
-                                                    "arrival_y",
-                                                    64
-                                            )
-                                            .forGetter(
-                                                    state ->
-                                                            state.arrivalPosition
-                                                                    .getY()
-                                            ),
-
-                                    Codec.INT
-                                            .optionalFieldOf(
-                                                    "arrival_z",
-                                                    0
-                                            )
-                                            .forGetter(
-                                                    state ->
-                                                            state.arrivalPosition
-                                                                    .getZ()
+                                                    TedVillageWorldState
+                                                            ::getArrivalPosition
                                             ),
 
                                     Codec.BOOL
@@ -151,39 +160,19 @@ public final class TedVillageWorldState
                                                             ::getVillageQuestStage
                                             ),
 
-                                    Codec.INT
+                                    BlockPos.CODEC
                                             .optionalFieldOf(
-                                                    "return_gateway_x",
-                                                    0
+                                                    "return_gateway_position",
+                                                    new BlockPos(
+                                                            0,
+                                                            64,
+                                                            0
+                                                    )
                                             )
                                             .forGetter(
-                                                    state ->
-                                                            state.returnGatewayPosition
-                                                                    .getX()
+                                                    TedVillageWorldState
+                                                            ::getReturnGatewayPosition
                                             ),
-
-                                    Codec.INT
-                                            .optionalFieldOf(
-                                                    "return_gateway_y",
-                                                    64
-                                            )
-                                            .forGetter(
-                                                    state ->
-                                                            state.returnGatewayPosition
-                                                                    .getY()
-                                            ),
-
-                                    Codec.INT
-                                            .optionalFieldOf(
-                                                    "return_gateway_z",
-                                                    0
-                                            )
-                                            .forGetter(
-                                                    state ->
-                                                            state.returnGatewayPosition
-                                                                    .getZ()
-                                            ),
-
 
                                     BlockPos.CODEC
                                             .optionalFieldOf(
@@ -191,8 +180,8 @@ public final class TedVillageWorldState
                                                     BlockPos.ZERO
                                             )
                                             .forGetter(
-                                                    state ->
-                                                            state.elderSpawnPosition
+                                                    TedVillageWorldState
+                                                            ::getElderSpawnPosition
                                             ),
 
                                     BlockPos.CODEC
@@ -201,8 +190,8 @@ public final class TedVillageWorldState
                                                     BlockPos.ZERO
                                             )
                                             .forGetter(
-                                                    state ->
-                                                            state.technicianSpawnPosition
+                                                    TedVillageWorldState
+                                                            ::getTechnicianSpawnPosition
                                             ),
 
                                     BlockPos.CODEC
@@ -211,8 +200,18 @@ public final class TedVillageWorldState
                                                     BlockPos.ZERO
                                             )
                                             .forGetter(
-                                                    state ->
-                                                            state.allyHomePosition
+                                                    TedVillageWorldState
+                                                            ::getAllyHomePosition
+                                            ),
+
+                                    RechorusFacilityData.CODEC
+                                            .optionalFieldOf(
+                                                    "rechorus_facility",
+                                                    RechorusFacilityData.empty()
+                                            )
+                                            .forGetter(
+                                                    TedVillageWorldState
+                                                            ::createFacilityData
                                             )
                             ).apply(
                                     instance,
@@ -239,17 +238,22 @@ public final class TedVillageWorldState
         this(
                 CURRENT_DATA_VERSION,
                 false,
-                0,
-                64,
-                0,
+                new BlockPos(
+                        0,
+                        64,
+                        0
+                ),
                 false,
                 0,
-                0,
-                64,
-                0,
+                new BlockPos(
+                        0,
+                        64,
+                        0
+                ),
                 BlockPos.ZERO,
                 BlockPos.ZERO,
-                BlockPos.ZERO
+                BlockPos.ZERO,
+                RechorusFacilityData.empty()
         );
     }
 
@@ -259,17 +263,14 @@ public final class TedVillageWorldState
     private TedVillageWorldState(
             int dataVersion,
             boolean villageGenerated,
-            int arrivalX,
-            int arrivalY,
-            int arrivalZ,
+            BlockPos arrivalPosition,
             boolean firstArrivalCompleted,
             int villageQuestStage,
-            int returnGatewayX,
-            int returnGatewayY,
-            int returnGatewayZ,
+            BlockPos returnGatewayPosition,
             BlockPos elderSpawnPosition,
             BlockPos technicianSpawnPosition,
-            BlockPos allyHomePosition
+            BlockPos allyHomePosition,
+            RechorusFacilityData facilityData
     ) {
         this.dataVersion =
                 Math.max(
@@ -281,10 +282,13 @@ public final class TedVillageWorldState
                 villageGenerated;
 
         this.arrivalPosition =
-                new BlockPos(
-                        arrivalX,
-                        arrivalY,
-                        arrivalZ
+                safePosition(
+                        arrivalPosition,
+                        new BlockPos(
+                                0,
+                                64,
+                                0
+                        )
                 );
 
         this.firstArrivalCompleted =
@@ -297,28 +301,88 @@ public final class TedVillageWorldState
                 );
 
         this.returnGatewayPosition =
-                new BlockPos(
-                        returnGatewayX,
-                        returnGatewayY,
-                        returnGatewayZ
+                safePosition(
+                        returnGatewayPosition,
+                        new BlockPos(
+                                0,
+                                64,
+                                0
+                        )
                 );
+
         this.elderSpawnPosition =
-                elderSpawnPosition == null
-                        ? BlockPos.ZERO
-                        : elderSpawnPosition.immutable();
+                safePosition(
+                        elderSpawnPosition,
+                        BlockPos.ZERO
+                );
 
         this.technicianSpawnPosition =
-                technicianSpawnPosition == null
-                        ? BlockPos.ZERO
-                        : technicianSpawnPosition.immutable();
+                safePosition(
+                        technicianSpawnPosition,
+                        BlockPos.ZERO
+                );
 
         this.allyHomePosition =
-                allyHomePosition == null
-                        ? BlockPos.ZERO
-                        : allyHomePosition.immutable();
+                safePosition(
+                        allyHomePosition,
+                        BlockPos.ZERO
+                );
 
+        RechorusFacilityData safeFacilityData =
+                facilityData == null
+                        ? RechorusFacilityData.empty()
+                        : facilityData;
+
+        this.rechorusFacilityAnchorPosition =
+                safePosition(
+                        safeFacilityData
+                                .anchorPosition(),
+                        BlockPos.ZERO
+                );
+
+        this.waterTransferMachineBSlotPosition =
+                safePosition(
+                        safeFacilityData
+                                .machineBSlotPosition(),
+                        BlockPos.ZERO
+                );
+
+        this.rechorusPlantCoreSlotPosition =
+                safePosition(
+                        safeFacilityData
+                                .plantCoreSlotPosition(),
+                        BlockPos.ZERO
+                );
+
+        this.rechorusFacilityMarkersSaved =
+                safeFacilityData.markersSaved();
+
+        this.waterTransferMachineBInstalled =
+                safeFacilityData.machineBInstalled();
+
+        this.rechorusPlantCoreInstalled =
+                safeFacilityData.plantCoreInstalled();
+
+        this.rechorusPlantBuilt =
+                safeFacilityData.plantBuilt();
 
         migrateDataIfNeeded();
+    }
+
+
+    private static BlockPos safePosition(
+            BlockPos position,
+            BlockPos fallback
+    ) {
+        if (position != null) {
+            return position.immutable();
+        }
+
+        if (fallback != null) {
+            return fallback.immutable();
+        }
+
+        return BlockPos.ZERO;
     }
 
     public static TedVillageWorldState get(
@@ -386,6 +450,31 @@ public final class TedVillageWorldState
             version = 3;
         }
 
+        if (version < 4) {
+            this.rechorusFacilityAnchorPosition =
+                    BlockPos.ZERO;
+
+            this.waterTransferMachineBSlotPosition =
+                    BlockPos.ZERO;
+
+            this.rechorusPlantCoreSlotPosition =
+                    BlockPos.ZERO;
+
+            this.rechorusFacilityMarkersSaved =
+                    false;
+
+            this.waterTransferMachineBInstalled =
+                    false;
+
+            this.rechorusPlantCoreInstalled =
+                    false;
+
+            this.rechorusPlantBuilt =
+                    false;
+
+            version = 4;
+        }
+
         this.dataVersion =
                 Math.min(
                         version,
@@ -411,6 +500,19 @@ public final class TedVillageWorldState
 
     public int getVillageQuestStage() {
         return this.villageQuestStage;
+    }
+
+
+    private RechorusFacilityData createFacilityData() {
+        return new RechorusFacilityData(
+                this.rechorusFacilityAnchorPosition,
+                this.waterTransferMachineBSlotPosition,
+                this.rechorusPlantCoreSlotPosition,
+                this.rechorusFacilityMarkersSaved,
+                this.waterTransferMachineBInstalled,
+                this.rechorusPlantCoreInstalled,
+                this.rechorusPlantBuilt
+        );
     }
 
     public void completeGeneration(
@@ -459,6 +561,100 @@ public final class TedVillageWorldState
         this.setDirty();
     }
 
+    public boolean hasRechorusFacilityMarkers() {
+        return this.rechorusFacilityMarkersSaved;
+    }
+
+    public BlockPos getRechorusFacilityAnchorPosition() {
+        return this.rechorusFacilityAnchorPosition;
+    }
+
+    public BlockPos getWaterTransferMachineBSlotPosition() {
+        return this.waterTransferMachineBSlotPosition;
+    }
+
+    public BlockPos getRechorusPlantCoreSlotPosition() {
+        return this.rechorusPlantCoreSlotPosition;
+    }
+
+    public boolean isWaterTransferMachineBInstalled() {
+        return this.waterTransferMachineBInstalled;
+    }
+
+    public boolean isRechorusPlantCoreInstalled() {
+        return this.rechorusPlantCoreInstalled;
+    }
+
+    public boolean isRechorusPlantBuilt() {
+        return this.rechorusPlantBuilt;
+    }
+
+    public void setRechorusFacilityPositions(
+            BlockPos facilityAnchor,
+            BlockPos machineBSlot,
+            BlockPos plantCoreSlot
+    ) {
+        if (facilityAnchor == null
+                || machineBSlot == null
+                || plantCoreSlot == null) {
+            return;
+        }
+
+        this.rechorusFacilityAnchorPosition =
+                facilityAnchor.immutable();
+
+        this.waterTransferMachineBSlotPosition =
+                machineBSlot.immutable();
+
+        this.rechorusPlantCoreSlotPosition =
+                plantCoreSlot.immutable();
+
+        this.rechorusFacilityMarkersSaved =
+                true;
+
+        this.setDirty();
+    }
+
+    public void setWaterTransferMachineBInstalled(
+            boolean installed
+    ) {
+        if (this.waterTransferMachineBInstalled
+                == installed) {
+            return;
+        }
+
+        this.waterTransferMachineBInstalled =
+                installed;
+
+        this.setDirty();
+    }
+
+    public void setRechorusPlantCoreInstalled(
+            boolean installed
+    ) {
+        if (this.rechorusPlantCoreInstalled
+                == installed) {
+            return;
+        }
+
+        this.rechorusPlantCoreInstalled =
+                installed;
+
+        this.setDirty();
+    }
+
+    public void setRechorusPlantBuilt(
+            boolean built
+    ) {
+        if (this.rechorusPlantBuilt == built) {
+            return;
+        }
+
+        this.rechorusPlantBuilt = built;
+
+        this.setDirty();
+    }
+
     /*
      * デバッグで村を再生成したい場合に使用する。
      */
@@ -487,6 +683,27 @@ public final class TedVillageWorldState
 
         this.allyHomePosition =
                 BlockPos.ZERO;
+
+        this.rechorusFacilityAnchorPosition =
+                BlockPos.ZERO;
+
+        this.waterTransferMachineBSlotPosition =
+                BlockPos.ZERO;
+
+        this.rechorusPlantCoreSlotPosition =
+                BlockPos.ZERO;
+
+        this.rechorusFacilityMarkersSaved =
+                false;
+
+        this.waterTransferMachineBInstalled =
+                false;
+
+        this.rechorusPlantCoreInstalled =
+                false;
+
+        this.rechorusPlantBuilt =
+                false;
 
         this.setDirty();
     }
@@ -538,4 +755,148 @@ public final class TedVillageWorldState
 
         this.setDirty();
     }
+
+    public TedVillageQuestStage getVillageQuest() {
+        return TedVillageQuestStage.fromId(
+                this.villageQuestStage
+        );
+    }
+
+    public void setVillageQuestStage(
+            TedVillageQuestStage stage
+    ) {
+        if (stage == null) {
+            return;
+        }
+
+        setVillageQuestStage(
+                stage.getId()
+        );
+    }
+
+    public boolean advanceVillageQuest(
+            TedVillageQuestStage minimumCurrent,
+            TedVillageQuestStage next
+    ) {
+        if (minimumCurrent == null
+                || next == null) {
+            return false;
+        }
+
+        if (!getVillageQuest().isAtLeast(
+                minimumCurrent
+        )) {
+            return false;
+        }
+
+        if (getVillageQuest().isAtLeast(next)) {
+            return false;
+        }
+
+        setVillageQuestStage(next);
+        return true;
+    }
+
+    private record RechorusFacilityData(
+            BlockPos anchorPosition,
+            BlockPos machineBSlotPosition,
+            BlockPos plantCoreSlotPosition,
+            boolean markersSaved,
+            boolean machineBInstalled,
+            boolean plantCoreInstalled,
+            boolean plantBuilt
+    ) {
+        private static final Codec<RechorusFacilityData> CODEC =
+                RecordCodecBuilder.create(
+                        instance ->
+                                instance.group(
+                                        BlockPos.CODEC
+                                                .optionalFieldOf(
+                                                        "anchor_position",
+                                                        BlockPos.ZERO
+                                                )
+                                                .forGetter(
+                                                        RechorusFacilityData
+                                                                ::anchorPosition
+                                                ),
+
+                                        BlockPos.CODEC
+                                                .optionalFieldOf(
+                                                        "machine_b_slot_position",
+                                                        BlockPos.ZERO
+                                                )
+                                                .forGetter(
+                                                        RechorusFacilityData
+                                                                ::machineBSlotPosition
+                                                ),
+
+                                        BlockPos.CODEC
+                                                .optionalFieldOf(
+                                                        "plant_core_slot_position",
+                                                        BlockPos.ZERO
+                                                )
+                                                .forGetter(
+                                                        RechorusFacilityData
+                                                                ::plantCoreSlotPosition
+                                                ),
+
+                                        Codec.BOOL
+                                                .optionalFieldOf(
+                                                        "markers_saved",
+                                                        false
+                                                )
+                                                .forGetter(
+                                                        RechorusFacilityData
+                                                                ::markersSaved
+                                                ),
+
+                                        Codec.BOOL
+                                                .optionalFieldOf(
+                                                        "machine_b_installed",
+                                                        false
+                                                )
+                                                .forGetter(
+                                                        RechorusFacilityData
+                                                                ::machineBInstalled
+                                                ),
+
+                                        Codec.BOOL
+                                                .optionalFieldOf(
+                                                        "plant_core_installed",
+                                                        false
+                                                )
+                                                .forGetter(
+                                                        RechorusFacilityData
+                                                                ::plantCoreInstalled
+                                                ),
+
+                                        Codec.BOOL
+                                                .optionalFieldOf(
+                                                        "plant_built",
+                                                        false
+                                                )
+                                                .forGetter(
+                                                        RechorusFacilityData
+                                                                ::plantBuilt
+                                                )
+                                ).apply(
+                                        instance,
+                                        RechorusFacilityData::new
+                                )
+                );
+
+        private static RechorusFacilityData empty() {
+            return new RechorusFacilityData(
+                    BlockPos.ZERO,
+                    BlockPos.ZERO,
+                    BlockPos.ZERO,
+                    false,
+                    false,
+                    false,
+                    false
+            );
+        }
+    }
+
+
 }
