@@ -13,9 +13,7 @@ import com.licht_meilleur.the_end_of_dragon.world.TedBattleController;
 import com.licht_meilleur.the_end_of_dragon.world.TedEndermanBattleHandler;
 import com.licht_meilleur.the_end_of_dragon.world.block.entity.EndermanVillageGatewayBlockEntity;
 import com.licht_meilleur.the_end_of_dragon.world.enderman.TedEndermanFriendship;
-import com.licht_meilleur.the_end_of_dragon.world.village.TedRechorusFacilityManager;
-import com.licht_meilleur.the_end_of_dragon.world.village.TedVillageGatewayManager;
-import com.licht_meilleur.the_end_of_dragon.world.village.TedVillageResidentManager;
+import com.licht_meilleur.the_end_of_dragon.world.village.*;
 import com.licht_meilleur.the_end_of_dragon.world.village.quest.TedVillageQuestRegistry;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -45,7 +43,7 @@ public final class TheEndOfDragonFabric implements ModInitializer {
          * Spawn EggがEntityTypeを参照するため、
          * Entity → Sound → Itemの順で登録する。
          */
-
+        ModFluids.registerFabric();
         ModBlocks.registerFabric();
         ModDataComponents.registerFabric();
         /*
@@ -101,6 +99,18 @@ public final class TheEndOfDragonFabric implements ModInitializer {
                         );
 
                         TedRechorusFacilityManager.tick(
+                                level
+                        );
+
+                        TedRechorusJuiceFlowManager.tick(
+                                level
+                        );
+
+                        TedRechorusProductionManager.tick(
+                                level
+                        );
+
+                        TedRechorusRegenerationManager.tick(
                                 level
                         );
 

@@ -13,9 +13,7 @@ import com.licht_meilleur.the_end_of_dragon.world.EndDragonSpawnHandler;
 import com.licht_meilleur.the_end_of_dragon.world.TedBattleController;
 import com.licht_meilleur.the_end_of_dragon.world.TedEndermanBattleHandler;
 import com.licht_meilleur.the_end_of_dragon.world.enderman.TedEndermanFriendship;
-import com.licht_meilleur.the_end_of_dragon.world.village.TedRechorusFacilityManager;
-import com.licht_meilleur.the_end_of_dragon.world.village.TedVillageGatewayManager;
-import com.licht_meilleur.the_end_of_dragon.world.village.TedVillageResidentManager;
+import com.licht_meilleur.the_end_of_dragon.world.village.*;
 import com.licht_meilleur.the_end_of_dragon.world.village.quest.TedVillageQuestRegistry;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.monster.EnderMan;
@@ -35,7 +33,7 @@ public final class TheEndOfDragonNeoForge {
 
     public TheEndOfDragonNeoForge(IEventBus modBus) {
         NeoForgeModDataComponents.register(modBus);
-
+        NeoForgeModFluids.register(modBus);
         NeoForgeModBlocks.register(modBus);
         NeoForgeModBlockEntities.register(modBus);
 
@@ -83,6 +81,7 @@ public final class TheEndOfDragonNeoForge {
 
             NeoForgeModDataComponents
                     .bindCommonReferences();
+            NeoForgeModFluids.bindCommonReferences();
             NeoForgeModBlocks.bindCommonReferences();
             NeoForgeModBlockEntities.bindCommonReferences();
             NeoForgeModEntities.bindCommonReferences();
@@ -164,6 +163,19 @@ public final class TheEndOfDragonNeoForge {
             );
 
             TedRechorusFacilityManager.tick(
+                    level
+            );
+
+            TedRechorusJuiceFlowManager.tick(
+                    level
+            );
+
+
+            TedRechorusProductionManager.tick(
+                    level
+            );
+
+            TedRechorusRegenerationManager.tick(
                     level
             );
 

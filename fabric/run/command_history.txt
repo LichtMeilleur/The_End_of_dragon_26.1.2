@@ -1,12 +1,3 @@
-/ted spawn
-/ted kill
-/ted bow
-/summon the_end_of_dragon:ted_ally_enderman
-/gamemode survival
-/gamemode creative
-/summon the_end_of_dragon:ted_ally_enderman
-/gamemode survival
-/gamemode creative
 /ted_air figure
 /summon the_end_of_dragon:ted_ally_enderman
 /gamemode survival
@@ -48,3 +39,12 @@
 /give Player527 minecraft:ender_pearl
 /gamemode survival
 /gamemode creative
+/setblock ~ ~ ~ the_end_of_dragon:rechorus_flower
+/setblock 21 63 45
+/setblock ~ ~ ~ the_end_of_dragon:rechorus_flower
+/data get block 17 64 39
+/setblock 17 64 39 the_end_of_dragon:rechorus_flower[facing=east]
+/gamemode survival
+/gamemode creative
+/summon the_end_of_dragon:rechorus_juice_blob
+/ted juice_flow

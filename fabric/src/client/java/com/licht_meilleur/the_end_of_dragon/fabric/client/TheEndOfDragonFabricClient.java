@@ -15,18 +15,28 @@ import com.licht_meilleur.the_end_of_dragon.network.TedOpenQuestLetterPayload;
 import com.licht_meilleur.the_end_of_dragon.network.TedQuestClientNetwork;
 import com.licht_meilleur.the_end_of_dragon.network.TedSubmitQuestPayload;
 import com.licht_meilleur.the_end_of_dragon.registry.ModEntities;
+import com.licht_meilleur.the_end_of_dragon.registry.ModFluids;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderingRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.fabricmc.fabric.impl.client.rendering.EntityRendererRegistryImpl;
+import net.minecraft.client.color.block.BlockTintSources;
+import net.minecraft.client.renderer.block.FluidModel;
+import net.minecraft.client.renderer.entity.NoopRenderer;
+import net.minecraft.client.renderer.entity.ThrownItemRenderer;
+import net.minecraft.client.resources.model.sprite.Material;
+import net.minecraft.util.ARGB;
 
 public final class TheEndOfDragonFabricClient implements ClientModInitializer {
 
     private static int debugTick;
-
+    private static final int
+            RECHORUS_JUICE_COLOR =
+            0xFFF2D84B;
     @Override
     public void onInitializeClient() {
 
@@ -66,6 +76,7 @@ public final class TheEndOfDragonFabricClient implements ClientModInitializer {
         );
 
 
+
         // HUD描画
         HudElementRegistry.attachElementBefore(
                 VanillaHudElements.CHAT,
@@ -85,6 +96,60 @@ public final class TheEndOfDragonFabricClient implements ClientModInitializer {
                         )
         );
 
+        FluidRenderingRegistry.register(
+                ModFluids.RECHORUS_JUICE_SOURCE,
+                ModFluids.RECHORUS_JUICE_FLOWING,
+                new FluidModel.Unbaked(
+                        new Material(
+                                TheEndOfDragon.id(
+                                        "block/rechorus_juice_still"
+                                )
+                        ),
+                        new Material(
+                                TheEndOfDragon.id(
+                                        "block/rechorus_juice_flow"
+                                )
+                        ),
+                        new Material(
+                                TheEndOfDragon.id(
+                                        "block/rechorus_juice_overlay"
+                                )
+                        ),
+                        BlockTintSources.constant(
+                                ARGB.opaque(
+                                        0xF2D84B
+                                )
+                        )
+                )
+        );
+
+        FluidRenderingRegistry.register(
+                ModFluids.RECHORUS_JUICE_GUIDE_SOURCE,
+                ModFluids.RECHORUS_JUICE_GUIDE_FLOWING,
+                new FluidModel.Unbaked(
+                        new Material(
+                                TheEndOfDragon.id(
+                                        "block/rechorus_juice_still"
+                                )
+                        ),
+                        new Material(
+                                TheEndOfDragon.id(
+                                        "block/rechorus_juice_flow"
+                                )
+                        ),
+                        new Material(
+                                TheEndOfDragon.id(
+                                        "block/rechorus_juice_overlay"
+                                )
+                        ),
+                        BlockTintSources.constant(
+                                ARGB.opaque(
+                                        0xFFF29A
+                                )
+                        )
+                )
+        );
+
 
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
@@ -100,4 +165,6 @@ public final class TheEndOfDragonFabricClient implements ClientModInitializer {
 
 
     }
+
+
 }

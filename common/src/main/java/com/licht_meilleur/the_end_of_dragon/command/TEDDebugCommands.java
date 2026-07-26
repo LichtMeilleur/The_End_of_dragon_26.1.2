@@ -7,11 +7,13 @@ import com.licht_meilleur.the_end_of_dragon.entity.vfx.TedVfxType;
 import com.licht_meilleur.the_end_of_dragon.registry.ModEntities;
 import com.licht_meilleur.the_end_of_dragon.registry.ModItems;
 import com.licht_meilleur.the_end_of_dragon.world.EndDragonSpawnHandler;
+import com.licht_meilleur.the_end_of_dragon.world.village.TedRechorusJuiceFlowManager;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -143,6 +145,73 @@ public final class TEDDebugCommands {
 
                                     return 1;
                                 }))
+
+                        .then(
+                                Commands.literal(
+                                                "juice_flow"
+                                        )
+                                        .executes(context -> {
+                                            ServerPlayer player =
+                                                    context.getSource()
+                                                            .getPlayerOrException();
+
+                                            ServerLevel level =
+                                                    context.getSource()
+                                                            .getLevel();
+
+                                            /*
+                                             * プレイヤーの視線方向へ少し離し、
+                                             * さらに5ブロック上から生成する。
+                                             */
+                                            Vec3 startVector =
+                                                    player.position()
+                                                            .add(
+                                                                    player.getLookAngle()
+                                                                            .scale(
+                                                                                    3.0D
+                                                                            )
+                                                            )
+                                                            .add(
+                                                                    0.0D,
+                                                                    5.0D,
+                                                                    0.0D
+                                                            );
+
+                                            BlockPos startPosition =
+                                                    BlockPos.containing(
+                                                            startVector
+                                                    );
+
+                                            boolean started =
+                                                    TedRechorusJuiceFlowManager
+                                                            .start(
+                                                                    level,
+                                                                    startPosition
+                                                            );
+
+                                            if (!started) {
+                                                context.getSource()
+                                                        .sendFailure(
+                                                                Component.literal(
+                                                                        "[TED] 果汁水の仮流体を開始できませんでした。"
+                                                                )
+                                                        );
+
+                                                return 0;
+                                            }
+
+                                            context.getSource()
+                                                    .sendSuccess(
+                                                            () -> Component.literal(
+                                                                    "[TED] 果汁水の仮流体を開始しました: "
+                                                                            + startPosition
+                                                            ),
+                                                            false
+                                                    );
+
+                                            return 1;
+                                        })
+                        )
 
 
         );

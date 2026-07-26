@@ -10,9 +10,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.food.FoodProperties;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.SpawnEggItem;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.TypedEntityData;
 
 public final class ModItems {
@@ -152,6 +150,24 @@ public final class ModItems {
                     TheEndOfDragon.id("water_transfer_machine_b")
             );
 
+    public static final ResourceKey<Item>
+            RECHORUS_JUICE_BUCKET_KEY =
+            ResourceKey.create(
+                    Registries.ITEM,
+                    TheEndOfDragon.id(
+                            "rechorus_juice_bucket"
+                    )
+            );
+
+    public static final ResourceKey<Item>
+            RECHORUS_JUICE_BOTTLE_KEY =
+            ResourceKey.create(
+                    Registries.ITEM,
+                    TheEndOfDragon.id(
+                            "rechorus_juice_bottle"
+                    )
+            );
+
     public static Item THE_END_OF_DRAGON_ICON;
     public static Item THE_END_OF_DRAGON_SPAWN_EGG;
     public static Item THE_END_PIECE;
@@ -176,6 +192,9 @@ public final class ModItems {
 
     public static Item WATER_TRANSFER_MACHINE_A;
     public static Item WATER_TRANSFER_MACHINE_B;
+
+    public static Item RECHORUS_JUICE_BUCKET;
+    public static Item RECHORUS_JUICE_BOTTLE;
 
     private static boolean fabricRegistered = false;
 
@@ -465,6 +484,38 @@ public final class ModItems {
                                         .stacksTo(1)
                                         .fireResistant()
                                         .useBlockDescriptionPrefix()
+                        )
+                );
+
+        RECHORUS_JUICE_BUCKET =
+                Registry.register(
+                        BuiltInRegistries.ITEM,
+                        RECHORUS_JUICE_BUCKET_KEY
+                                .identifier(),
+                        new BucketItem(
+                                ModFluids.RECHORUS_JUICE_SOURCE,
+                                new Item.Properties()
+                                        .setId(
+                                                RECHORUS_JUICE_BUCKET_KEY
+                                        )
+                                        .craftRemainder(
+                                                Items.BUCKET
+                                        )
+                                        .stacksTo(1)
+                        )
+                );
+
+        RECHORUS_JUICE_BOTTLE =
+                Registry.register(
+                        BuiltInRegistries.ITEM,
+                        RECHORUS_JUICE_BOTTLE_KEY
+                                .identifier(),
+                        new Item(
+                                new Item.Properties()
+                                        .setId(
+                                                RECHORUS_JUICE_BOTTLE_KEY
+                                        )
+                                        .stacksTo(16)
                         )
                 );
 

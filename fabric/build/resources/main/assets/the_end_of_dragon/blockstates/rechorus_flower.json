@@ -1,0 +1,29 @@
+{
+  "variants": {
+    "facing=up": {
+      "model": "the_end_of_dragon:block/rechorus_flower"
+    },
+    "facing=down": {
+      "model": "the_end_of_dragon:block/rechorus_flower",
+      "x": 180
+    },
+    "facing=north": {
+      "model": "the_end_of_dragon:block/rechorus_flower",
+      "x": 90
+    },
+    "facing=south": {
+      "model": "the_end_of_dragon:block/rechorus_flower",
+      "x": 270
+    },
+    "facing=west": {
+      "model": "the_end_of_dragon:block/rechorus_flower",
+      "x": 90,
+      "y": 270
+    },
+    "facing=east": {
+      "model": "the_end_of_dragon:block/rechorus_flower",
+      "x": 90,
+      "y": 90
+    }
+  }
+}

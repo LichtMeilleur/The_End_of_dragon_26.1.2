@@ -3,7 +3,8 @@
 	"credit": "Made with Blockbench",
 	"texture_size": [64, 64],
 	"textures": {
-		"1": "the_end_of_dragon:block/water_transfer_machine_b_preview"
+		"1": "the_end_of_dragon:block/water_transfer_machine_b_preview",
+		"particle": "the_end_of_dragon:block/water_transfer_machine_b_preview"
 	},
 	"elements": [
 		{

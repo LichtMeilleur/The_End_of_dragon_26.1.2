@@ -13,6 +13,8 @@ import com.licht_meilleur.the_end_of_dragon.client.render.TedVfxRenderer;
 import com.licht_meilleur.the_end_of_dragon.neoforge.client.network.TedNeoForgeClientNetwork;
 import com.licht_meilleur.the_end_of_dragon.neoforge.registry.NeoForgeModEntities;
 import com.licht_meilleur.the_end_of_dragon.registry.ModEntities;
+import net.minecraft.client.renderer.entity.NoopRenderer;
+import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
@@ -59,6 +61,8 @@ public final class TheEndOfDragonNeoForgeClient {
                 NeoForgeModEntities.TED_TECH_ENDERMAN.get(),
                 TedTechEndermanRenderer::new
         );
+
+
     }
 
     public static void registerGuiLayers(

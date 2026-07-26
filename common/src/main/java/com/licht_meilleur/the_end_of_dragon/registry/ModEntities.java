@@ -1,9 +1,7 @@
 package com.licht_meilleur.the_end_of_dragon.registry;
 
 import com.licht_meilleur.the_end_of_dragon.TheEndOfDragon;
-import com.licht_meilleur.the_end_of_dragon.entity.TheEndOfDragonCollisionEntity;
-import com.licht_meilleur.the_end_of_dragon.entity.TheEndOfDragonCoreEntity;
-import com.licht_meilleur.the_end_of_dragon.entity.TheEndOfDragonDisplayEntity;
+import com.licht_meilleur.the_end_of_dragon.entity.*;
 import com.licht_meilleur.the_end_of_dragon.entity.enderman.TedAllyEndermanEntity;
 import com.licht_meilleur.the_end_of_dragon.entity.enderman.village.TedElderEndermanEntity;
 import com.licht_meilleur.the_end_of_dragon.entity.enderman.village.TedTechEndermanEntity;
@@ -57,6 +55,26 @@ public final class ModEntities {
                     TheEndOfDragon.id("ted_tech_enderman")
             );
 
+    public static final ResourceKey<EntityType<?>>
+            RECHORUS_JUICE_BLOB_KEY =
+            ResourceKey.create(
+                    Registries.ENTITY_TYPE,
+                    TheEndOfDragon.id(
+                            "rechorus_juice_blob"
+                    )
+            );
+
+    public static final ResourceKey<EntityType<?>>
+            RECHORUS_JUICE_TRAIL_KEY =
+            ResourceKey.create(
+                    Registries.ENTITY_TYPE,
+                    TheEndOfDragon.id(
+                            "rechorus_juice_trail"
+                    )
+            );
+
+
+
     /*
      * 各ローダーの登録処理によって代入される。
      *
@@ -74,6 +92,8 @@ public final class ModEntities {
     public static EntityType<TedAllyEndermanEntity> TED_ALLY_ENDERMAN;
     public static EntityType<TedElderEndermanEntity> TED_ELDER_ENDERMAN;
     public static EntityType<TedTechEndermanEntity> TED_TECH_ENDERMAN;
+
+
 
     private static boolean fabricRegistered = false;
     private static boolean bound = false;
@@ -202,6 +222,8 @@ public final class ModEntities {
 
 
 
+
+
         bound = true;
 
         TheEndOfDragon.LOGGER.info(
@@ -223,6 +245,7 @@ public final class ModEntities {
             EntityType<TedAllyEndermanEntity> allyEnderman,
             EntityType<TedElderEndermanEntity> elderEnderman,
             EntityType<TedTechEndermanEntity> techEnderman
+
     ) {
         THE_END_OF_DRAGON = core;
         THE_END_OF_DRAGON_DISPLAY = display;
@@ -231,6 +254,7 @@ public final class ModEntities {
         TED_ALLY_ENDERMAN = allyEnderman;
         TED_ELDER_ENDERMAN = elderEnderman;
         TED_TECH_ENDERMAN = techEnderman;
+
 
         bound = true;
 

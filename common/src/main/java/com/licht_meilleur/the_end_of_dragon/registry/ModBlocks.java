@@ -4,11 +4,15 @@ import com.licht_meilleur.the_end_of_dragon.TheEndOfDragon;
 import com.licht_meilleur.the_end_of_dragon.world.block
         .EndermanVillageGatewayBlock;
 import com.licht_meilleur.the_end_of_dragon.world.block.EndermanVillageReturnGatewayBlock;
+import com.licht_meilleur.the_end_of_dragon.world.block.RechorusFlowerBlock;
+import com.licht_meilleur.the_end_of_dragon.world.block.RechorusJuiceDropBlock;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
@@ -56,12 +60,111 @@ public final class ModBlocks {
                     TheEndOfDragon.id("water_transfer_machine_b")
             );
 
+
+    public static final ResourceKey<Block>
+            RECHORUS_ROOT_KEY =
+            ResourceKey.create(
+                    Registries.BLOCK,
+                    TheEndOfDragon.id(
+                            "rechorus_root"
+                    )
+            );
+
+    public static final ResourceKey<Block>
+            RECHORUS_PLANT_KEY =
+            ResourceKey.create(
+                    Registries.BLOCK,
+                    TheEndOfDragon.id(
+                            "rechorus_plant"
+                    )
+            );
+
+    public static final ResourceKey<Block>
+            RECHORUS_FLOWER_KEY =
+            ResourceKey.create(
+                    Registries.BLOCK,
+                    TheEndOfDragon.id(
+                            "rechorus_flower"
+                    )
+            );
+
+    public static final ResourceKey<Block>
+            RECHORUS_MELON_STEM_KEY =
+            ResourceKey.create(
+                    Registries.BLOCK,
+                    TheEndOfDragon.id(
+                            "rechorus_melon_stem"
+                    )
+            );
+
+    public static final ResourceKey<Block>
+            RECHORUS_PLANT_CORE_PREVIEW_KEY =
+            ResourceKey.create(
+                    Registries.BLOCK,
+                    TheEndOfDragon.id(
+                            "rechorus_plant_core_preview"
+                    )
+            );
+
+    public static final ResourceKey<Block>
+            WATER_TRANSFER_MACHINE_B_PREVIEW_KEY =
+            ResourceKey.create(
+                    Registries.BLOCK,
+                    TheEndOfDragon.id(
+                            "water_transfer_machine_b_preview"
+                    )
+            );
+
+    public static final ResourceKey<Block>
+            RECHORUS_JUICE_KEY =
+            ResourceKey.create(
+                    Registries.BLOCK,
+                    TheEndOfDragon.id(
+                            "rechorus_juice"
+                    )
+            );
+
+    public static final ResourceKey<Block>
+            RECHORUS_JUICE_GUIDE_KEY =
+            ResourceKey.create(
+                    Registries.BLOCK,
+                    TheEndOfDragon.id(
+                            "rechorus_juice_guide"
+                    )
+            );
+
+    public static final ResourceKey<Block> DEBUG_MARKER_KEY =
+            ResourceKey.create(
+                    Registries.BLOCK,
+                    TheEndOfDragon.id(
+                            "debug_marker"
+                    )
+            );
+
+
+
+
+
+
     public static Block ENDERMAN_VILLAGE_GATEWAY;
     public static Block ENDERMAN_VILLAGE_RETURN_GATEWAY;
     public static Block RECHORUS_MELON;
     public static Block RECHORUS_PLANT_CORE;
     public static Block WATER_TRANSFER_MACHINE_A;
     public static Block WATER_TRANSFER_MACHINE_B;
+    public static Block RECHORUS_ROOT;
+    public static Block RECHORUS_PLANT;
+    public static Block RECHORUS_FLOWER;
+    public static Block RECHORUS_MELON_STEM;
+
+    public static Block RECHORUS_PLANT_CORE_PREVIEW;
+    public static Block WATER_TRANSFER_MACHINE_B_PREVIEW;
+
+    public static Block RECHORUS_JUICE;
+    public static Block RECHORUS_JUICE_GUIDE;
+
+    public static Block DEBUG_MARKER;
+
 
     private static boolean fabricRegistered = false;
 
@@ -184,6 +287,195 @@ public final class ModBlocks {
                         )
                 );
 
+        RECHORUS_PLANT_CORE_PREVIEW =
+                Registry.register(
+                        BuiltInRegistries.BLOCK,
+                        RECHORUS_PLANT_CORE_PREVIEW_KEY
+                                .identifier(),
+                        new Block(
+                                BlockBehaviour.Properties
+                                        .of()
+                                        .setId(
+                                                RECHORUS_PLANT_CORE_PREVIEW_KEY
+                                        )
+                                        .strength(
+                                                -1.0F,
+                                                3_600_000.0F
+                                        )
+                                        .noCollision()
+                                        .noOcclusion()
+                                        .replaceable()
+                                        .lightLevel(
+                                                state -> 3
+                                        )
+                        )
+                );
+
+        WATER_TRANSFER_MACHINE_B_PREVIEW =
+                Registry.register(
+                        BuiltInRegistries.BLOCK,
+                        WATER_TRANSFER_MACHINE_B_PREVIEW_KEY
+                                .identifier(),
+                        new Block(
+                                BlockBehaviour.Properties
+                                        .of()
+                                        .setId(
+                                                WATER_TRANSFER_MACHINE_B_PREVIEW_KEY
+                                        )
+                                        .strength(
+                                                -1.0F,
+                                                3_600_000.0F
+                                        )
+                                        .noCollision()
+                                        .noOcclusion()
+                                        .replaceable()
+                                        .lightLevel(
+                                                state -> 3
+                                        )
+                        )
+                );
+
+        RECHORUS_ROOT =
+                Registry.register(
+                        BuiltInRegistries.BLOCK,
+                        RECHORUS_ROOT_KEY.identifier(),
+                        new Block(
+                                BlockBehaviour.Properties
+                                        .of()
+                                        .setId(
+                                                RECHORUS_ROOT_KEY
+                                        )
+                                        .strength(
+                                                2.0F,
+                                                6.0F
+                                        )
+                                        .sound(
+                                                SoundType.WOOD
+                                        )
+                                        .noOcclusion()
+                        )
+                );
+
+        RECHORUS_PLANT =
+                Registry.register(
+                        BuiltInRegistries.BLOCK,
+                        RECHORUS_PLANT_KEY.identifier(),
+                        new Block(
+                                BlockBehaviour.Properties
+                                        .of()
+                                        .setId(
+                                                RECHORUS_PLANT_KEY
+                                        )
+                                        .strength(
+                                                2.0F,
+                                                6.0F
+                                        )
+                                        .sound(
+                                                SoundType.WOOD
+                                        )
+                                        .noOcclusion()
+                        )
+                );
+
+        RECHORUS_FLOWER =
+                Registry.register(
+                        BuiltInRegistries.BLOCK,
+                        RECHORUS_FLOWER_KEY.identifier(),
+                        new RechorusFlowerBlock(
+                                BlockBehaviour.Properties
+                                        .of()
+                                        .setId(
+                                                RECHORUS_FLOWER_KEY
+                                        )
+                                        .strength(
+                                                0.5F
+                                        )
+                                        .sound(
+                                                SoundType.AZALEA
+                                        )
+                                        .noCollision()
+                                        .noOcclusion()
+                        )
+                );
+
+        RECHORUS_MELON_STEM =
+                Registry.register(
+                        BuiltInRegistries.BLOCK,
+                        RECHORUS_MELON_STEM_KEY.identifier(),
+                        new Block(
+                                BlockBehaviour.Properties
+                                        .of()
+                                        .setId(
+                                                RECHORUS_MELON_STEM_KEY
+                                        )
+                                        .strength(
+                                                0.0F
+                                        )
+                                        .sound(
+                                                SoundType.CROP
+                                        )
+                                        .noCollision()
+                                        .noOcclusion()
+                        )
+                );
+
+        RECHORUS_JUICE =
+                Registry.register(
+                        BuiltInRegistries.BLOCK,
+                        RECHORUS_JUICE_KEY.identifier(),
+                        new LiquidBlock(
+                                ModFluids.RECHORUS_JUICE_SOURCE,
+                                BlockBehaviour.Properties
+                                        .ofFullCopy(
+                                                Blocks.WATER
+                                        )
+                                        .setId(
+                                                RECHORUS_JUICE_KEY
+                                        )
+                                        .noLootTable()
+                                        .lightLevel(
+                                                state -> 6
+                                        )
+                        )
+                );
+
+        RECHORUS_JUICE_GUIDE =
+                Registry.register(
+                        BuiltInRegistries.BLOCK,
+                        RECHORUS_JUICE_GUIDE_KEY
+                                .identifier(),
+                        new LiquidBlock(
+                                ModFluids
+                                        .RECHORUS_JUICE_GUIDE_SOURCE,
+                                BlockBehaviour.Properties
+                                        .ofFullCopy(
+                                                Blocks.WATER
+                                        )
+                                        .setId(
+                                                RECHORUS_JUICE_GUIDE_KEY
+                                        )
+                                        .noLootTable()
+                        )
+                );
+
+        DEBUG_MARKER =
+                Registry.register(
+                        BuiltInRegistries.BLOCK,
+                        DEBUG_MARKER_KEY.identifier(),
+                        new Block(
+                                BlockBehaviour.Properties
+                                        .of()
+                                        .setId(DEBUG_MARKER_KEY)
+                                        .strength(-1.0F)
+                                        .noLootTable()
+                                        .noCollision()
+                                        .replaceable()
+                                        .lightLevel(state -> 15)
+                                        .noOcclusion()
+                        )
+                );
+
+
 
 
         TheEndOfDragon.LOGGER.info(
@@ -197,31 +489,72 @@ public final class ModBlocks {
             Block rechorusMelon,
             Block rechorusPlantCore,
             Block waterTransferMachineA,
-            Block waterTransferMachineB
+            Block waterTransferMachineB,
+            Block rechorusRoot,
+            Block rechorusPlant,
+            Block rechorusFlower,
+            Block rechorusMelonStem,
+            Block rechorusPlantCorePreview,
+            Block waterTransferMachineBPreview,
+            Block rechorusJuice,
+            Block rechorusJuiceGuide,
+            Block debugMarker
+
     ) {
-        ENDERMAN_VILLAGE_GATEWAY =
-                endermanVillageGateway;
+        {
+            {
+                ENDERMAN_VILLAGE_GATEWAY =
+                        endermanVillageGateway;
 
-        ENDERMAN_VILLAGE_RETURN_GATEWAY =
-                endermanVillageReturnGateway;
+                ENDERMAN_VILLAGE_RETURN_GATEWAY =
+                        endermanVillageReturnGateway;
 
-        RECHORUS_MELON =
-                rechorusMelon;
+                RECHORUS_MELON =
+                        rechorusMelon;
 
-        RECHORUS_PLANT_CORE =
-                rechorusPlantCore;
+                RECHORUS_PLANT_CORE =
+                        rechorusPlantCore;
 
-        WATER_TRANSFER_MACHINE_A =
-                waterTransferMachineA;
+                WATER_TRANSFER_MACHINE_A =
+                        waterTransferMachineA;
 
-        WATER_TRANSFER_MACHINE_B =
-                waterTransferMachineB;
+                WATER_TRANSFER_MACHINE_B =
+                        waterTransferMachineB;
 
-        TheEndOfDragon.LOGGER.info(
-                "Bound NeoForge blocks to common registry references"
-        );
-    }
+                RECHORUS_PLANT_CORE_PREVIEW =
+                        rechorusPlantCorePreview;
 
-    private ModBlocks() {
+                WATER_TRANSFER_MACHINE_B_PREVIEW =
+                        waterTransferMachineBPreview;
+
+                RECHORUS_ROOT =
+                        rechorusRoot;
+
+                RECHORUS_PLANT =
+                        rechorusPlant;
+
+                RECHORUS_FLOWER =
+                        rechorusFlower;
+
+                RECHORUS_MELON_STEM =
+                        rechorusMelonStem;
+
+                RECHORUS_JUICE =
+                        rechorusJuice;
+
+                RECHORUS_JUICE_GUIDE =
+                        rechorusJuiceGuide;
+
+                DEBUG_MARKER =
+                        debugMarker;
+
+                TheEndOfDragon.LOGGER.info(
+                        "Bound NeoForge blocks to common registry references"
+                );
+            }
+
+
+        }
+
     }
 }

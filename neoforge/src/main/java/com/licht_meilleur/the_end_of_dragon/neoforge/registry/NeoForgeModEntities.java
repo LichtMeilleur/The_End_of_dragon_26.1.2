@@ -1,9 +1,7 @@
 package com.licht_meilleur.the_end_of_dragon.neoforge.registry;
 
 import com.licht_meilleur.the_end_of_dragon.TheEndOfDragon;
-import com.licht_meilleur.the_end_of_dragon.entity.TheEndOfDragonCollisionEntity;
-import com.licht_meilleur.the_end_of_dragon.entity.TheEndOfDragonCoreEntity;
-import com.licht_meilleur.the_end_of_dragon.entity.TheEndOfDragonDisplayEntity;
+import com.licht_meilleur.the_end_of_dragon.entity.*;
 import com.licht_meilleur.the_end_of_dragon.entity.enderman.TedAllyEndermanEntity;
 import com.licht_meilleur.the_end_of_dragon.entity.enderman.village.TedElderEndermanEntity;
 import com.licht_meilleur.the_end_of_dragon.entity.enderman.village.TedTechEndermanEntity;
@@ -139,6 +137,9 @@ public final class NeoForgeModEntities {
                             .build(ModEntities.TED_TECH_ENDERMAN_KEY)
             );
 
+
+
+
     public static void register(IEventBus modBus) {
         ENTITY_TYPES.register(modBus);
     }
@@ -152,6 +153,8 @@ public final class NeoForgeModEntities {
                 TED_ALLY_ENDERMAN.get(),
                 TED_ELDER_ENDERMAN.get(),
                 TED_TECH_ENDERMAN.get()
+
+
         );
     }
 

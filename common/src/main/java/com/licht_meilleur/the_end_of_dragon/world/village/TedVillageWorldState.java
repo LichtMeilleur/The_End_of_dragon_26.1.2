@@ -18,7 +18,7 @@ public final class TedVillageWorldState
      * 保存項目の意味や構造を変更したら増やす。
      */
     private static final int CURRENT_DATA_VERSION =
-            4;
+            5;
 
     private int dataVersion;
     /*
@@ -81,6 +81,26 @@ public final class TedVillageWorldState
      */
     private BlockPos rechorusPlantCoreSlotPosition =
             BlockPos.ZERO;
+    /*
+     * 地下貯水槽に保存されている通常水量。
+     * 単位はmB想定。
+     */
+    private int rechorusStoredWater;
+
+    /*
+     * 次の果汁水塊を作るまでの蓄積量。
+     */
+    private int rechorusPendingJuice;
+
+    /*
+     * 最後に果汁生産処理を行った時刻。
+     */
+    private long rechorusLastProductionTime;
+
+    /*
+     * 最後にプラント再生処理を行った時刻。
+     */
+    private long rechorusLastRegenerationTime;
 
     private boolean rechorusFacilityMarkersSaved;
 
@@ -100,6 +120,101 @@ public final class TedVillageWorldState
 
     public BlockPos getAllyHomePosition() {
         return allyHomePosition;
+    }
+
+    public int getRechorusStoredWater() {
+        return this.rechorusStoredWater;
+    }
+
+    public int getRechorusPendingJuice() {
+        return this.rechorusPendingJuice;
+    }
+
+    public void setRechorusStoredWater(
+            int amount
+    ) {
+        int safeAmount =
+                Math.max(
+                        0,
+                        amount
+                );
+
+        if (this.rechorusStoredWater
+                == safeAmount) {
+            return;
+        }
+
+        this.rechorusStoredWater =
+                safeAmount;
+
+        this.setDirty();
+    }
+
+    public void setRechorusPendingJuice(
+            int amount
+    ) {
+        int safeAmount =
+                Math.max(
+                        0,
+                        amount
+                );
+
+        if (this.rechorusPendingJuice
+                == safeAmount) {
+            return;
+        }
+
+        this.rechorusPendingJuice =
+                safeAmount;
+
+        this.setDirty();
+    }
+
+    public boolean consumeRechorusWater(
+            int amount
+    ) {
+        if (amount <= 0
+                || this.rechorusStoredWater
+                < amount) {
+            return false;
+        }
+
+        this.rechorusStoredWater -=
+                amount;
+
+        this.setDirty();
+
+        return true;
+    }
+
+    public void addRechorusWater(
+            int amount,
+            int capacity
+    ) {
+        if (amount <= 0) {
+            return;
+        }
+
+        this.setRechorusStoredWater(
+                Math.min(
+                        Math.max(0, capacity),
+                        this.rechorusStoredWater
+                                + amount
+                )
+        );
+    }
+
+    public void addRechorusPendingJuice(
+            int amount
+    ) {
+        if (amount <= 0) {
+            return;
+        }
+
+        this.setRechorusPendingJuice(
+                this.rechorusPendingJuice
+                        + amount
+        );
     }
 
     private static final Codec<TedVillageWorldState> CODEC =
@@ -213,6 +328,7 @@ public final class TedVillageWorldState
                                                     TedVillageWorldState
                                                             ::createFacilityData
                                             )
+
                             ).apply(
                                     instance,
                                     TedVillageWorldState::new
@@ -366,6 +482,18 @@ public final class TedVillageWorldState
         this.rechorusPlantBuilt =
                 safeFacilityData.plantBuilt();
 
+        this.rechorusStoredWater =
+                Math.max(
+                        0,
+                        safeFacilityData.storedWater()
+                );
+
+        this.rechorusPendingJuice =
+                Math.max(
+                        0,
+                        safeFacilityData.pendingJuice()
+                );
+
         migrateDataIfNeeded();
     }
 
@@ -475,6 +603,16 @@ public final class TedVillageWorldState
             version = 4;
         }
 
+        if (version < 5) {
+            this.rechorusStoredWater =
+                    0;
+
+            this.rechorusPendingJuice =
+                    0;
+
+            version = 5;
+        }
+
         this.dataVersion =
                 Math.min(
                         version,
@@ -511,7 +649,9 @@ public final class TedVillageWorldState
                 this.rechorusFacilityMarkersSaved,
                 this.waterTransferMachineBInstalled,
                 this.rechorusPlantCoreInstalled,
-                this.rechorusPlantBuilt
+                this.rechorusPlantBuilt,
+                this.rechorusStoredWater,
+                this.rechorusPendingJuice
         );
     }
 
@@ -804,7 +944,9 @@ public final class TedVillageWorldState
             boolean markersSaved,
             boolean machineBInstalled,
             boolean plantCoreInstalled,
-            boolean plantBuilt
+            boolean plantBuilt,
+            int storedWater,
+            int pendingJuice
     ) {
         private static final Codec<RechorusFacilityData> CODEC =
                 RecordCodecBuilder.create(
@@ -878,6 +1020,25 @@ public final class TedVillageWorldState
                                                 .forGetter(
                                                         RechorusFacilityData
                                                                 ::plantBuilt
+                                                ),
+                                        Codec.INT
+                                                .optionalFieldOf(
+                                                        "stored_water",
+                                                        0
+                                                )
+                                                .forGetter(
+                                                        RechorusFacilityData
+                                                                ::storedWater
+                                                ),
+
+                                        Codec.INT
+                                                .optionalFieldOf(
+                                                        "pending_juice",
+                                                        0
+                                                )
+                                                .forGetter(
+                                                        RechorusFacilityData
+                                                                ::pendingJuice
                                                 )
                                 ).apply(
                                         instance,
@@ -893,10 +1054,10 @@ public final class TedVillageWorldState
                     false,
                     false,
                     false,
-                    false
+                    false,
+                    0,
+                    0
             );
         }
     }
-
-
 }

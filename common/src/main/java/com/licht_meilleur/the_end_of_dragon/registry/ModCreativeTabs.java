@@ -90,6 +90,12 @@ public final class ModCreativeTabs {
                             output.accept(
                                     ModItems.WATER_TRANSFER_MACHINE_B
                             );
+                            output.accept(
+                                    ModItems.RECHORUS_JUICE_BUCKET
+                            );
+                            output.accept(
+                                    ModItems.RECHORUS_JUICE_BOTTLE
+                            );
                         })
                         .build()
 
