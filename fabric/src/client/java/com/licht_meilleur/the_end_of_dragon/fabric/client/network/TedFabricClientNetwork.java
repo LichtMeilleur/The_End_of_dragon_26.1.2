@@ -1,5 +1,6 @@
 package com.licht_meilleur.the_end_of_dragon.fabric.client.network;
 
+import com.licht_meilleur.the_end_of_dragon.client.TedWaterTransferClientHandler;
 import com.licht_meilleur.the_end_of_dragon.client.quest.TedVillageQuestClientHandler;
 import com.licht_meilleur.the_end_of_dragon.client.sound.TedBgmManager;
 import com.licht_meilleur.the_end_of_dragon.network.*;
@@ -102,6 +103,26 @@ public final class TedFabricClientNetwork {
                                 new TedSelectQuestPayload(
                                         questId
                                 )
+                        )
+        );
+
+        ClientPlayNetworking.registerGlobalReceiver(
+                TedOpenWaterTransferScreenPayload.TYPE,
+                (payload, context) ->
+                        context.client()
+                                .execute(
+                                        () ->
+                                                TedWaterTransferClientHandler
+                                                        .openScreen(
+                                                                payload
+                                                        )
+                                )
+        );
+
+        TedWaterTransferNetwork.bindSetChannelSender(
+                payload ->
+                        ClientPlayNetworking.send(
+                                payload
                         )
         );
     }

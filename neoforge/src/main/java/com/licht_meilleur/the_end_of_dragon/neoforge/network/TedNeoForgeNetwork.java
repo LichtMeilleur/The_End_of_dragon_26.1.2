@@ -42,6 +42,14 @@ public final class TedNeoForgeNetwork {
                                 )
                         )
         );
+
+        TedWaterTransferNetwork.bindOpenScreenSender(
+                (player, payload) ->
+                        PacketDistributor.sendToPlayer(
+                                player,
+                                payload
+                        )
+        );
     }
 
     public static void registerPayloads(
@@ -106,6 +114,11 @@ public final class TedNeoForgeNetwork {
                                     }
                                 }
                         )
+        );
+
+        registrar.playToClient(
+                TedOpenWaterTransferScreenPayload.TYPE,
+                TedOpenWaterTransferScreenPayload.STREAM_CODEC
         );
     }
 }

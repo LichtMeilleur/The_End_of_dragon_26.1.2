@@ -7,6 +7,7 @@ import com.licht_meilleur.the_end_of_dragon.client.entity.enderman.TedAllyEnderm
 import com.licht_meilleur.the_end_of_dragon.client.entity.enderman.renderer.TedElderEndermanRenderer;
 import com.licht_meilleur.the_end_of_dragon.client.entity.enderman.renderer.TedTechEndermanRenderer;
 import com.licht_meilleur.the_end_of_dragon.client.quest.TedVillageQuestClientHandler;
+import com.licht_meilleur.the_end_of_dragon.client.render.RechorusJuiceBlobRenderer;
 import com.licht_meilleur.the_end_of_dragon.client.render.TheEndOfDragonCollisionRenderer;
 import com.licht_meilleur.the_end_of_dragon.client.render.TheEndOfDragonCoreRenderer;
 import com.licht_meilleur.the_end_of_dragon.client.render.TheEndOfDragonDisplayRenderer;
@@ -75,6 +76,11 @@ public final class TheEndOfDragonFabricClient implements ClientModInitializer {
                 TedTechEndermanRenderer::new
         );
 
+        EntityRendererRegistry.register(
+                ModEntities.RECHORUS_JUICE_BLOB,
+                RechorusJuiceBlobRenderer::new
+        );
+
 
 
         // HUD描画
@@ -118,33 +124,6 @@ public final class TheEndOfDragonFabricClient implements ClientModInitializer {
                         BlockTintSources.constant(
                                 ARGB.opaque(
                                         0xF2D84B
-                                )
-                        )
-                )
-        );
-
-        FluidRenderingRegistry.register(
-                ModFluids.RECHORUS_JUICE_GUIDE_SOURCE,
-                ModFluids.RECHORUS_JUICE_GUIDE_FLOWING,
-                new FluidModel.Unbaked(
-                        new Material(
-                                TheEndOfDragon.id(
-                                        "block/rechorus_juice_still"
-                                )
-                        ),
-                        new Material(
-                                TheEndOfDragon.id(
-                                        "block/rechorus_juice_flow"
-                                )
-                        ),
-                        new Material(
-                                TheEndOfDragon.id(
-                                        "block/rechorus_juice_overlay"
-                                )
-                        ),
-                        BlockTintSources.constant(
-                                ARGB.opaque(
-                                        0xFFF29A
                                 )
                         )
                 )

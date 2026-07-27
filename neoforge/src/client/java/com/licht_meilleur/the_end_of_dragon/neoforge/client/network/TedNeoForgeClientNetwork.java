@@ -1,5 +1,6 @@
 package com.licht_meilleur.the_end_of_dragon.neoforge.client.network;
 
+import com.licht_meilleur.the_end_of_dragon.client.TedWaterTransferClientHandler;
 import com.licht_meilleur.the_end_of_dragon.client.quest
         .TedVillageQuestClientHandler;
 import com.licht_meilleur.the_end_of_dragon.client.sound
@@ -63,6 +64,22 @@ public final class TedNeoForgeClientNetwork {
                                 new TedSelectQuestPayload(
                                         questId
                                 )
+                        )
+        );
+
+        event.register(
+                TedOpenWaterTransferScreenPayload.TYPE,
+                (payload, context) ->
+                        TedWaterTransferClientHandler
+                                .openScreen(
+                                        payload
+                                )
+        );
+
+        TedWaterTransferNetwork.bindSetChannelSender(
+                payload ->
+                        ClientPacketDistributor.sendToServer(
+                                payload
                         )
         );
     }

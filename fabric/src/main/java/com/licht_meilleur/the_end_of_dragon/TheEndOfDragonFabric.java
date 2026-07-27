@@ -12,6 +12,9 @@ import com.licht_meilleur.the_end_of_dragon.world.EndDragonSpawnHandler;
 import com.licht_meilleur.the_end_of_dragon.world.TedBattleController;
 import com.licht_meilleur.the_end_of_dragon.world.TedEndermanBattleHandler;
 import com.licht_meilleur.the_end_of_dragon.world.block.entity.EndermanVillageGatewayBlockEntity;
+import com.licht_meilleur.the_end_of_dragon.world.block.entity.RechorusPlantCoreBlockEntity;
+import com.licht_meilleur.the_end_of_dragon.world.block.entity.WaterTransferMachineABlockEntity;
+import com.licht_meilleur.the_end_of_dragon.world.block.entity.WaterTransferMachineBBlockEntity;
 import com.licht_meilleur.the_end_of_dragon.world.enderman.TedEndermanFriendship;
 import com.licht_meilleur.the_end_of_dragon.world.village.*;
 import com.licht_meilleur.the_end_of_dragon.world.village.quest.TedVillageQuestRegistry;
@@ -32,8 +35,16 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 public final class TheEndOfDragonFabric implements ModInitializer {
 
     private static BlockEntityType<
-                EndermanVillageGatewayBlockEntity>
+            EndermanVillageGatewayBlockEntity>
             endermanVillageGatewayBlockEntityType;
+
+    private static BlockEntityType<
+            WaterTransferMachineABlockEntity>
+            waterTransferMachineABlockEntityType;
+
+    private static BlockEntityType<
+            WaterTransferMachineBBlockEntity>
+            waterTransferMachineBBlockEntityType;
 
     @Override
     public void onInitialize() {
@@ -62,8 +73,48 @@ public final class TheEndOfDragonFabric implements ModInitializer {
                         ).build()
                 );
 
+        waterTransferMachineABlockEntityType =
+                Registry.register(
+                        BuiltInRegistries.BLOCK_ENTITY_TYPE,
+                        ModBlockEntities
+                                .WATER_TRANSFER_MACHINE_A_KEY
+                                .identifier(),
+                        FabricBlockEntityTypeBuilder.create(
+                                WaterTransferMachineABlockEntity::new,
+                                ModBlocks.WATER_TRANSFER_MACHINE_A
+                        ).build()
+                );
+
+        waterTransferMachineBBlockEntityType =
+                Registry.register(
+                        BuiltInRegistries.BLOCK_ENTITY_TYPE,
+                        ModBlockEntities
+                                .WATER_TRANSFER_MACHINE_B_KEY
+                                .identifier(),
+                        FabricBlockEntityTypeBuilder.create(
+                                WaterTransferMachineBBlockEntity::new,
+                                ModBlocks.WATER_TRANSFER_MACHINE_B
+                        ).build()
+                );
+
+        BlockEntityType<RechorusPlantCoreBlockEntity>
+                rechorusPlantCoreBlockEntityType =
+                Registry.register(
+                        BuiltInRegistries.BLOCK_ENTITY_TYPE,
+                        ModBlockEntities
+                                .RECHORUS_PLANT_CORE_KEY
+                                .identifier(),
+                        FabricBlockEntityTypeBuilder.create(
+                                RechorusPlantCoreBlockEntity::new,
+                                ModBlocks.RECHORUS_PLANT_CORE
+                        ).build()
+                );
+
         ModBlockEntities.bindFabric(
-                endermanVillageGatewayBlockEntityType
+                endermanVillageGatewayBlockEntityType,
+                waterTransferMachineABlockEntityType,
+                waterTransferMachineBBlockEntityType,
+                rechorusPlantCoreBlockEntityType
         );
 
         ModEntities.registerFabric();
@@ -102,17 +153,6 @@ public final class TheEndOfDragonFabric implements ModInitializer {
                                 level
                         );
 
-                        TedRechorusJuiceFlowManager.tick(
-                                level
-                        );
-
-                        TedRechorusProductionManager.tick(
-                                level
-                        );
-
-                        TedRechorusRegenerationManager.tick(
-                                level
-                        );
 
                         TedEndermanFriendship.tick(
                                 level

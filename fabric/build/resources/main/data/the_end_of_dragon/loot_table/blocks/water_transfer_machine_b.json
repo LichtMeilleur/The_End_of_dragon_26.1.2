@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "the_end_of_dragon:water_transfer_machine_b"
+        }
+      ]
+    }
+  ],
+  "random_sequence": "the_end_of_dragon:blocks/water_transfer_machine_b"
+}

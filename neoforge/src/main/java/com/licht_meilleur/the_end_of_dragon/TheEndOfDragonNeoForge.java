@@ -166,18 +166,6 @@ public final class TheEndOfDragonNeoForge {
                     level
             );
 
-            TedRechorusJuiceFlowManager.tick(
-                    level
-            );
-
-
-            TedRechorusProductionManager.tick(
-                    level
-            );
-
-            TedRechorusRegenerationManager.tick(
-                    level
-            );
 
             /*
              * 一般エンダーマンの友好化処理。

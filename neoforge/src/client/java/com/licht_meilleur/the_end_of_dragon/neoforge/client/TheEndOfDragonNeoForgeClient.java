@@ -6,10 +6,7 @@ import com.licht_meilleur.the_end_of_dragon.client.TedAllyEndermanHud;
 import com.licht_meilleur.the_end_of_dragon.client.entity.enderman.TedAllyEndermanRenderer;
 import com.licht_meilleur.the_end_of_dragon.client.entity.enderman.renderer.TedElderEndermanRenderer;
 import com.licht_meilleur.the_end_of_dragon.client.entity.enderman.renderer.TedTechEndermanRenderer;
-import com.licht_meilleur.the_end_of_dragon.client.render.TheEndOfDragonCollisionRenderer;
-import com.licht_meilleur.the_end_of_dragon.client.render.TheEndOfDragonCoreRenderer;
-import com.licht_meilleur.the_end_of_dragon.client.render.TheEndOfDragonDisplayRenderer;
-import com.licht_meilleur.the_end_of_dragon.client.render.TedVfxRenderer;
+import com.licht_meilleur.the_end_of_dragon.client.render.*;
 import com.licht_meilleur.the_end_of_dragon.neoforge.client.network.TedNeoForgeClientNetwork;
 import com.licht_meilleur.the_end_of_dragon.neoforge.registry.NeoForgeModEntities;
 import com.licht_meilleur.the_end_of_dragon.registry.ModEntities;
@@ -60,6 +57,11 @@ public final class TheEndOfDragonNeoForgeClient {
         event.registerEntityRenderer(
                 NeoForgeModEntities.TED_TECH_ENDERMAN.get(),
                 TedTechEndermanRenderer::new
+        );
+
+        event.registerEntityRenderer(
+                NeoForgeModEntities.RECHORUS_JUICE_BLOB.get(),
+                RechorusJuiceBlobRenderer::new
         );
 
 

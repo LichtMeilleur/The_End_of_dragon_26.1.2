@@ -245,36 +245,32 @@ public final class TedRechorusFacilityManager {
         );
 
         /*
-         * 既に生成済みなら再生成しない。
+         * 両方設置済みなのでPreviewを完全に消す。
          */
-        if (state.isRechorusPlantBuilt()) {
-            return;
-        }
+        removePreview(
+                level,
+                machineBPosition,
+                ModBlocks.WATER_TRANSFER_MACHINE_B_PREVIEW
+        );
 
-        boolean built =
-                TedRechorusTreePlacer.placeAtCore(
-                        level,
-                        corePosition
-                );
-
-        if (!built) {
-            return;
-        }
+        removePreview(
+                level,
+                corePosition,
+                ModBlocks.RECHORUS_PLANT_CORE_PREVIEW
+        );
 
         /*
-         * クエスト達成条件だけ保存する。
+         * プラント本体の生成はここでは行わない。
          *
-         * RECHORUS_PLANT_BUILTへの進行は、
-         * クエスト画面の確認ボタンを押した際に
-         * 行う。
+         * コアが水を必要量吸収した後、
+         * TedRechorusPlantManagerが成長処理を行う。
          */
-        state.setRechorusPlantBuilt(
-                true
-        );
-
-        TheEndOfDragon.LOGGER.info(
-                "Rechorus facility construction objective completed"
-        );
+        if (!state.isRechorusPlantBuilt()) {
+            TheEndOfDragon.LOGGER.debug(
+                    "Rechorus facility installed and waiting for water growth: core={}",
+                    corePosition
+            );
+        }
     }
 
     private static void ensurePreview(

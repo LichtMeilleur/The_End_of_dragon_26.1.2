@@ -2,9 +2,7 @@ package com.licht_meilleur.the_end_of_dragon.neoforge.registry;
 
 import com.licht_meilleur.the_end_of_dragon.TheEndOfDragon;
 import com.licht_meilleur.the_end_of_dragon.registry.ModBlocks;
-import com.licht_meilleur.the_end_of_dragon.world.block.EndermanVillageGatewayBlock;
-import com.licht_meilleur.the_end_of_dragon.world.block.EndermanVillageReturnGatewayBlock;
-import com.licht_meilleur.the_end_of_dragon.world.block.RechorusFlowerBlock;
+import com.licht_meilleur.the_end_of_dragon.world.block.*;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Item;
@@ -92,11 +90,11 @@ public final class NeoForgeModBlocks {
                     )
             );
 
-    public static final DeferredHolder<Block, Block>
+    public static final DeferredHolder<Block, RechorusPlantCoreBlock>
             RECHORUS_PLANT_CORE =
             BLOCKS.register(
                     "rechorus_plant_core",
-                    () -> new Block(
+                    () -> new RechorusPlantCoreBlock(
                             BlockBehaviour.Properties
                                     .of()
                                     .setId(
@@ -109,38 +107,56 @@ public final class NeoForgeModBlocks {
                     )
             );
 
-    public static final DeferredHolder<Block, Block>
+    public static final DeferredHolder<
+            Block,
+            WaterTransferMachineABlock>
             WATER_TRANSFER_MACHINE_A =
             BLOCKS.register(
                     "water_transfer_machine_a",
-                    () -> new Block(
+                    () -> new WaterTransferMachineABlock(
                             BlockBehaviour.Properties
                                     .of()
                                     .setId(
                                             ModBlocks
                                                     .WATER_TRANSFER_MACHINE_A_KEY
                                     )
-                                    .strength(3.0F, 12.0F)
-                                    .sound(SoundType.METAL)
-                                    .lightLevel(state -> 4)
+                                    .strength(
+                                            3.0F,
+                                            12.0F
+                                    )
+                                    .sound(
+                                            SoundType.METAL
+                                    )
+                                    .lightLevel(
+                                            state -> 4
+                                    )
                                     .noOcclusion()
                     )
             );
 
-    public static final DeferredHolder<Block, Block>
+    public static final DeferredHolder<
+            Block,
+            WaterTransferMachineBBlock>
             WATER_TRANSFER_MACHINE_B =
             BLOCKS.register(
                     "water_transfer_machine_b",
-                    () -> new Block(
+                    () -> new WaterTransferMachineBBlock(
                             BlockBehaviour.Properties
                                     .of()
                                     .setId(
                                             ModBlocks
                                                     .WATER_TRANSFER_MACHINE_B_KEY
                                     )
-                                    .strength(3.0F, 12.0F)
-                                    .sound(SoundType.METAL)
-                                    .lightLevel(state -> 4)
+                                    .strength(
+                                            3.0F,
+                                            12.0F
+                                    )
+                                    .sound(
+                                            SoundType.METAL
+                                    )
+                                    .lightLevel(
+                                            state -> 4
+                                    )
                                     .noOcclusion()
                     )
             );
@@ -299,65 +315,6 @@ public final class NeoForgeModBlocks {
                     )
             );
 
-    public static final DeferredHolder<
-            Block,
-            DebugMarkerBlock> DEBUG_MARKER =
-            BLOCKS.register(
-                    "debug_marker",
-                    () -> new DebugMarkerBlock(
-                            BlockBehaviour.Properties
-                                    .of()
-                                    .setId(
-                                            ModBlocks.DEBUG_MARKER_KEY
-                                    )
-                                    /*
-                                     * サバイバルで破壊不可。
-                                     */
-                                    .strength(
-                                            -1.0F,
-                                            3_600_000.0F
-                                    )
-                                    /*
-                                     * アイテムを落とさない。
-                                     */
-                                    .noLootTable()
-                                    /*
-                                     * 当たり判定なし。
-                                     */
-                                    .noCollision()
-                                    /*
-                                     * 周囲の面を隠さない。
-                                     */
-                                    .noOcclusion()
-                                    /*
-                                     * デバッグ位置を見つけやすくする。
-                                     */
-                                    .lightLevel(
-                                            state -> 15
-                                    )
-                    )
-            );
-
-    public static final DeferredHolder<
-            Block,
-            LiquidBlock> RECHORUS_JUICE_GUIDE =
-            BLOCKS.register(
-                    "rechorus_juice_guide",
-                    () -> new LiquidBlock(
-                            NeoForgeModFluids
-                                    .RECHORUS_JUICE_GUIDE_SOURCE
-                                    .get(),
-                            BlockBehaviour.Properties
-                                    .ofFullCopy(
-                                            Blocks.WATER
-                                    )
-                                    .setId(
-                                            ModBlocks
-                                                    .RECHORUS_JUICE_GUIDE_KEY
-                                    )
-                                    .noLootTable()
-                    )
-            );
 
 
 
@@ -383,9 +340,7 @@ public final class NeoForgeModBlocks {
                 RECHORUS_MELON_STEM.get(),
                 RECHORUS_PLANT_CORE_PREVIEW.get(),
                 WATER_TRANSFER_MACHINE_B_PREVIEW.get(),
-                RECHORUS_JUICE.get(),
-                RECHORUS_JUICE_GUIDE.get(),
-                DEBUG_MARKER.get()
+                RECHORUS_JUICE.get()
 
 
         );

@@ -1,11 +1,7 @@
 package com.licht_meilleur.the_end_of_dragon.registry;
 
 import com.licht_meilleur.the_end_of_dragon.TheEndOfDragon;
-import com.licht_meilleur.the_end_of_dragon.world.block
-        .EndermanVillageGatewayBlock;
-import com.licht_meilleur.the_end_of_dragon.world.block.EndermanVillageReturnGatewayBlock;
-import com.licht_meilleur.the_end_of_dragon.world.block.RechorusFlowerBlock;
-import com.licht_meilleur.the_end_of_dragon.world.block.RechorusJuiceDropBlock;
+import com.licht_meilleur.the_end_of_dragon.world.block.*;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -124,22 +120,8 @@ public final class ModBlocks {
                     )
             );
 
-    public static final ResourceKey<Block>
-            RECHORUS_JUICE_GUIDE_KEY =
-            ResourceKey.create(
-                    Registries.BLOCK,
-                    TheEndOfDragon.id(
-                            "rechorus_juice_guide"
-                    )
-            );
 
-    public static final ResourceKey<Block> DEBUG_MARKER_KEY =
-            ResourceKey.create(
-                    Registries.BLOCK,
-                    TheEndOfDragon.id(
-                            "debug_marker"
-                    )
-            );
+
 
 
 
@@ -161,9 +143,8 @@ public final class ModBlocks {
     public static Block WATER_TRANSFER_MACHINE_B_PREVIEW;
 
     public static Block RECHORUS_JUICE;
-    public static Block RECHORUS_JUICE_GUIDE;
 
-    public static Block DEBUG_MARKER;
+
 
 
     private static boolean fabricRegistered = false;
@@ -246,7 +227,7 @@ public final class ModBlocks {
                 Registry.register(
                         BuiltInRegistries.BLOCK,
                         RECHORUS_PLANT_CORE_KEY.identifier(),
-                        new Block(
+                        new RechorusPlantCoreBlock(
                                 BlockBehaviour.Properties
                                         .of()
                                         .setId(RECHORUS_PLANT_CORE_KEY)
@@ -261,7 +242,7 @@ public final class ModBlocks {
                 Registry.register(
                         BuiltInRegistries.BLOCK,
                         WATER_TRANSFER_MACHINE_A_KEY.identifier(),
-                        new Block(
+                        new WaterTransferMachineABlock(
                                 BlockBehaviour.Properties
                                         .of()
                                         .setId(WATER_TRANSFER_MACHINE_A_KEY)
@@ -276,7 +257,7 @@ public final class ModBlocks {
                 Registry.register(
                         BuiltInRegistries.BLOCK,
                         WATER_TRANSFER_MACHINE_B_KEY.identifier(),
-                        new Block(
+                        new WaterTransferMachineBBlock(
                                 BlockBehaviour.Properties
                                         .of()
                                         .setId(WATER_TRANSFER_MACHINE_B_KEY)
@@ -439,41 +420,8 @@ public final class ModBlocks {
                         )
                 );
 
-        RECHORUS_JUICE_GUIDE =
-                Registry.register(
-                        BuiltInRegistries.BLOCK,
-                        RECHORUS_JUICE_GUIDE_KEY
-                                .identifier(),
-                        new LiquidBlock(
-                                ModFluids
-                                        .RECHORUS_JUICE_GUIDE_SOURCE,
-                                BlockBehaviour.Properties
-                                        .ofFullCopy(
-                                                Blocks.WATER
-                                        )
-                                        .setId(
-                                                RECHORUS_JUICE_GUIDE_KEY
-                                        )
-                                        .noLootTable()
-                        )
-                );
 
-        DEBUG_MARKER =
-                Registry.register(
-                        BuiltInRegistries.BLOCK,
-                        DEBUG_MARKER_KEY.identifier(),
-                        new Block(
-                                BlockBehaviour.Properties
-                                        .of()
-                                        .setId(DEBUG_MARKER_KEY)
-                                        .strength(-1.0F)
-                                        .noLootTable()
-                                        .noCollision()
-                                        .replaceable()
-                                        .lightLevel(state -> 15)
-                                        .noOcclusion()
-                        )
-                );
+
 
 
 
@@ -496,9 +444,7 @@ public final class ModBlocks {
             Block rechorusMelonStem,
             Block rechorusPlantCorePreview,
             Block waterTransferMachineBPreview,
-            Block rechorusJuice,
-            Block rechorusJuiceGuide,
-            Block debugMarker
+            Block rechorusJuice
 
     ) {
         {
@@ -542,11 +488,6 @@ public final class ModBlocks {
                 RECHORUS_JUICE =
                         rechorusJuice;
 
-                RECHORUS_JUICE_GUIDE =
-                        rechorusJuiceGuide;
-
-                DEBUG_MARKER =
-                        debugMarker;
 
                 TheEndOfDragon.LOGGER.info(
                         "Bound NeoForge blocks to common registry references"

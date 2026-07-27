@@ -64,14 +64,9 @@ public final class ModEntities {
                     )
             );
 
-    public static final ResourceKey<EntityType<?>>
-            RECHORUS_JUICE_TRAIL_KEY =
-            ResourceKey.create(
-                    Registries.ENTITY_TYPE,
-                    TheEndOfDragon.id(
-                            "rechorus_juice_trail"
-                    )
-            );
+
+
+
 
 
 
@@ -92,7 +87,8 @@ public final class ModEntities {
     public static EntityType<TedAllyEndermanEntity> TED_ALLY_ENDERMAN;
     public static EntityType<TedElderEndermanEntity> TED_ELDER_ENDERMAN;
     public static EntityType<TedTechEndermanEntity> TED_TECH_ENDERMAN;
-
+    public static EntityType<RechorusJuiceBlobEntity>
+            RECHORUS_JUICE_BLOB;
 
 
     private static boolean fabricRegistered = false;
@@ -220,6 +216,25 @@ public final class ModEntities {
                                 .build(TED_TECH_ENDERMAN_KEY)
                 );
 
+        RECHORUS_JUICE_BLOB =
+                Registry.register(
+                        BuiltInRegistries.ENTITY_TYPE,
+                        RECHORUS_JUICE_BLOB_KEY.identifier(),
+                        EntityType.Builder.of(
+                                        RechorusJuiceBlobEntity::new,
+                                        MobCategory.MISC
+                                )
+                                .sized(
+                                        0.8F,
+                                        0.8F
+                                )
+                                .clientTrackingRange(10)
+                                .updateInterval(1)
+                                .build(
+                                        RECHORUS_JUICE_BLOB_KEY
+                                )
+                );
+
 
 
 
@@ -244,8 +259,8 @@ public final class ModEntities {
             EntityType<TedVfxEntity> vfx,
             EntityType<TedAllyEndermanEntity> allyEnderman,
             EntityType<TedElderEndermanEntity> elderEnderman,
-            EntityType<TedTechEndermanEntity> techEnderman
-
+            EntityType<TedTechEndermanEntity> techEnderman,
+            EntityType<RechorusJuiceBlobEntity> rechorusJuiceBlob
     ) {
         THE_END_OF_DRAGON = core;
         THE_END_OF_DRAGON_DISPLAY = display;
@@ -254,7 +269,7 @@ public final class ModEntities {
         TED_ALLY_ENDERMAN = allyEnderman;
         TED_ELDER_ENDERMAN = elderEnderman;
         TED_TECH_ENDERMAN = techEnderman;
-
+        RECHORUS_JUICE_BLOB = rechorusJuiceBlob;
 
         bound = true;
 

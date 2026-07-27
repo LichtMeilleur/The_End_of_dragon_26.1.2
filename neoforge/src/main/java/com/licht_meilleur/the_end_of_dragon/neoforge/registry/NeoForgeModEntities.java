@@ -137,6 +137,27 @@ public final class NeoForgeModEntities {
                             .build(ModEntities.TED_TECH_ENDERMAN_KEY)
             );
 
+    public static final DeferredHolder<
+            EntityType<?>,
+            EntityType<RechorusJuiceBlobEntity>
+            > RECHORUS_JUICE_BLOB =
+            ENTITY_TYPES.register(
+                    "rechorus_juice_blob",
+                    () -> EntityType.Builder.of(
+                                    RechorusJuiceBlobEntity::new,
+                                    MobCategory.MISC
+                            )
+                            .sized(
+                                    0.65F,
+                                    0.65F
+                            )
+                            .clientTrackingRange(10)
+                            .updateInterval(1)
+                            .build(
+                                    ModEntities.RECHORUS_JUICE_BLOB_KEY
+                            )
+            );
+
 
 
 
@@ -152,9 +173,8 @@ public final class NeoForgeModEntities {
                 TED_VFX.get(),
                 TED_ALLY_ENDERMAN.get(),
                 TED_ELDER_ENDERMAN.get(),
-                TED_TECH_ENDERMAN.get()
-
-
+                TED_TECH_ENDERMAN.get(),
+                RECHORUS_JUICE_BLOB.get()
         );
     }
 

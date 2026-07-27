@@ -1,30 +1,25 @@
 package com.licht_meilleur.the_end_of_dragon.command;
 
 import com.licht_meilleur.the_end_of_dragon.entity.DragonState;
+import com.licht_meilleur.the_end_of_dragon.entity.RechorusJuiceBlobEntity;
 import com.licht_meilleur.the_end_of_dragon.entity.TheEndOfDragonCoreEntity;
 import com.licht_meilleur.the_end_of_dragon.entity.vfx.TedVfxEntity;
 import com.licht_meilleur.the_end_of_dragon.entity.vfx.TedVfxType;
 import com.licht_meilleur.the_end_of_dragon.registry.ModEntities;
 import com.licht_meilleur.the_end_of_dragon.registry.ModItems;
 import com.licht_meilleur.the_end_of_dragon.world.EndDragonSpawnHandler;
-import com.licht_meilleur.the_end_of_dragon.world.village.TedRechorusJuiceFlowManager;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -151,6 +146,7 @@ public final class TEDDebugCommands {
                                                 "juice_flow"
                                         )
                                         .executes(context -> {
+
                                             ServerPlayer player =
                                                     context.getSource()
                                                             .getPlayerOrException();
@@ -160,16 +156,14 @@ public final class TEDDebugCommands {
                                                             .getLevel();
 
                                             /*
-                                             * プレイヤーの視線方向へ少し離し、
-                                             * さらに5ブロック上から生成する。
+                                             * プレイヤーの視線方向3ブロック、
+                                             * さらに5ブロック上へ生成。
                                              */
-                                            Vec3 startVector =
+                                            Vec3 spawnPos =
                                                     player.position()
                                                             .add(
                                                                     player.getLookAngle()
-                                                                            .scale(
-                                                                                    3.0D
-                                                                            )
+                                                                            .scale(3.0D)
                                                             )
                                                             .add(
                                                                     0.0D,
@@ -177,37 +171,27 @@ public final class TEDDebugCommands {
                                                                     0.0D
                                                             );
 
-                                            BlockPos startPosition =
-                                                    BlockPos.containing(
-                                                            startVector
+                                            RechorusJuiceBlobEntity blob =
+                                                    new RechorusJuiceBlobEntity(
+                                                            ModEntities.RECHORUS_JUICE_BLOB,
+                                                            level
                                                     );
 
-                                            boolean started =
-                                                    TedRechorusJuiceFlowManager
-                                                            .start(
-                                                                    level,
-                                                                    startPosition
-                                                            );
+                                            blob.setPos(
+                                                    spawnPos.x,
+                                                    spawnPos.y,
+                                                    spawnPos.z
+                                            );
 
-                                            if (!started) {
-                                                context.getSource()
-                                                        .sendFailure(
-                                                                Component.literal(
-                                                                        "[TED] 果汁水の仮流体を開始できませんでした。"
-                                                                )
-                                                        );
+                                            level.addFreshEntity(blob);
 
-                                                return 0;
-                                            }
-
-                                            context.getSource()
-                                                    .sendSuccess(
-                                                            () -> Component.literal(
-                                                                    "[TED] 果汁水の仮流体を開始しました: "
-                                                                            + startPosition
-                                                            ),
-                                                            false
-                                                    );
+                                            context.getSource().sendSuccess(
+                                                    () -> Component.literal(
+                                                            "[TED] Rechorus Juice Blob を生成しました : "
+                                                                    + BlockPos.containing(spawnPos)
+                                                    ),
+                                                    false
+                                            );
 
                                             return 1;
                                         })

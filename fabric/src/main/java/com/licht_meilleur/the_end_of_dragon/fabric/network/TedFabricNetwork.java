@@ -1,9 +1,6 @@
 package com.licht_meilleur.the_end_of_dragon.fabric.network;
 
-import com.licht_meilleur.the_end_of_dragon.network.TedBgmPayload;
-import com.licht_meilleur.the_end_of_dragon.network.TedNetwork;
-import com.licht_meilleur.the_end_of_dragon.network.TedOpenQuestLetterPayload;
-import com.licht_meilleur.the_end_of_dragon.network.TedSubmitQuestPayload;
+import com.licht_meilleur.the_end_of_dragon.network.*;
 import com.licht_meilleur.the_end_of_dragon.world.village.quest.TedVillageQuestManager;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -13,25 +10,12 @@ public final class TedFabricNetwork {
     }
 
     public static void init() {
-        /*
-         * サーバーからクライアントへ送るPayload型を登録。
-         */
+
         PayloadTypeRegistry.clientboundPlay()
                 .register(
                         TedBgmPayload.TYPE,
                         TedBgmPayload.STREAM_CODEC
                 );
-
-        /*
-         * Common側の送信窓口へFabric実装を設定。
-         */
-        TedNetwork.setSender(
-                (player, command) ->
-                        ServerPlayNetworking.send(
-                                player,
-                                new TedBgmPayload(command)
-                        )
-        );
 
         PayloadTypeRegistry.clientboundPlay()
                 .register(
@@ -45,6 +29,26 @@ public final class TedFabricNetwork {
                         TedSubmitQuestPayload.STREAM_CODEC
                 );
 
+        PayloadTypeRegistry.clientboundPlay()
+                .register(
+                        TedOpenWaterTransferScreenPayload.TYPE,
+                        TedOpenWaterTransferScreenPayload.STREAM_CODEC
+                );
+
+        PayloadTypeRegistry.serverboundPlay()
+                .register(
+                        TedSetWaterTransferChannelPayload.TYPE,
+                        TedSetWaterTransferChannelPayload.STREAM_CODEC
+                );
+
+        TedNetwork.setSender(
+                (player, command) ->
+                        ServerPlayNetworking.send(
+                                player,
+                                new TedBgmPayload(command)
+                        )
+        );
+
         TedNetwork.setQuestSender(
                 (player, questId, completable) ->
                         ServerPlayNetworking.send(
@@ -53,6 +57,14 @@ public final class TedFabricNetwork {
                                         questId,
                                         completable
                                 )
+                        )
+        );
+
+        TedWaterTransferNetwork.bindOpenScreenSender(
+                (player, payload) ->
+                        ServerPlayNetworking.send(
+                                player,
+                                payload
                         )
         );
 
@@ -66,6 +78,20 @@ public final class TedFabricNetwork {
                                                         .submitQuest(
                                                                 context.player(),
                                                                 payload.questId()
+                                                        )
+                                )
+        );
+
+        ServerPlayNetworking.registerGlobalReceiver(
+                TedSetWaterTransferChannelPayload.TYPE,
+                (payload, context) ->
+                        context.server()
+                                .execute(
+                                        () ->
+                                                TedWaterTransferServerHandler
+                                                        .handleSetChannel(
+                                                                context.player(),
+                                                                payload
                                                         )
                                 )
         );

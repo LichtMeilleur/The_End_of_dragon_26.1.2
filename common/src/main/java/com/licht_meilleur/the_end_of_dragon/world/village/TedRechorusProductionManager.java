@@ -1,10 +1,11 @@
 package com.licht_meilleur.the_end_of_dragon.world.village;
 
+import com.licht_meilleur.the_end_of_dragon.TheEndOfDragon;
+import com.licht_meilleur.the_end_of_dragon.entity.RechorusJuiceBlobEntity;
 import com.licht_meilleur.the_end_of_dragon.registry.ModBlocks;
-import com.licht_meilleur.the_end_of_dragon.world.block
-        .RechorusFlowerBlock;
-import com.licht_meilleur.the_end_of_dragon.world.dimension
-        .TedDimensions;
+import com.licht_meilleur.the_end_of_dragon.registry.ModEntities;
+import com.licht_meilleur.the_end_of_dragon.world.block.RechorusFlowerBlock;
+import com.licht_meilleur.the_end_of_dragon.world.dimension.TedDimensions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -23,7 +24,7 @@ public final class TedRechorusProductionManager {
      */
 
     /*
-     * 生産判定を行う間隔。
+     * 生産判定間隔。
      *
      * 200tick = 10秒。
      */
@@ -31,39 +32,45 @@ public final class TedRechorusProductionManager {
             200L;
 
     /*
-     * 1回の生産処理で消費する通常水量。
-     *
-     * mB想定。
+     * 1サイクルで消費する水量。
      */
     private static final int WATER_PER_CYCLE =
             100;
 
     /*
-     * 花1個あたり、
-     * 1サイクルで生産する果汁量。
+     * 花1個あたりの果汁生産量。
      */
     private static final int JUICE_PER_FLOWER =
             25;
 
     /*
-     * 仮流体を1回生成するために必要な果汁量。
-     *
-     * 1000mB = バケツ1杯分想定。
+     * Blob1個の生成に必要な果汁量。
      */
-    private static final int JUICE_PER_FLOW =
+    private static final int JUICE_PER_BLOB =
             1_000;
 
+
+
     /*
-     * コアを中心に花を探す範囲。
+     * 1回の生産処理で生成するBlobの最大数。
+     *
+     * 果汁が大量に蓄積していても、
+     * 一度に大量生成しないための制限。
      */
-    private static final int FLOWER_SEARCH_RADIUS =
-            24;
+    private static final int MAX_BLOBS_PER_CYCLE =
+            1;
 
     public static void tick(
             ServerLevel level
     ) {
+        if (level == null) {
+            return;
+        }
+
+
+
         /*
-         * 村ディメンション以外では処理しない。
+         * エンダーマン村以外では動作しない。
          */
         if (!level.dimension().equals(
                 TedDimensions.ENDERMAN_VILLAGE
@@ -71,9 +78,6 @@ public final class TedRechorusProductionManager {
             return;
         }
 
-        /*
-         * 指定間隔でのみ処理する。
-         */
         if (level.getGameTime()
                 % PRODUCTION_INTERVAL != 0L) {
             return;
@@ -82,28 +86,26 @@ public final class TedRechorusProductionManager {
         TedVillageWorldState state =
                 TedVillageWorldState.get(level);
 
-        /*
-         * プラントが完成していなければ生産しない。
-         */
-        if (!state.isRechorusPlantBuilt()) {
-            return;
-        }
+
 
         /*
-         * 既に仮流体の生成処理中なら、
-         * 次の流体はまだ出さない。
+         * 施設側の完成フラグ。
          */
-        if (TedRechorusJuiceFlowManager.isActive(
-                level
-        )) {
+        if (!state.isRechorusPlantBuilt()
+                || !state.isRechorusPlantCoreInstalled()) {
             return;
         }
 
         BlockPos corePosition =
                 state.getRechorusPlantCoreSlotPosition();
 
+        if (corePosition == null) {
+            return;
+        }
+
         /*
-         * コアブロックが存在しなければ停止。
+         * 保存されたコア位置に、
+         * 実際のコアブロックが存在するか確認。
          */
         if (!level.getBlockState(
                 corePosition
@@ -114,17 +116,19 @@ public final class TedRechorusProductionManager {
         }
 
         List<BlockPos> flowers =
-                findFlowers(
-                        level,
-                        corePosition
-                );
+                TedRechorusPlantManager
+                        .getManagedFlowers(
+                                level,
+                                corePosition
+                        );
 
         if (flowers.isEmpty()) {
             return;
         }
 
         /*
-         * 通常水が足りなければ生産しない。
+         * 通常水を消費できない場合は、
+         * 果汁を生産しない。
          */
         if (!state.consumeRechorusWater(
                 WATER_PER_CYCLE
@@ -140,19 +144,61 @@ public final class TedRechorusProductionManager {
                 producedJuice
         );
 
-        /*
-         * バケツ1杯分に満たない場合は、
-         * 蓄積だけして終了。
-         */
-        if (state.getRechorusPendingJuice()
-                < JUICE_PER_FLOW) {
-            return;
-        }
+        int generatedBlobs = 0;
 
         /*
-         * 毎回同じ花にならないよう、
-         * 候補順をランダム化。
+         * 果汁量が十分にある間、
+         * 設定された上限までBlobを生成する。
          */
+        while (state.getRechorusPendingJuice()
+                >= JUICE_PER_BLOB
+                && generatedBlobs
+                < MAX_BLOBS_PER_CYCLE) {
+
+            if (!spawnBlobFromRandomFlower(
+                    level,
+                    flowers
+            )) {
+                /*
+                 * 全ての花の出口が塞がっている場合。
+                 *
+                 * 果汁量は消費せず、
+                 * 次回へ持ち越す。
+                 */
+                break;
+            }
+
+            state.setRechorusPendingJuice(
+                    state.getRechorusPendingJuice()
+                            - JUICE_PER_BLOB
+            );
+
+            generatedBlobs++;
+        }
+
+        if (generatedBlobs > 0) {
+            TheEndOfDragon.LOGGER.info(
+                    "Produced {} Rechorus Juice Blob(s): core={}, flowers={}, pendingJuice={}",
+                    generatedBlobs,
+                    corePosition,
+                    flowers.size(),
+                    state.getRechorusPendingJuice()
+            );
+        }
+    }
+
+
+
+
+    private static boolean spawnBlobFromRandomFlower(
+            ServerLevel level,
+            List<BlockPos> flowers
+    ) {
+        if (flowers == null
+                || flowers.isEmpty()) {
+            return false;
+        }
+
         List<BlockPos> shuffledFlowers =
                 new ArrayList<>(
                         flowers
@@ -162,76 +208,25 @@ public final class TedRechorusProductionManager {
                 shuffledFlowers,
                 new java.util.Random(
                         level.getGameTime()
+                                + level.getRandom().nextLong()
                 )
         );
 
-        /*
-         * 空いている開始地点を持つ花を順に探す。
-         */
         for (BlockPos flowerPosition
                 : shuffledFlowers) {
 
-            if (!startGuideFlowFromFlower(
+            if (spawnBlobFromFlower(
                     level,
                     flowerPosition
             )) {
-                continue;
+                return true;
             }
-
-            /*
-             * 仮流体生成に成功した時だけ、
-             * バケツ1杯分を消費する。
-             */
-            state.setRechorusPendingJuice(
-                    state.getRechorusPendingJuice()
-                            - JUICE_PER_FLOW
-            );
-
-            return;
         }
+
+        return false;
     }
 
-    private static List<BlockPos> findFlowers(
-            ServerLevel level,
-            BlockPos center
-    ) {
-        List<BlockPos> positions =
-                new ArrayList<>();
-
-        BlockPos minimum =
-                center.offset(
-                        -FLOWER_SEARCH_RADIUS,
-                        -FLOWER_SEARCH_RADIUS,
-                        -FLOWER_SEARCH_RADIUS
-                );
-
-        BlockPos maximum =
-                center.offset(
-                        FLOWER_SEARCH_RADIUS,
-                        FLOWER_SEARCH_RADIUS,
-                        FLOWER_SEARCH_RADIUS
-                );
-
-        BlockPos.betweenClosedStream(
-                minimum,
-                maximum
-        ).forEach(position -> {
-            if (!level.getBlockState(position)
-                    .is(
-                            ModBlocks.RECHORUS_FLOWER
-                    )) {
-                return;
-            }
-
-            positions.add(
-                    position.immutable()
-            );
-        });
-
-        return positions;
-    }
-
-    private static boolean startGuideFlowFromFlower(
+    private static boolean spawnBlobFromFlower(
             ServerLevel level,
             BlockPos flowerPosition
     ) {
@@ -246,154 +241,122 @@ public final class TedRechorusProductionManager {
             return false;
         }
 
+        if (!flowerState.hasProperty(
+                RechorusFlowerBlock.FACING
+        )) {
+            return false;
+        }
+
+        if (ModEntities.RECHORUS_JUICE_BLOB
+                == null) {
+            return false;
+        }
+
         Direction facing =
                 flowerState.getValue(
                         RechorusFlowerBlock.FACING
                 );
 
-        BlockPos startPosition =
-                findGuideStartPosition(
-                        level,
-                        flowerPosition,
+        /*
+         * 花が向いている外側を、
+         * Blobの生成候補にする。
+         *
+         * 花ブロック自身の座標には生成しない。
+         */
+        BlockPos spawnBlockPosition =
+                flowerPosition.relative(
                         facing
                 );
 
-        if (startPosition == null) {
+        if (!canSpawnBlobAt(
+                level,
+                spawnBlockPosition
+        )) {
             return false;
         }
 
-        return TedRechorusJuiceFlowManager.start(
-                level,
-                startPosition
+        double spawnX =
+                spawnBlockPosition.getX()
+                        + 0.5D;
+
+        double spawnY =
+                spawnBlockPosition.getY()
+                        + 0.5D;
+
+        double spawnZ =
+                spawnBlockPosition.getZ()
+                        + 0.5D;
+
+        /*
+         * 下向きの花は、
+         * 花の直下寄りから垂れるようにする。
+         */
+        if (facing == Direction.DOWN) {
+            spawnY =
+                    spawnBlockPosition.getY()
+                            + 0.85D;
+        }
+
+        /*
+         * 上向きの花は、
+         * 外側マスのやや下側へ配置する。
+         *
+         * そのまま上へ浮いて見えないようにする。
+         */
+        if (facing == Direction.UP) {
+            spawnY =
+                    spawnBlockPosition.getY()
+                            + 0.15D;
+        }
+
+        RechorusJuiceBlobEntity blob =
+                new RechorusJuiceBlobEntity(
+                        ModEntities.RECHORUS_JUICE_BLOB,
+                        level
+                );
+
+        blob.setPos(
+                spawnX,
+                spawnY,
+                spawnZ
+        );
+
+        /*
+         * Entityの当たり判定としても、
+         * 実際に配置可能か確認する。
+         */
+        if (!level.noCollision(
+                blob,
+                blob.getBoundingBox()
+        )) {
+            return false;
+        }
+
+        return level.addFreshEntity(
+                blob
         );
     }
 
-    private static BlockPos findGuideStartPosition(
-            ServerLevel level,
-            BlockPos flowerPosition,
-            Direction facing
-    ) {
-        /*
-         * 側面に咲いた花は、
-         * 花が向いている外側から流し始める。
-         */
-        if (facing.getAxis()
-                .isHorizontal()) {
-
-            BlockPos outsidePosition =
-                    flowerPosition.relative(
-                            facing
-                    );
-
-            if (canStartFluidAt(
-                    level,
-                    outsidePosition
-            )) {
-                return outsidePosition;
-            }
-        }
-
-        /*
-         * 下向きの花は直下を優先。
-         */
-        if (facing == Direction.DOWN) {
-            BlockPos belowPosition =
-                    flowerPosition.below();
-
-            if (canStartFluidAt(
-                    level,
-                    belowPosition
-            )) {
-                return belowPosition;
-            }
-        }
-
-        /*
-         * 上向きの花は真下に幹がある可能性が高い。
-         *
-         * まず周囲4方向から、
-         * さらに下へ流れられる位置を優先する。
-         */
-        Direction[] horizontalDirections = {
-                Direction.NORTH,
-                Direction.SOUTH,
-                Direction.WEST,
-                Direction.EAST
-        };
-
-        for (Direction direction
-                : horizontalDirections) {
-
-            BlockPos sidePosition =
-                    flowerPosition.relative(
-                            direction
-                    );
-
-            if (!canStartFluidAt(
-                    level,
-                    sidePosition
-            )) {
-                continue;
-            }
-
-            if (canStartFluidAt(
-                    level,
-                    sidePosition.below()
-            )) {
-                return sidePosition;
-            }
-        }
-
-        /*
-         * 下が塞がっていても、
-         * 横が空いていれば仮流体に流路を探させる。
-         */
-        for (Direction direction
-                : horizontalDirections) {
-
-            BlockPos sidePosition =
-                    flowerPosition.relative(
-                            direction
-                    );
-
-            if (canStartFluidAt(
-                    level,
-                    sidePosition
-            )) {
-                return sidePosition;
-            }
-        }
-
-        /*
-         * 最後に直下を試す。
-         */
-        BlockPos belowPosition =
-                flowerPosition.below();
-
-        if (canStartFluidAt(
-                level,
-                belowPosition
-        )) {
-            return belowPosition;
-        }
-
-        return null;
-    }
-
-    private static boolean canStartFluidAt(
+    private static boolean canSpawnBlobAt(
             ServerLevel level,
             BlockPos position
     ) {
+        if (!level.isInWorldBounds(
+                position
+        )) {
+            return false;
+        }
+
         BlockState state =
                 level.getBlockState(
                         position
                 );
 
         /*
-         * 現段階では空気だけを許可。
+         * 花や植物を上書きしないため、
+         * canBeReplaced()は使用しない。
          *
-         * replaceable判定を広げると、
-         * 草や植物を上書きする可能性があるため。
+         * 完全な空気ブロックだけを許可する。
          */
         return state.isAir();
     }

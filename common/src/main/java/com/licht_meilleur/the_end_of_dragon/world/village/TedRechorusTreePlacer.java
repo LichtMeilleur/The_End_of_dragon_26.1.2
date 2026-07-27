@@ -50,6 +50,7 @@ public final class TedRechorusTreePlacer {
      * ========================================
      */
 
+
     /*
      * 生成する最低花数。
      */
@@ -680,18 +681,125 @@ public final class TedRechorusTreePlacer {
     ) {
     }
 
-    public static List<PlantPartTarget>
-    getPlantPartTargets(
+    public static List<PlantPartTarget> getPlantPartTargets(
             ServerLevel level,
             BlockPos corePosition
     ) {
-        return List.of();
+        if (level == null
+                || corePosition == null) {
+            return List.of();
+        }
+
+        var optionalTemplate =
+                level.getStructureManager()
+                        .get(TEMPLATE_ID);
+
+        if (optionalTemplate.isEmpty()) {
+            TheEndOfDragon.LOGGER.error(
+                    "Missing Rechorus tree structure while reading regeneration targets: {}",
+                    TEMPLATE_ID
+            );
+
+            return List.of();
+        }
+
+        StructureTemplate template =
+                optionalTemplate.get();
+
+        StructurePlaceSettings settings =
+                new StructurePlaceSettings()
+                        .setIgnoreEntities(false);
+
+        BlockPos localCorePosition =
+                findMarker(
+                        template,
+                        settings,
+                        CORE_MARKER_NAME
+                );
+
+        if (localCorePosition == null) {
+            TheEndOfDragon.LOGGER.error(
+                    "Rechorus tree has no core marker while reading regeneration targets: {}",
+                    CORE_MARKER_NAME
+            );
+
+            return List.of();
+        }
+
+        /*
+         * NBT内のコア位置を、
+         * 実際のコア位置へ重ねたときの原点。
+         */
+        BlockPos structureOrigin =
+                corePosition.subtract(
+                        localCorePosition
+                );
+
+        List<PlantPartTarget> targets =
+                new ArrayList<>();
+
+        List<StructureTemplate.StructureBlockInfo>
+                jigsawBlocks =
+                template.filterBlocks(
+                        BlockPos.ZERO,
+                        settings,
+                        Blocks.JIGSAW
+                );
+
+        for (StructureTemplate.StructureBlockInfo info
+                : jigsawBlocks) {
+
+            String markerName =
+                    getMarkerName(info);
+
+            BlockPos worldPosition =
+                    structureOrigin.offset(
+                            info.pos()
+                    ).immutable();
+
+            if (ROOT_MARKER_NAME.equals(
+                    markerName
+            )) {
+                targets.add(
+                        new PlantPartTarget(
+                                worldPosition,
+                                ModBlocks.RECHORUS_ROOT
+                                        .defaultBlockState()
+                        )
+                );
+
+                continue;
+            }
+
+            if (STEM_MARKER_NAME.equals(
+                    markerName
+            )) {
+                targets.add(
+                        new PlantPartTarget(
+                                worldPosition,
+                                ModBlocks.RECHORUS_PLANT
+                                        .defaultBlockState()
+                        )
+                );
+            }
+        }
+
+        return List.copyOf(
+                targets
+        );
     }
 
     public record PlantPartTarget(
             BlockPos position,
             BlockState state
     ) {
+    }
+
+    public static int getMaximumFlowerCount() {
+        return Math.max(
+                0,
+                MAX_FLOWERS
+        );
     }
 
     private TedRechorusTreePlacer() {
