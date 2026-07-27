@@ -33,6 +33,9 @@ public final class TheEndOfDragonNeoForge {
 
     public TheEndOfDragonNeoForge(IEventBus modBus) {
         NeoForgeModDataComponents.register(modBus);
+
+        NeoForgeModFluidTypes.register(modBus);
+
         NeoForgeModFluids.register(modBus);
         NeoForgeModBlocks.register(modBus);
         NeoForgeModBlockEntities.register(modBus);
@@ -52,6 +55,11 @@ public final class TheEndOfDragonNeoForge {
         modBus.addListener(this::commonSetup);
         modBus.addListener(this::registerAttributes);
 
+
+        modBus.addListener(
+                TheEndOfDragonNeoForgeClient
+                        ::registerFluidModels
+        );
         modBus.addListener(
                 TheEndOfDragonNeoForgeClient::registerEntityRenderers
         );

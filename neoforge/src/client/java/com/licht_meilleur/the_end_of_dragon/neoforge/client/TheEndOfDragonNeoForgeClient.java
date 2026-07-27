@@ -2,6 +2,7 @@ package com.licht_meilleur.the_end_of_dragon.neoforge.client;
 
 import com.licht_meilleur.the_end_of_dragon.TheEndOfDragon;
 import com.licht_meilleur.the_end_of_dragon.client.LightOfDestructionHudRenderer;
+import com.licht_meilleur.the_end_of_dragon.client.RechorusJuiceOverlayRenderer;
 import com.licht_meilleur.the_end_of_dragon.client.TedAllyEndermanHud;
 import com.licht_meilleur.the_end_of_dragon.client.entity.enderman.TedAllyEndermanRenderer;
 import com.licht_meilleur.the_end_of_dragon.client.entity.enderman.renderer.TedElderEndermanRenderer;
@@ -9,10 +10,16 @@ import com.licht_meilleur.the_end_of_dragon.client.entity.enderman.renderer.TedT
 import com.licht_meilleur.the_end_of_dragon.client.render.*;
 import com.licht_meilleur.the_end_of_dragon.neoforge.client.network.TedNeoForgeClientNetwork;
 import com.licht_meilleur.the_end_of_dragon.neoforge.registry.NeoForgeModEntities;
+import com.licht_meilleur.the_end_of_dragon.neoforge.registry.NeoForgeModFluids;
 import com.licht_meilleur.the_end_of_dragon.registry.ModEntities;
+import net.minecraft.client.color.block.BlockTintSources;
+import net.minecraft.client.renderer.block.FluidModel;
 import net.minecraft.client.renderer.entity.NoopRenderer;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
+import net.minecraft.client.resources.model.sprite.Material;
+import net.minecraft.util.ARGB;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.RegisterFluidModelsEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlersEvent;
@@ -87,6 +94,53 @@ public final class TheEndOfDragonNeoForgeClient {
                                 graphics,
                                 deltaTracker
                         )
+        );
+
+        event.registerAbove(
+                VanillaGuiLayers.CHAT,
+                TheEndOfDragon.id(
+                        "rechorus_juice_overlay"
+                ),
+                (graphics, deltaTracker) ->
+                        RechorusJuiceOverlayRenderer.render(
+                                graphics
+                        )
+        );
+    }
+
+    public static void registerFluidModels(
+            RegisterFluidModelsEvent event
+    ) {
+        FluidModel.Unbaked model =
+                new FluidModel.Unbaked(
+                        new Material(
+                                TheEndOfDragon.id(
+                                        "block/rechorus_juice_still"
+                                )
+                        ),
+                        new Material(
+                                TheEndOfDragon.id(
+                                        "block/rechorus_juice_flow"
+                                )
+                        ),
+                        new Material(
+                                TheEndOfDragon.id(
+                                        "block/rechorus_juice_overlay"
+                                )
+                        ),
+                        BlockTintSources.constant(
+                                ARGB.opaque(
+                                        0xF2D84B
+                                )
+                        )
+                );
+
+        event.register(
+                model,
+                NeoForgeModFluids
+                        .RECHORUS_JUICE_SOURCE,
+                NeoForgeModFluids
+                        .RECHORUS_JUICE_FLOWING
         );
     }
 

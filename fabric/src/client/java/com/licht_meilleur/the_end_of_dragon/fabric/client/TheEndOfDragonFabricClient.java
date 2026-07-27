@@ -2,6 +2,7 @@ package com.licht_meilleur.the_end_of_dragon.fabric.client;
 
 import com.licht_meilleur.the_end_of_dragon.TheEndOfDragon;
 import com.licht_meilleur.the_end_of_dragon.client.LightOfDestructionHudRenderer;
+import com.licht_meilleur.the_end_of_dragon.client.RechorusJuiceOverlayRenderer;
 import com.licht_meilleur.the_end_of_dragon.client.TedAllyEndermanHud;
 import com.licht_meilleur.the_end_of_dragon.client.entity.enderman.TedAllyEndermanRenderer;
 import com.licht_meilleur.the_end_of_dragon.client.entity.enderman.renderer.TedElderEndermanRenderer;
@@ -17,6 +18,7 @@ import com.licht_meilleur.the_end_of_dragon.network.TedQuestClientNetwork;
 import com.licht_meilleur.the_end_of_dragon.network.TedSubmitQuestPayload;
 import com.licht_meilleur.the_end_of_dragon.registry.ModEntities;
 import com.licht_meilleur.the_end_of_dragon.registry.ModFluids;
+import com.licht_meilleur.the_end_of_dragon.world.fluid.RechorusJuiceFluid;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -30,7 +32,10 @@ import net.minecraft.client.renderer.block.FluidModel;
 import net.minecraft.client.renderer.entity.NoopRenderer;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.client.resources.model.sprite.Material;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.util.ARGB;
+import net.minecraft.world.level.material.FluidState;
 
 public final class TheEndOfDragonFabricClient implements ClientModInitializer {
 
@@ -102,6 +107,17 @@ public final class TheEndOfDragonFabricClient implements ClientModInitializer {
                         )
         );
 
+        HudElementRegistry.attachElementBefore(
+                VanillaHudElements.CHAT,
+                TheEndOfDragon.id(
+                        "rechorus_juice_overlay"
+                ),
+                (graphics, deltaTracker) ->
+                        RechorusJuiceOverlayRenderer.render(
+                                graphics
+                        )
+        );
+
         FluidRenderingRegistry.register(
                 ModFluids.RECHORUS_JUICE_SOURCE,
                 ModFluids.RECHORUS_JUICE_FLOWING,
@@ -134,6 +150,9 @@ public final class TheEndOfDragonFabricClient implements ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             LightOfDestructionHudRenderer.clientTick();
             TedAllyEndermanHud.clientTick();
+
+
+
         });
 
         TedFabricClientNetwork.init();

@@ -9,9 +9,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.food.FoodProperties;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.SpawnEggItem;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.TypedEntityData;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -319,6 +317,40 @@ public final class NeoForgeModItems {
                     )
             );
 
+    public static final DeferredHolder<Item, Item>
+            RECHORUS_JUICE_BUCKET =
+            ITEMS.register(
+                    "rechorus_juice_bucket",
+                    () -> new BucketItem(
+                            NeoForgeModFluids
+                                    .RECHORUS_JUICE_SOURCE
+                                    .get(),
+                            new Item.Properties()
+                                    .setId(
+                                            ModItems
+                                                    .RECHORUS_JUICE_BUCKET_KEY
+                                    )
+                                    .craftRemainder(
+                                            Items.BUCKET
+                                    )
+                                    .stacksTo(1)
+                    )
+            );
+
+    public static final DeferredHolder<Item, Item>
+            RECHORUS_JUICE_BOTTLE =
+            ITEMS.register(
+                    "rechorus_juice_bottle",
+                    () -> new Item(
+                            new Item.Properties()
+                                    .setId(
+                                            ModItems
+                                                    .RECHORUS_JUICE_BOTTLE_KEY
+                                    )
+                                    .stacksTo(16)
+                    )
+            );
+
     public static void register(IEventBus modBus) {
         ITEMS.register(modBus);
     }
@@ -343,7 +375,9 @@ public final class NeoForgeModItems {
                 RECHORUS_PLANT_CORE.get(),
                 RECHORUS_PLANT_SEED.get(),
                 WATER_TRANSFER_MACHINE_A.get(),
-                WATER_TRANSFER_MACHINE_B.get()
+                WATER_TRANSFER_MACHINE_B.get(),
+                RECHORUS_JUICE_BUCKET.get(),
+                RECHORUS_JUICE_BOTTLE.get()
         );
     }
 

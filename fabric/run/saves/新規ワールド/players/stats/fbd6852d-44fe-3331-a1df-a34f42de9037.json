@@ -1,0 +1,25 @@
+{
+  "stats": {
+    "minecraft:mined": {
+      "minecraft:end_stone": 2
+    },
+    "minecraft:picked_up": {
+      "minecraft:end_stone": 2
+    },
+    "minecraft:used": {
+      "minecraft:copper_pickaxe": 2,
+      "minecraft:end_stone": 2,
+      "minecraft:enderman_spawn_egg": 1
+    },
+    "minecraft:custom": {
+      "minecraft:time_since_rest": 931,
+      "minecraft:walk_one_cm": 4863,
+      "minecraft:total_world_time": 1337,
+      "minecraft:leave_game": 1,
+      "minecraft:play_time": 931,
+      "minecraft:jump": 7,
+      "minecraft:time_since_death": 931
+    }
+  },
+  "DataVersion": 4790
+}

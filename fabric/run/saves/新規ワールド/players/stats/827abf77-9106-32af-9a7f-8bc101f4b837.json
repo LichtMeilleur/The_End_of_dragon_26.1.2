@@ -1,0 +1,18 @@
+{
+  "stats": {
+    "minecraft:custom": {
+      "minecraft:time_since_rest": 681,
+      "minecraft:walk_one_cm": 2677,
+      "minecraft:total_world_time": 695,
+      "minecraft:leave_game": 1,
+      "minecraft:fly_one_cm": 566,
+      "minecraft:play_time": 681,
+      "minecraft:jump": 14,
+      "minecraft:time_since_death": 681
+    },
+    "minecraft:used": {
+      "minecraft:enderman_spawn_egg": 1
+    }
+  },
+  "DataVersion": 4790
+}

@@ -543,8 +543,10 @@ public final class ModItems {
             Item rechorusPlantCore,
             Item rechorusPlantSeed,
             Item waterTransferMachineA,
-            Item waterTransferMachineB
-    ) {
+            Item waterTransferMachineB,
+            Item rechorusJuiceBucket,
+            Item rechorusJuiceBottle
+    )  {
         THE_END_OF_DRAGON_ICON =
                 icon;
 
@@ -601,6 +603,12 @@ public final class ModItems {
 
         WATER_TRANSFER_MACHINE_B =
                 waterTransferMachineB;
+
+        RECHORUS_JUICE_BUCKET =
+                rechorusJuiceBucket;
+
+        RECHORUS_JUICE_BOTTLE =
+                rechorusJuiceBottle;
 
         TheEndOfDragon.LOGGER.info(
                 "Bound NeoForge items to common registry references"

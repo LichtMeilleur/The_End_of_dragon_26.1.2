@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "the_end_of_dragon:ender_pearl_guide_book",
+    "minecraft:ender_pearl"
+  ],
+  "result": {
+    "id": "the_end_of_dragon:true_ender_pearl",
+    "count": 1
+  }
+}

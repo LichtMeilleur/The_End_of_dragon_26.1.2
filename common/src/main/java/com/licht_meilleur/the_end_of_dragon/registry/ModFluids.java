@@ -48,12 +48,40 @@ public final class ModFluids {
 
         fabricRegistered = true;
 
+        /*
+         * Registry.registerより先にSourceとFlowingの
+         * 両インスタンスを作成し、Common参照へ代入する。
+         *
+         * これにより登録途中にgetSource()/getFlowing()が
+         * 呼ばれてもnullや誤ったfallbackを返さない。
+         */
+        RechorusJuiceFluid.Source source =
+                new RechorusJuiceFluid.Source(
+                        () -> RECHORUS_JUICE_SOURCE,
+                        () -> RECHORUS_JUICE_FLOWING
+                );
+
+        RechorusJuiceFluid.Flowing flowing =
+                new RechorusJuiceFluid.Flowing(
+                        () -> RECHORUS_JUICE_SOURCE,
+                        () -> RECHORUS_JUICE_FLOWING
+                );
+
+        /*
+         * 登録処理より先に相互参照を成立させる。
+         */
+        RECHORUS_JUICE_SOURCE =
+                source;
+
+        RECHORUS_JUICE_FLOWING =
+                flowing;
+
         RECHORUS_JUICE_SOURCE =
                 Registry.register(
                         BuiltInRegistries.FLUID,
                         RECHORUS_JUICE_SOURCE_KEY
                                 .identifier(),
-                        new RechorusJuiceFluid.Source()
+                        source
                 );
 
         RECHORUS_JUICE_FLOWING =
@@ -61,10 +89,8 @@ public final class ModFluids {
                         BuiltInRegistries.FLUID,
                         RECHORUS_JUICE_FLOWING_KEY
                                 .identifier(),
-                        new RechorusJuiceFluid.Flowing()
+                        flowing
                 );
-
-
 
         TheEndOfDragon.LOGGER.info(
                 "Registered Rechorus Juice fluids for Fabric"

@@ -7,6 +7,7 @@
 	"authors": [
 		"LichtMeilleur"
 	],
+
 	"icon": "assets/the_end_of_dragon/icon.png",
 	"license": "ARR",
 	"environment": "*",
@@ -18,10 +19,20 @@
 			"com.licht_meilleur.the_end_of_dragon.fabric.client.TheEndOfDragonFabricClient"
 		]
 	},
+
+	"mixins": [
+		"the_end_of_dragon.mixins.json",
+		{
+			"config": "the_end_of_dragon.client.mixins.json",
+			"environment": "client"
+		}
+	],
+
 	"depends": {
 		"fabricloader": ">=0.18.6",
 		"minecraft": "~26.1.2",
 		"java": ">=25",
 		"fabric-api": "*"
 	}
+
 }

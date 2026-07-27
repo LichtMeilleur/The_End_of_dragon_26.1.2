@@ -1,6 +1,79 @@
 {
   "itemGroup.the_end_of_dragon": "The End Of Dragon",
+
   "boss.the_end_of_dragon.the_end_of_dragon": "The End of Dragon",
-  "item.the_end_of_dragon.the_end_piece": "The End Piece",
-  "item.the_end_of_dragon.the_end_of_dragon_spawn_egg": "The End of Dragon Spawn Egg"
+  "entity.the_end_of_dragon.the_end_of_dragon": "The End of Dragon",
+  "entity.the_end_of_dragon.the_end_of_dragon_display": "The End of Dragon",
+  "entity.the_end_of_dragon.the_end_of_dragon_collision": "The End of Dragon",
+
+  "item.the_end_of_dragon.the_end_piece": "End Fragment",
+  "item.the_end_of_dragon.the_end_of_dragon_spawn_egg": "The End of Dragon Spawn Egg",
+  "item.the_end_of_dragon.enderman_village_gateway": "Gateway to Enderman Village",
+
+  "item.the_end_of_dragon.ender_pearl_guide_book": "Ender Pearl Guide",
+  "item.the_end_of_dragon.ender_pearl_application_book": "Ender Pearl Application",
+  "item.the_end_of_dragon.ender_pearl_advanced_book": "Ender Pearl Advanced Guide",
+  "item.the_end_of_dragon.ender_pearl_mastery_book": "Ender Pearl Mastery",
+  "item.the_end_of_dragon.ender_pearl_secret_book": "Ender Pearl Secret",
+
+  "item.the_end_of_dragon.true_ender_pearl": "True Ender Pearl",
+
+  "tooltip.the_end_of_dragon.true_ender_pearl.level": "Rank %s",
+  "tooltip.the_end_of_dragon.true_ender_pearl.unlocked": "Abilities",
+
+  "tooltip.the_end_of_dragon.true_ender_pearl.ability.teleport": "Teleport where you look",
+  "tooltip.the_end_of_dragon.true_ender_pearl.ability.offhand": "Can be used from off-hand",
+  "tooltip.the_end_of_dragon.true_ender_pearl.ability.carry_players": "Sneak to teleport nearby allies",
+  "tooltip.the_end_of_dragon.true_ender_pearl.ability.no_fall_damage": "Negates fall damage",
+  "tooltip.the_end_of_dragon.true_ender_pearl.ability.no_cooldown": "No cooldown",
+
+  "message.the_end_of_dragon.ally_enderman.help": "H...Help...",
+  "message.the_end_of_dragon.ally_enderman.detected": "A wounded Enderman is calling for help.",
+  "message.the_end_of_dragon.ally_enderman.feed": "Give it food to help it recover.",
+  "message.the_end_of_dragon.ally_enderman.nearby": "A faint cry for help can be heard nearby...",
+  "message.the_end_of_dragon.ally_faint_voice": "You hear a faint voice...",
+  "message.the_end_of_dragon.ally_enderman.request_food": "<Enderman> Food...Please...",
+  "message.the_end_of_dragon.ally_enderman.food_received": "<Enderman> Thank...You...",
+  "message.the_end_of_dragon.ally_enderman.combat_supply": "<Enderman> Take...This...",
+
+  "entity.the_end_of_dragon.ally_elder_enderman": "Enderman Elder",
+  "message.the_end_of_dragon.elder.not_ready": "<Elder> Not...Time...Yet...",
+
+  "entity.the_end_of_dragon.ally_tech_enderman": "Enderman Technician",
+  "message.the_end_of_dragon.technician.not_ready": "<Technician> Preparing...Come...Later...",
+
+  "message.the_end_of_dragon.technician.locked": "Talk...To...Elder...",
+  "message.the_end_of_dragon.technician.preparing": "<Technician> Preparing...Come...Later...",
+
+  "message.the_end_of_dragon.quest.submit_hint": "Sneak and right-click to submit the quest.",
+
+  "message.the_end_of_dragon.quest.submit_hint": "Use the request letter to submit or check the quest.",
+
+  "quest.the_end_of_dragon.water_transfer.title": "Develop Water Transfer",
+  "quest.the_end_of_dragon.water_transfer.description": "Water...Dangerous...For Us. We Need...Safe Water.\nWant Machine...Bring Water From Your World.\nPlease...Collect Materials.",
+
+  "quest.the_end_of_dragon.rechorus_melon.title": "Prototype Rechorus Melon",
+  "quest.the_end_of_dragon.rechorus_melon.description": "Want Study...Big Green Fruit From Your World.\nNeed Chorus Fruit...And Seeds From Green Fruit.",
+
+  "quest.the_end_of_dragon.rechorus_seed.title": "Successful Seed",
+  "quest.the_end_of_dragon.rechorus_seed.description": "These...Prototype Seeds.\nPlease Grow Them...In Your World.\nIf Strange Fruit Grows...Bring Its Seeds.",
+
+  "quest.the_end_of_dragon.rechorus_plant.title": "Prototype Rechorus Plant",
+  "quest.the_end_of_dragon.rechorus_plant.description": "Rechorus Melon...Not Good Enough. Makes Safe Water...But Not Much.\nNeed Tree...That Drinks Much Water. Please Find Tree...Growing In Water.",
+
+  "quest.the_end_of_dragon.facility.title": "Build Juice-Water Facility",
+  "quest.the_end_of_dragon.facility.description": "Place Chorus Tree Core...And Transfer Machine...At Marked Places.",
+
+  "message.the_end_of_dragon.quest.none": "There are no current requests.",
+  "message.the_end_of_dragon.quest.incomplete": "The request requirements are not complete.",
+  "message.the_end_of_dragon.quest.completed": "Completed: %s",
+  "message.the_end_of_dragon.quest.ready": "The requirements are complete.",
+  "message.the_end_of_dragon.quest.not_ready": "The requirements are not complete.",
+
+  "gui.the_end_of_dragon.quest.submit": "Submit",
+  "gui.the_end_of_dragon.quest.check": "Check",
+  "gui.the_end_of_dragon.quest.accept": "Accept",
+
+  "gui.the_end_of_dragon.quest_list.title": "Request List",
+  "gui.the_end_of_dragon.quest_list.empty": "There are no current requests."
 }

@@ -1,6 +1,7 @@
 package com.licht_meilleur.the_end_of_dragon.neoforge.registry;
 
 import com.licht_meilleur.the_end_of_dragon.TheEndOfDragon;
+import com.licht_meilleur.the_end_of_dragon.neoforge.world.fluid.NeoForgeRechorusJuiceFluid;
 import com.licht_meilleur.the_end_of_dragon.registry.ModFluids;
 import com.licht_meilleur.the_end_of_dragon.world.fluid
         .RechorusJuiceFluid;
@@ -22,22 +23,36 @@ public final class NeoForgeModFluids {
                     TheEndOfDragon.MOD_ID
             );
 
+    private static Fluid getSourceFluid() {
+        return RECHORUS_JUICE_SOURCE.get();
+    }
+
+    private static Fluid getFlowingFluid() {
+        return RECHORUS_JUICE_FLOWING.get();
+    }
+
     public static final DeferredHolder<
             Fluid,
-            RechorusJuiceFluid.Source>
+            NeoForgeRechorusJuiceFluid.Source>
             RECHORUS_JUICE_SOURCE =
             FLUIDS.register(
                     "rechorus_juice",
-                    RechorusJuiceFluid.Source::new
+                    () -> new NeoForgeRechorusJuiceFluid.Source(
+                            NeoForgeModFluids::getSourceFluid,
+                            NeoForgeModFluids::getFlowingFluid
+                    )
             );
 
     public static final DeferredHolder<
             Fluid,
-            RechorusJuiceFluid.Flowing>
+            NeoForgeRechorusJuiceFluid.Flowing>
             RECHORUS_JUICE_FLOWING =
             FLUIDS.register(
                     "flowing_rechorus_juice",
-                    RechorusJuiceFluid.Flowing::new
+                    () -> new NeoForgeRechorusJuiceFluid.Flowing(
+                            NeoForgeModFluids::getSourceFluid,
+                            NeoForgeModFluids::getFlowingFluid
+                    )
             );
 
 

@@ -1,6 +1,92 @@
 {
   "itemGroup.the_end_of_dragon": "The End Of Dragon",
   "boss.the_end_of_dragon.the_end_of_dragon": "終焉の龍",
+  "entity.the_end_of_dragon.the_end_of_dragon": "終焉の龍",
+  "entity.the_end_of_dragon.the_end_of_dragon_display": "終焉の龍",
+  "entity.the_end_of_dragon.the_end_of_dragon_collision": "終焉の龍",
+
   "item.the_end_of_dragon.the_end_piece": "終焉の欠片",
-  "item.the_end_of_dragon.the_end_of_dragon_spawn_egg": "終焉の龍のスポーンエッグ"
+  "item.the_end_of_dragon.the_end_of_dragon_spawn_egg": "終焉の龍のスポーンエッグ",
+  "block.the_end_of_dragon.enderman_village_gateway": "エンダーマンの村への門",
+  "item.the_end_of_dragon.ender_pearl_guide_book": "エンダーパール指南書",
+  "item.the_end_of_dragon.ender_pearl_application_book": "エンダーパール応用書",
+  "item.the_end_of_dragon.ender_pearl_advanced_book": "エンダーパール上級書",
+  "item.the_end_of_dragon.ender_pearl_mastery_book": "エンダーパール熟達書",
+  "item.the_end_of_dragon.ender_pearl_secret_book": "エンダーパール極意書",
+  "block.the_end_of_dragon.water_transfer_machine_a": "水転送装置A",
+  "block.the_end_of_dragon.water_transfer_machine_b": "水転送装置B",
+  "block.the_end_of_dragon.rechorus_melon": "リコーラスメロン",
+  "item.the_end_of_dragon.rechorus_melon_cut": "リコーラスメロンの薄切り",
+  "item.the_end_of_dragon.rechorus_melon_seed": "リコーラスメロンの種",
+  "item.the_end_of_dragon.rechorus_melon_seed_prototype": "試作リコーラスメロンの種",
+  "block.the_end_of_dragon.rechorus_plant_core": "リコーラスプラントコア",
+  "item.the_end_of_dragon.rechorus_plant_seed": "試作リコーラスプラントの苗木",
+  "item.the_end_of_dragon.rechorus_juice_bucket": "リコーラス果汁水入りバケツ",
+  "item.the_end_of_dragon.rechorus_juice_bottle": "リコーラス果汁水入り瓶",
+  "block.the_end_of_dragon.rechorus_juice": "リコーラス果汁水",
+
+  "item.the_end_of_dragon.true_ender_pearl": "真のエンダーパール",
+
+  "tooltip.the_end_of_dragon.true_ender_pearl.level": "ランク %s",
+  "tooltip.the_end_of_dragon.true_ender_pearl.unlocked": "能力",
+
+  "tooltip.the_end_of_dragon.true_ender_pearl.ability.teleport": "視線方向へ瞬間移動",
+  "tooltip.the_end_of_dragon.true_ender_pearl.ability.offhand": "オフハンドから使用可能",
+  "tooltip.the_end_of_dragon.true_ender_pearl.ability.carry_players": "スニーク使用で周囲のプレイヤーも転送",
+  "tooltip.the_end_of_dragon.true_ender_pearl.ability.no_fall_damage": "落下ダメージを無効化",
+  "tooltip.the_end_of_dragon.true_ender_pearl.ability.no_cooldown": "クールタイムなし",
+
+  "message.the_end_of_dragon.ally_enderman.help": "タ……スケテ……",
+  "message.the_end_of_dragon.ally_enderman.detected": "瀕死のエンダーマンが助けを求めている",
+  "message.the_end_of_dragon.ally_enderman.feed": "食べ物を与えて回復させよう",
+  "message.the_end_of_dragon.ally_enderman.nearby": "助けを求める声が近くから聞こえる……",
+  "message.the_end_of_dragon.ally_faint_voice": "かすかな声が聞こえる……",
+  "message.the_end_of_dragon.ally_enderman.request_food": "<エンダーマン> タベモノ、クダサイ",
+  "message.the_end_of_dragon.ally_enderman.food_received": "<エンダーマン> アリガトウ",
+  "message.the_end_of_dragon.ally_enderman.combat_supply": "<エンダーマン> コレ、ツカッテ",
+
+
+  "entity.the_end_of_dragon.ally_elder_enderman": "エンダーマンの長老",
+  "message.the_end_of_dragon.elder.not_ready": "<長老> マダ、ハナスベキトキデハナイ",
+
+  "entity.the_end_of_dragon.ally_tech_enderman": "エンダーマンの技術屋",
+  "message.the_end_of_dragon.technician.not_ready": "<技術屋> ジュンビチュウ、マタキテ",
+
+
+  "message.the_end_of_dragon.technician.locked": "チョウロウ　カラ　ハナシ　キイテ。",
+  "message.the_end_of_dragon.technician.preparing": "<技術屋> ジュンビチュウ、マタキテ",
+
+  "message.the_end_of_dragon.quest.submit_hint": "スニークしながら右クリックすると、納品・達成確認を行います。",
+
+  "message.the_end_of_dragon.quest.submit_hint": "依頼書から納品・達成確認を行えます。",
+
+  "quest.the_end_of_dragon.water_transfer.title": "水転送装置の開発",
+  "quest.the_end_of_dragon.water_transfer.description": "ワタシタチ　ミズ　アブナイ。アンゼンナ　ミズ　ホシイ。\nキミタチノ　セカイカラ　ミズヲ　ハコブ　キカイ　ツクリタイ。\nソノタメノ　ソザイ　アツメテホシイ。",
+
+  "quest.the_end_of_dragon.rechorus_melon.title": "リコーラスメロンの試作",
+  "quest.the_end_of_dragon.rechorus_melon.description": "キミタチノ　セカイノ　ミドリノ　オオキナ　クダモノ　シラベタイ。\nコーラスノミ　ト　ソノ　クダモノノ　タネ　ホシイ。",
+
+  "quest.the_end_of_dragon.rechorus_seed.title": "成功した種",
+  "quest.the_end_of_dragon.rechorus_seed.description": "タメシニ　ツクッタ　タネ。\nキミタチノ　セカイデ　ソダテテホシイ。\nカワッタ　ミガ　デキタラ　タネヲ　トドケテホシイ。",
+
+  "quest.the_end_of_dragon.rechorus_plant.title": "リコーラスプラントの試作",
+  "quest.the_end_of_dragon.rechorus_plant.description": "リコーラスメロン　ダメ　ダッタ。アンゼンナ　ミズ　ツクレル。ダケド　タクサン　ツクルノ　ムカナイ。\nミズヲ　タクサン　スウ　キ　ホシイ。ミズニ　ハエル　キ　サガシテホシイ。",
+
+  "quest.the_end_of_dragon.facility.title": "果汁水施設の建設",
+  "quest.the_end_of_dragon.facility.description": "コーラスノ　キノモト　ト　トランスファーキカイヲ　シテイノ　バショニ　セッチ　シテホシイ。",
+
+  "message.the_end_of_dragon.quest.none": "現在の依頼はありません。",
+  "message.the_end_of_dragon.quest.incomplete": "まだ依頼の条件を満たしていません。",
+  "message.the_end_of_dragon.quest.completed": "%s を達成しました。",
+  "message.the_end_of_dragon.quest.ready": "必要な条件を満たしています。",
+  "message.the_end_of_dragon.quest.not_ready": "まだ必要な条件を満たしていません。",
+
+  "gui.the_end_of_dragon.quest.submit": "納品する",
+  "gui.the_end_of_dragon.quest.check": "確認する",
+  "gui.the_end_of_dragon.quest.accept": "受注する",
+
+  "gui.the_end_of_dragon.quest_list.title": "依頼一覧",
+  "gui.the_end_of_dragon.quest_list.empty": "現在の依頼はありません。"
+
+
 }

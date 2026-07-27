@@ -1,0 +1,11 @@
+{
+  "type": "the_end_of_dragon:enderman_village",
+  "generator": {
+    "type": "minecraft:noise",
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "the_end_of_dragon:enderman_village"
+    },
+    "settings": "the_end_of_dragon:enderman_village"
+  }
+}

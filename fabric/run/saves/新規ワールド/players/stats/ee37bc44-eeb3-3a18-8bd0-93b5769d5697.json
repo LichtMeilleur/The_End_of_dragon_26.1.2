@@ -1,0 +1,18 @@
+{
+  "stats": {
+    "minecraft:used": {
+      "the_end_of_dragon:rechorus_juice_bucket": 1,
+      "minecraft:enderman_spawn_egg": 13
+    },
+    "minecraft:custom": {
+      "minecraft:time_since_rest": 297,
+      "minecraft:walk_one_cm": 420,
+      "minecraft:total_world_time": 309,
+      "minecraft:leave_game": 1,
+      "minecraft:walk_on_water_one_cm": 474,
+      "minecraft:play_time": 297,
+      "minecraft:time_since_death": 297
+    }
+  },
+  "DataVersion": 4790
+}

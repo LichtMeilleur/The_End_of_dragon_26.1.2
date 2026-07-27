@@ -11,6 +11,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.material.FlowingFluid;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -299,20 +300,34 @@ public final class NeoForgeModBlocks {
             RECHORUS_JUICE =
             BLOCKS.register(
                     "rechorus_juice",
-                    () -> new LiquidBlock(
-                            NeoForgeModFluids
-                                    .RECHORUS_JUICE_SOURCE
-                                    .get(),
-                            BlockBehaviour.Properties
-                                    .ofFullCopy(
-                                            Blocks.WATER
-                                    )
-                                    .setId(
-                                            ModBlocks
-                                                    .RECHORUS_JUICE_KEY
-                                    )
-                                    .noLootTable()
-                    )
+                    () -> {
+                        FlowingFluid source =
+                                NeoForgeModFluids
+                                        .RECHORUS_JUICE_SOURCE
+                                        .get();
+
+                        TheEndOfDragon.LOGGER.info(
+                                "Creating Rechorus Juice block: sourceClass={}, getSource={}",
+                                source.getClass().getName(),
+                                source.getSource()
+                        );
+
+                        return new LiquidBlock(
+                                source,
+                                BlockBehaviour.Properties
+                                        .ofFullCopy(
+                                                Blocks.WATER
+                                        )
+                                        .setId(
+                                                ModBlocks
+                                                        .RECHORUS_JUICE_KEY
+                                        )
+                                        .noLootTable()
+                                        .lightLevel(
+                                                state -> 6
+                                        )
+                        );
+                    }
             );
 
 

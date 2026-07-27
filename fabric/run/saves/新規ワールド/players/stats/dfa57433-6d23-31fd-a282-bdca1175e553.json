@@ -1,0 +1,19 @@
+{
+  "stats": {
+    "minecraft:used": {
+      "minecraft:bucket": 1,
+      "the_end_of_dragon:rechorus_juice_bucket": 1
+    },
+    "minecraft:custom": {
+      "minecraft:time_since_rest": 1014,
+      "minecraft:walk_one_cm": 7491,
+      "minecraft:total_world_time": 1034,
+      "minecraft:leave_game": 1,
+      "minecraft:fly_one_cm": 314,
+      "minecraft:play_time": 1014,
+      "minecraft:jump": 6,
+      "minecraft:time_since_death": 1014
+    }
+  },
+  "DataVersion": 4790
+}
