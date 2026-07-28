@@ -1,7 +1,6 @@
 package com.licht_meilleur.the_end_of_dragon.mixin;
 
 import com.licht_meilleur.the_end_of_dragon.registry.ModItemTags;
-import com.licht_meilleur.the_end_of_dragon.registry.ModItems;
 import com.licht_meilleur.the_end_of_dragon.world.phase
         .TedDifferentPhaseManager;
 import net.minecraft.core.BlockPos;
@@ -35,24 +34,41 @@ public abstract class ServerPlayerGameModeUseDifferentPhaseMixin {
             BlockHitResult hitResult,
             CallbackInfoReturnable<InteractionResult> callbackInfo
     ) {
+        /*
+         * 通常位相ではバニラ処理へ一切干渉しない。
+         */
+        if (!TedDifferentPhaseManager
+                .isInDifferentPhase(player)) {
+            return;
+        }
+
+        /*
+         * 使用許可タグのアイテムは、
+         * ブロック使用経路ではなく
+         * アイテム自身のuse()を実行する。
+         */
+        if (itemStack.is(
+                ModItemTags.DIFFERENT_PHASE_USABLE
+        )) {
+            callbackInfo.setReturnValue(
+                    itemStack.use(
+                            level,
+                            player,
+                            hand
+                    )
+            );
+            return;
+        }
+
         BlockPos position =
                 hitResult.getBlockPos();
 
         BlockState blockState =
-                level.getBlockState(
-                        position
-                );
+                level.getBlockState(position);
 
-        if (itemStack.is(
-                ModItemTags.DIFFERENT_PHASE_USABLE
-        )) {
-            /*
-             * 位相関連アイテムは、
-             * ブロックを向いていても通常処理を続ける。
-             */
-            return;
-        }
-
+        /*
+         * それ以外のブロック操作・設置を禁止する。
+         */
         if (!TedDifferentPhaseManager
                 .canModifyBlock(
                         player,

@@ -204,14 +204,39 @@ public final class TedDifferentPhaseManager {
         int nextAir =
                 player.getAirSupply() - 1;
 
+        /*
+         * バニラの溺水と同様に、
+         * 酸素が-20まで達したら0へ戻して
+         * 2ダメージを与える。
+         */
+        if (nextAir <= -20) {
+            player.setAirSupply(
+                    0
+            );
+
+            player.hurtServer(
+                    player.level(),
+                    player.damageSources()
+                            .drown(),
+                    2.0F
+            );
+
+            return;
+        }
+
         player.setAirSupply(
                 nextAir
         );
 
         /*
-         * 酸素切れダメージは、
-         * DamageSourceを確認して次に追加する。
+         * 別位相中は炎上状態も解除する。
+         *
+         * ダメージだけ無効にすると、
+         * 炎の表示が残り続けるため。
          */
+        if (player.isOnFire()) {
+            player.clearFire();
+        }
     }
 
     private static void synchronize(

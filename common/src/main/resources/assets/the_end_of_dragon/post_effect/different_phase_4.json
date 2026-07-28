@@ -1,0 +1,20 @@
+{
+  "vertex_shader": "minecraft:core/screenquad",
+  "fragment_shader": "minecraft:post/invert",
+  "inputs": [
+    {
+      "sampler_name": "In",
+      "target": "minecraft:main"
+    }
+  ],
+  "output": "minecraft:main",
+  "uniforms": {
+    "InvertConfig": [
+      {
+        "name": "InverseAmount",
+        "type": "float",
+        "value": 1.0
+      }
+    ]
+  }
+}
