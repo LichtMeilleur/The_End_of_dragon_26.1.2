@@ -38,7 +38,7 @@ public final class RechorusIrrigationHelper {
                  z <= HORIZONTAL_RANGE;
                  z++) {
 
-                for (int y = -VERTICAL_RANGE;
+                for (int y = 0;
                      y <= VERTICAL_RANGE;
                      y++) {
 

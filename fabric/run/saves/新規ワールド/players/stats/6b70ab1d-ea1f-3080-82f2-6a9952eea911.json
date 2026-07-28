@@ -1,0 +1,20 @@
+{
+  "stats": {
+    "minecraft:custom": {
+      "minecraft:sprint_one_cm": 57,
+      "minecraft:time_since_rest": 2685,
+      "minecraft:walk_one_cm": 19122,
+      "minecraft:total_world_time": 2696,
+      "minecraft:leave_game": 1,
+      "minecraft:play_time": 2685,
+      "minecraft:jump": 3,
+      "minecraft:time_since_death": 2685
+    },
+    "minecraft:used": {
+      "minecraft:bone_meal": 16,
+      "the_end_of_dragon:rechorus_melon_seed_prototype": 2,
+      "the_end_of_dragon:rechorus_melon_seed": 5
+    }
+  },
+  "DataVersion": 4790
+}

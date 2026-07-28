@@ -1,0 +1,48 @@
+{
+  "stats": {
+    "minecraft:picked_up": {
+      "minecraft:carrot": 8,
+      "minecraft:dirt": 3,
+      "minecraft:stick": 2,
+      "minecraft:melon_slice": 10
+    },
+    "minecraft:mined": {
+      "minecraft:melon": 1,
+      "minecraft:grass_block": 3,
+      "minecraft:carrots": 2,
+      "minecraft:spruce_leaves": 10
+    },
+    "minecraft:used": {
+      "minecraft:water_bucket": 1,
+      "minecraft:wooden_hoe": 14,
+      "minecraft:bone_meal": 41,
+      "minecraft:carrot": 69,
+      "the_end_of_dragon:rechorus_melon_seed_prototype": 2,
+      "the_end_of_dragon:rechorus_melon_seed": 3,
+      "the_end_of_dragon:rechorus_juice_bucket": 1,
+      "minecraft:melon_seeds": 6,
+      "minecraft:torch": 4,
+      "minecraft:melon_slice": 2,
+      "minecraft:dirt": 27
+    },
+    "minecraft:dropped": {
+      "minecraft:melon_slice": 4
+    },
+    "minecraft:custom": {
+      "minecraft:time_since_rest": 19213,
+      "minecraft:walk_one_cm": 78696,
+      "minecraft:leave_game": 1,
+      "minecraft:damage_taken": 490,
+      "minecraft:play_time": 19213,
+      "minecraft:jump": 337,
+      "minecraft:time_since_death": 19213,
+      "minecraft:drop": 4,
+      "minecraft:fall_one_cm": 9600,
+      "minecraft:swim_one_cm": 267,
+      "minecraft:total_world_time": 19438,
+      "minecraft:fly_one_cm": 20965,
+      "minecraft:sneak_time": 34
+    }
+  },
+  "DataVersion": 4790
+}

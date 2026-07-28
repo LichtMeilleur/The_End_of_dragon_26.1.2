@@ -1,6 +1,7 @@
 package com.licht_meilleur.the_end_of_dragon.neoforge.client.network;
 
 import com.licht_meilleur.the_end_of_dragon.client.TedWaterTransferClientHandler;
+import com.licht_meilleur.the_end_of_dragon.client.phase.TedDifferentPhaseClientState;
 import com.licht_meilleur.the_end_of_dragon.client.quest
         .TedVillageQuestClientHandler;
 import com.licht_meilleur.the_end_of_dragon.client.sound
@@ -29,6 +30,17 @@ public final class TedNeoForgeClientNetwork {
                         TedBgmManager.stop();
                     }
                 }
+        );
+
+        event.register(
+                TedDifferentPhaseSyncPayload.TYPE,
+                (payload, context) ->
+                        TedDifferentPhaseClientState
+                                .update(
+                                        payload.playerId(),
+                                        payload.persistent(),
+                                        payload.temporaryTicks()
+                                )
         );
 
         event.register(

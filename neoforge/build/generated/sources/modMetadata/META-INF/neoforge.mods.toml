@@ -33,3 +33,6 @@ side="BOTH"
 
 [[mixins]]
 config = "the_end_of_dragon.mixins.json"
+
+[[mixins]]
+config = "the_end_of_dragon.client.mixins.json"

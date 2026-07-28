@@ -16,6 +16,7 @@ import com.licht_meilleur.the_end_of_dragon.world.block.entity.RechorusPlantCore
 import com.licht_meilleur.the_end_of_dragon.world.block.entity.WaterTransferMachineABlockEntity;
 import com.licht_meilleur.the_end_of_dragon.world.block.entity.WaterTransferMachineBBlockEntity;
 import com.licht_meilleur.the_end_of_dragon.world.enderman.TedEndermanFriendship;
+import com.licht_meilleur.the_end_of_dragon.world.phase.TedDifferentPhaseManager;
 import com.licht_meilleur.the_end_of_dragon.world.village.*;
 import com.licht_meilleur.the_end_of_dragon.world.village.quest.TedVillageQuestRegistry;
 import net.fabricmc.api.ModInitializer;
@@ -28,6 +29,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.monster.EnderMan;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -140,6 +142,16 @@ public final class TheEndOfDragonFabric implements ModInitializer {
                 server -> {
                     for (ServerLevel level :
                             server.getAllLevels()) {
+
+
+                        for (ServerPlayer player :
+                                level.players()) {
+
+                            TedDifferentPhaseManager.serverTick(
+                                    player
+                            );
+                        }
+
 
                         TedVillageGatewayManager.tick(
                                 level

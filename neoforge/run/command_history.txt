@@ -6,3 +6,7 @@
 /gamemode creative
 /ted bow
 /ted_anim light
+/gamerule random_tick_speed 100
+/gamemode survival
+/gamemode creative
+/gamemode survival

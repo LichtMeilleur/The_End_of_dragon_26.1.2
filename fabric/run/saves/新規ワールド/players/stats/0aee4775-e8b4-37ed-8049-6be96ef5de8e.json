@@ -1,0 +1,22 @@
+{
+  "stats": {
+    "minecraft:custom": {
+      "minecraft:time_since_rest": 3126,
+      "minecraft:walk_one_cm": 12030,
+      "minecraft:total_world_time": 3149,
+      "minecraft:leave_game": 1,
+      "minecraft:play_time": 3126,
+      "minecraft:jump": 1,
+      "minecraft:time_since_death": 3126
+    },
+    "minecraft:used": {
+      "minecraft:water_bucket": 3,
+      "minecraft:wooden_hoe": 3,
+      "the_end_of_dragon:rechorus_melon_seed_prototype": 1,
+      "the_end_of_dragon:rechorus_melon_seed": 1,
+      "the_end_of_dragon:rechorus_juice_bucket": 2,
+      "minecraft:dirt": 4
+    }
+  },
+  "DataVersion": 4790
+}

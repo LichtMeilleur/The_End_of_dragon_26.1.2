@@ -1,8 +1,7 @@
 package com.licht_meilleur.the_end_of_dragon.neoforge.registry;
 
 import com.licht_meilleur.the_end_of_dragon.TheEndOfDragon;
-import com.licht_meilleur.the_end_of_dragon.item.TedDebugBowItem;
-import com.licht_meilleur.the_end_of_dragon.item.TrueEnderPearlItem;
+import com.licht_meilleur.the_end_of_dragon.item.*;
 import com.licht_meilleur.the_end_of_dragon.registry.ModDataComponents;
 import com.licht_meilleur.the_end_of_dragon.registry.ModItems;
 import net.minecraft.core.component.DataComponents;
@@ -209,11 +208,13 @@ public final class NeoForgeModItems {
                     )
             );
 
-    public static final DeferredHolder<Item, Item>
+    public static final DeferredHolder<Item,
+            RechorusMelonCutItem>
+
             RECHORUS_MELON_CUT =
             ITEMS.register(
                     "rechorus_melon_cut",
-                    () -> new Item(
+                    () -> new RechorusMelonCutItem(
                             new Item.Properties()
                                     .setId(
                                             ModItems.RECHORUS_MELON_CUT_KEY
@@ -231,10 +232,14 @@ public final class NeoForgeModItems {
             RECHORUS_MELON_SEED =
             ITEMS.register(
                     "rechorus_melon_seed",
-                    () -> new Item(
+                    () -> new BlockItem(
+                            NeoForgeModBlocks
+                                    .RECHORUS_MELON_STEM
+                                    .get(),
                             new Item.Properties()
                                     .setId(
-                                            ModItems.RECHORUS_MELON_SEED_KEY
+                                            ModItems
+                                                    .RECHORUS_MELON_SEED_KEY
                                     )
                     )
             );
@@ -243,7 +248,10 @@ public final class NeoForgeModItems {
             RECHORUS_MELON_SEED_PROTOTYPE =
             ITEMS.register(
                     "rechorus_melon_seed_prototype",
-                    () -> new Item(
+                    () -> new BlockItem(
+                            NeoForgeModBlocks
+                                    .RECHORUS_MELON_STEM_PROTOTYPE
+                                    .get(),
                             new Item.Properties()
                                     .setId(
                                             ModItems
@@ -337,18 +345,39 @@ public final class NeoForgeModItems {
                     )
             );
 
-    public static final DeferredHolder<Item, Item>
+    public static final DeferredHolder<
+            Item,
+            RechorusJuiceBottleItem>
             RECHORUS_JUICE_BOTTLE =
             ITEMS.register(
                     "rechorus_juice_bottle",
-                    () -> new Item(
-                            new Item.Properties()
-                                    .setId(
-                                            ModItems
-                                                    .RECHORUS_JUICE_BOTTLE_KEY
-                                    )
-                                    .stacksTo(16)
-                    )
+                    () ->
+                            new RechorusJuiceBottleItem(
+                                    new Item.Properties()
+                                            .setId(
+                                                    ModItems
+                                                            .RECHORUS_JUICE_BOTTLE_KEY
+                                            )
+                                            .stacksTo(16)
+                            )
+            );
+
+    public static final DeferredHolder<
+            Item,
+            DifferentPhasePearlItem>
+            DIFFERENT_PHASE_PEARL =
+            ITEMS.register(
+                    "different_phase_pearl",
+                    () ->
+                            new DifferentPhasePearlItem(
+                                    new Item.Properties()
+                                            .setId(
+                                                    ModItems
+                                                            .DIFFERENT_PHASE_PEARL_KEY
+                                            )
+                                            .stacksTo(1)
+                                            .fireResistant()
+                            )
             );
 
     public static void register(IEventBus modBus) {
@@ -368,6 +397,7 @@ public final class NeoForgeModItems {
                 ENDER_PEARL_MASTERY_BOOK.get(),
                 ENDER_PEARL_SECRET_BOOK.get(),
                 TRUE_ENDER_PEARL.get(),
+                DIFFERENT_PHASE_PEARL.get(),
                 RECHORUS_MELON.get(),
                 RECHORUS_MELON_CUT.get(),
                 RECHORUS_MELON_SEED.get(),

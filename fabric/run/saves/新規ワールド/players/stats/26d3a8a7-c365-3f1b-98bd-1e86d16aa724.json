@@ -1,0 +1,31 @@
+{
+  "stats": {
+    "minecraft:used": {
+      "minecraft:lava_bucket": 9,
+      "minecraft:water_bucket": 2,
+      "minecraft:wooden_hoe": 11,
+      "minecraft:bone_meal": 18,
+      "minecraft:carrot": 4,
+      "minecraft:melon_seeds": 6,
+      "minecraft:oak_slab": 10,
+      "minecraft:andesite_slab": 5,
+      "minecraft:torch": 32,
+      "minecraft:dirt": 10,
+      "minecraft:smooth_stone_slab": 8
+    },
+    "minecraft:custom": {
+      "minecraft:time_since_rest": 20370,
+      "minecraft:walk_one_cm": 51822,
+      "minecraft:total_world_time": 20384,
+      "minecraft:leave_game": 1,
+      "minecraft:fly_one_cm": 135,
+      "minecraft:walk_on_water_one_cm": 860,
+      "minecraft:sneak_time": 22,
+      "minecraft:play_time": 20370,
+      "minecraft:damage_dealt": 80,
+      "minecraft:jump": 69,
+      "minecraft:time_since_death": 20370
+    }
+  },
+  "DataVersion": 4790
+}

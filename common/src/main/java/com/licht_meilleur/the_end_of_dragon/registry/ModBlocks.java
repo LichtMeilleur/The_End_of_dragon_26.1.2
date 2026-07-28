@@ -2,6 +2,8 @@ package com.licht_meilleur.the_end_of_dragon.registry;
 
 import com.licht_meilleur.the_end_of_dragon.TheEndOfDragon;
 import com.licht_meilleur.the_end_of_dragon.world.block.*;
+import com.licht_meilleur.the_end_of_dragon.world.crop.RechorusMelonStemBlock;
+import com.licht_meilleur.the_end_of_dragon.world.crop.RechorusSeedType;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -84,14 +86,6 @@ public final class ModBlocks {
                     )
             );
 
-    public static final ResourceKey<Block>
-            RECHORUS_MELON_STEM_KEY =
-            ResourceKey.create(
-                    Registries.BLOCK,
-                    TheEndOfDragon.id(
-                            "rechorus_melon_stem"
-                    )
-            );
 
     public static final ResourceKey<Block>
             RECHORUS_PLANT_CORE_PREVIEW_KEY =
@@ -120,6 +114,33 @@ public final class ModBlocks {
                     )
             );
 
+    public static final ResourceKey<Block>
+            RECHORUS_FARMLAND_KEY =
+            ResourceKey.create(
+                    Registries.BLOCK,
+                    TheEndOfDragon.id(
+                            "rechorus_farmland"
+                    )
+            );
+
+    public static final ResourceKey<Block>
+            RECHORUS_MELON_STEM_PROTOTYPE_KEY =
+            ResourceKey.create(
+                    Registries.BLOCK,
+                    TheEndOfDragon.id(
+                            "rechorus_melon_stem_prototype"
+                    )
+            );
+
+    public static final ResourceKey<Block>
+            RECHORUS_MELON_STEM_KEY =
+            ResourceKey.create(
+                    Registries.BLOCK,
+                    TheEndOfDragon.id(
+                            "rechorus_melon_stem"
+                    )
+            );
+
 
 
 
@@ -137,12 +158,17 @@ public final class ModBlocks {
     public static Block RECHORUS_ROOT;
     public static Block RECHORUS_PLANT;
     public static Block RECHORUS_FLOWER;
-    public static Block RECHORUS_MELON_STEM;
 
     public static Block RECHORUS_PLANT_CORE_PREVIEW;
     public static Block WATER_TRANSFER_MACHINE_B_PREVIEW;
 
     public static Block RECHORUS_JUICE;
+
+    public static Block RECHORUS_FARMLAND;
+
+    public static Block RECHORUS_MELON_STEM_PROTOTYPE;
+
+    public static Block RECHORUS_MELON_STEM;
 
 
 
@@ -210,18 +236,7 @@ public final class ModBlocks {
                         )
                 );
 
-        RECHORUS_MELON =
-                Registry.register(
-                        BuiltInRegistries.BLOCK,
-                        RECHORUS_MELON_KEY.identifier(),
-                        new Block(
-                                BlockBehaviour.Properties
-                                        .of()
-                                        .setId(RECHORUS_MELON_KEY)
-                                        .strength(1.0F)
-                                        .sound(SoundType.WOOD)
-                        )
-                );
+
 
         RECHORUS_PLANT_CORE =
                 Registry.register(
@@ -379,26 +394,7 @@ public final class ModBlocks {
                         )
                 );
 
-        RECHORUS_MELON_STEM =
-                Registry.register(
-                        BuiltInRegistries.BLOCK,
-                        RECHORUS_MELON_STEM_KEY.identifier(),
-                        new Block(
-                                BlockBehaviour.Properties
-                                        .of()
-                                        .setId(
-                                                RECHORUS_MELON_STEM_KEY
-                                        )
-                                        .strength(
-                                                0.0F
-                                        )
-                                        .sound(
-                                                SoundType.CROP
-                                        )
-                                        .noCollision()
-                                        .noOcclusion()
-                        )
-                );
+
 
         RECHORUS_JUICE =
                 Registry.register(
@@ -417,6 +413,78 @@ public final class ModBlocks {
                                         .lightLevel(
                                                 state -> 6
                                         )
+                        )
+                );
+
+        RECHORUS_FARMLAND =
+                Registry.register(
+                        BuiltInRegistries.BLOCK,
+                        RECHORUS_FARMLAND_KEY.identifier(),
+                        new RechorusFarmlandBlock(
+                                BlockBehaviour.Properties
+                                        .ofFullCopy(
+                                                Blocks.FARMLAND
+                                        )
+                                        .setId(
+                                                RECHORUS_FARMLAND_KEY
+                                        )
+                        )
+                );
+
+        RECHORUS_MELON =
+                Registry.register(
+                        BuiltInRegistries.BLOCK,
+                        RECHORUS_MELON_KEY.identifier(),
+                        new Block(
+                                BlockBehaviour.Properties
+                                        .of()
+                                        .setId(RECHORUS_MELON_KEY)
+                                        .strength(1.0F)
+                                        .sound(SoundType.WOOD)
+                        )
+                );
+
+        RECHORUS_MELON_STEM_PROTOTYPE =
+                Registry.register(
+                        BuiltInRegistries.BLOCK,
+                        RECHORUS_MELON_STEM_PROTOTYPE_KEY
+                                .identifier(),
+                        new RechorusMelonStemBlock(
+                                RechorusSeedType.PROTOTYPE,
+                                () -> ModItems
+                                        .RECHORUS_MELON_SEED_PROTOTYPE,
+                                () -> ModBlocks
+                                        .RECHORUS_MELON,
+                                BlockBehaviour.Properties
+                                        .ofFullCopy(
+                                                Blocks.MELON_STEM
+                                        )
+                                        .setId(
+                                                RECHORUS_MELON_STEM_PROTOTYPE_KEY
+                                        )
+                                        .randomTicks()
+                        )
+                );
+
+        RECHORUS_MELON_STEM =
+                Registry.register(
+                        BuiltInRegistries.BLOCK,
+                        RECHORUS_MELON_STEM_KEY
+                                .identifier(),
+                        new RechorusMelonStemBlock(
+                                RechorusSeedType.STABLE_MUTANT,
+                                () -> ModItems
+                                        .RECHORUS_MELON_SEED,
+                                () -> ModBlocks
+                                        .RECHORUS_MELON,
+                                BlockBehaviour.Properties
+                                        .ofFullCopy(
+                                                Blocks.MELON_STEM
+                                        )
+                                        .setId(
+                                                RECHORUS_MELON_STEM_KEY
+                                        )
+                                        .randomTicks()
                         )
                 );
 
@@ -441,10 +509,12 @@ public final class ModBlocks {
             Block rechorusRoot,
             Block rechorusPlant,
             Block rechorusFlower,
+            Block rechorusMelonStemPrototype,
             Block rechorusMelonStem,
             Block rechorusPlantCorePreview,
             Block waterTransferMachineBPreview,
-            Block rechorusJuice
+            Block rechorusJuice,
+            Block rechorusFarmland
 
     ) {
         {
@@ -482,11 +552,17 @@ public final class ModBlocks {
                 RECHORUS_FLOWER =
                         rechorusFlower;
 
+                RECHORUS_MELON_STEM_PROTOTYPE =
+                        rechorusMelonStemPrototype;
+
                 RECHORUS_MELON_STEM =
                         rechorusMelonStem;
 
                 RECHORUS_JUICE =
                         rechorusJuice;
+
+                RECHORUS_FARMLAND =
+                        rechorusFarmland;
 
 
                 TheEndOfDragon.LOGGER.info(

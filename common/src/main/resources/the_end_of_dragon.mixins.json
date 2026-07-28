@@ -4,8 +4,17 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "MobTargetMixin",
+    "PlayerDifferentPhaseMixin",
+    "LivingEntityDifferentPhaseMixin",
+    "EntityDifferentPhaseInteractionMixin",
+    "ServerPlayerGameModeDifferentPhaseMixin",
+    "ServerPlayerGameModeUseDifferentPhaseMixin",
+    "ItemStackDifferentPhaseMixin",
     "EntityRechorusJuiceMixin",
-    "LivingEntityRechorusJuiceMixin"
+    "LivingEntityRechorusJuiceMixin",
+    "HoeItemRechorusFarmlandMixin",
+    "CropBlockMixin",
+    "StemBlockMixin"
   ],
   "injectors": {
     "defaultRequire": 1

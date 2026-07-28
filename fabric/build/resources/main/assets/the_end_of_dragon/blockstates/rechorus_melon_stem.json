@@ -1,7 +1,115 @@
 {
-	"variants": {
-		"": {
-			"model": "the_end_of_dragon:block/rechorus_melon_stem"
+	"multipart": [
+		{
+			"when": {
+				"connected": "false",
+				"age": "0"
+			},
+			"apply": {
+				"model": "the_end_of_dragon:block/rechorus_melon_stem_growth0"
+			}
+		},
+		{
+			"when": {
+				"connected": "false",
+				"age": "1"
+			},
+			"apply": {
+				"model": "the_end_of_dragon:block/rechorus_melon_stem_growth1"
+			}
+		},
+		{
+			"when": {
+				"connected": "false",
+				"age": "2"
+			},
+			"apply": {
+				"model": "the_end_of_dragon:block/rechorus_melon_stem_growth2"
+			}
+		},
+		{
+			"when": {
+				"connected": "false",
+				"age": "3"
+			},
+			"apply": {
+				"model": "the_end_of_dragon:block/rechorus_melon_stem_growth3"
+			}
+		},
+		{
+			"when": {
+				"connected": "false",
+				"age": "4"
+			},
+			"apply": {
+				"model": "the_end_of_dragon:block/rechorus_melon_stem_growth4"
+			}
+		},
+		{
+			"when": {
+				"connected": "false",
+				"age": "5"
+			},
+			"apply": {
+				"model": "the_end_of_dragon:block/rechorus_melon_stem_growth5"
+			}
+		},
+		{
+			"when": {
+				"connected": "false",
+				"age": "6"
+			},
+			"apply": {
+				"model": "the_end_of_dragon:block/rechorus_melon_stem_growth6"
+			}
+		},
+		{
+			"when": {
+				"connected": "false",
+				"age": "7"
+			},
+			"apply": {
+				"model": "the_end_of_dragon:block/rechorus_melon_stem_growth7"
+			}
+		},
+		{
+			"when": {
+				"connected": "true",
+				"facing": "north"
+			},
+			"apply": {
+				"model": "the_end_of_dragon:block/attached_rechorus_melon_stem"
+			}
+		},
+		{
+			"when": {
+				"connected": "true",
+				"facing": "east"
+			},
+			"apply": {
+				"model": "the_end_of_dragon:block/attached_rechorus_melon_stem",
+				"y": 90
+			}
+		},
+		{
+			"when": {
+				"connected": "true",
+				"facing": "south"
+			},
+			"apply": {
+				"model": "the_end_of_dragon:block/attached_rechorus_melon_stem",
+				"y": 180
+			}
+		},
+		{
+			"when": {
+				"connected": "true",
+				"facing": "west"
+			},
+			"apply": {
+				"model": "the_end_of_dragon:block/attached_rechorus_melon_stem",
+				"y": 270
+			}
 		}
-	}
+	]
 }

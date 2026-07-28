@@ -22,6 +22,14 @@ public final class TedNeoForgeNetwork {
                         )
         );
 
+        TedDifferentPhaseNetwork.bindSender(
+                (player, payload) ->
+                        PacketDistributor.sendToPlayer(
+                                player,
+                                payload
+                        )
+        );
+
         TedNetwork.setQuestSender(
                 (player, questId, completable) ->
                         PacketDistributor.sendToPlayer(
@@ -66,6 +74,11 @@ public final class TedNeoForgeNetwork {
         registrar.playToClient(
                 TedBgmPayload.TYPE,
                 TedBgmPayload.STREAM_CODEC
+        );
+
+        registrar.playToClient(
+                TedDifferentPhaseSyncPayload.TYPE,
+                TedDifferentPhaseSyncPayload.STREAM_CODEC
         );
 
         registrar.playToClient(

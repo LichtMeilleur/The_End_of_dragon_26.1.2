@@ -1,8 +1,10 @@
 package com.licht_meilleur.the_end_of_dragon.fabric.network;
 
 import com.licht_meilleur.the_end_of_dragon.network.*;
+import com.licht_meilleur.the_end_of_dragon.world.phase.TedDifferentPhaseManager;
 import com.licht_meilleur.the_end_of_dragon.world.village.quest.TedVillageQuestManager;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 
 public final class TedFabricNetwork {
@@ -16,6 +18,21 @@ public final class TedFabricNetwork {
                         TedBgmPayload.TYPE,
                         TedBgmPayload.STREAM_CODEC
                 );
+
+        PayloadTypeRegistry.clientboundPlay()
+                .register(
+                        TedDifferentPhaseSyncPayload.TYPE,
+                        TedDifferentPhaseSyncPayload
+                                .STREAM_CODEC
+                );
+
+        TedDifferentPhaseNetwork.bindSender(
+                (player, payload) ->
+                        ServerPlayNetworking.send(
+                                player,
+                                payload
+                        )
+        );
 
         PayloadTypeRegistry.clientboundPlay()
                 .register(
@@ -93,6 +110,14 @@ public final class TedFabricNetwork {
                                                                 context.player(),
                                                                 payload
                                                         )
+                                )
+        );
+
+        ServerPlayConnectionEvents.JOIN.register(
+                (handler, sender, server) ->
+                        TedDifferentPhaseManager
+                                .synchronizeAllTo(
+                                        handler.player
                                 )
         );
     }

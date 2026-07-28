@@ -96,6 +96,9 @@ public final class ModCreativeTabs {
                             output.accept(
                                     ModItems.RECHORUS_JUICE_BOTTLE
                             );
+                            output.accept(
+                                    ModItems.DIFFERENT_PHASE_PEARL
+                            );
                         })
                         .build()
 

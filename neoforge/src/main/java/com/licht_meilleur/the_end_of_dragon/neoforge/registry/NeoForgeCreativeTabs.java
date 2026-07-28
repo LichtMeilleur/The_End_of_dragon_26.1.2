@@ -146,6 +146,12 @@ public final class NeoForgeCreativeTabs {
                                                 .RECHORUS_JUICE_BOTTLE
                                                 .get()
                                 );
+
+                                output.accept(
+                                        NeoForgeModItems
+                                                .DIFFERENT_PHASE_PEARL
+                                                .get()
+                                );
                             })
                             .build()
 

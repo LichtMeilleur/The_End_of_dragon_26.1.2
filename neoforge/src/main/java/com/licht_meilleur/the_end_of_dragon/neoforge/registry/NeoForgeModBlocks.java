@@ -2,7 +2,10 @@ package com.licht_meilleur.the_end_of_dragon.neoforge.registry;
 
 import com.licht_meilleur.the_end_of_dragon.TheEndOfDragon;
 import com.licht_meilleur.the_end_of_dragon.registry.ModBlocks;
+import com.licht_meilleur.the_end_of_dragon.registry.ModItems;
 import com.licht_meilleur.the_end_of_dragon.world.block.*;
+import com.licht_meilleur.the_end_of_dragon.world.crop.RechorusMelonStemBlock;
+import com.licht_meilleur.the_end_of_dragon.world.crop.RechorusSeedType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Item;
@@ -274,26 +277,58 @@ public final class NeoForgeModBlocks {
                     )
             );
 
-    public static final DeferredHolder<Block, Block>
+    public static final DeferredHolder<
+            Block,
+            RechorusMelonStemBlock>
+            RECHORUS_MELON_STEM_PROTOTYPE =
+            BLOCKS.register(
+                    "rechorus_melon_stem_prototype",
+                    () ->
+                            new RechorusMelonStemBlock(
+                                    RechorusSeedType.PROTOTYPE,
+                                    () ->
+                                            ModItems
+                                                    .RECHORUS_MELON_SEED_PROTOTYPE,
+                                    () ->
+                                            ModBlocks
+                                                    .RECHORUS_MELON,
+                                    BlockBehaviour.Properties
+                                            .ofFullCopy(
+                                                    Blocks.MELON_STEM
+                                            )
+                                            .setId(
+                                                    ModBlocks
+                                                            .RECHORUS_MELON_STEM_PROTOTYPE_KEY
+                                            )
+                                            .randomTicks()
+                            )
+            );
+
+    public static final DeferredHolder<
+            Block,
+            RechorusMelonStemBlock>
             RECHORUS_MELON_STEM =
             BLOCKS.register(
                     "rechorus_melon_stem",
-                    () -> new Block(
-                            BlockBehaviour.Properties
-                                    .of()
-                                    .setId(
+                    () ->
+                            new RechorusMelonStemBlock(
+                                    RechorusSeedType.STABLE_MUTANT,
+                                    () ->
+                                            ModItems
+                                                    .RECHORUS_MELON_SEED,
+                                    () ->
                                             ModBlocks
-                                                    .RECHORUS_MELON_STEM_KEY
-                                    )
-                                    .strength(
-                                            0.0F
-                                    )
-                                    .sound(
-                                            SoundType.CROP
-                                    )
-                                    .noCollision()
-                                    .noOcclusion()
-                    )
+                                                    .RECHORUS_MELON,
+                                    BlockBehaviour.Properties
+                                            .ofFullCopy(
+                                                    Blocks.MELON_STEM
+                                            )
+                                            .setId(
+                                                    ModBlocks
+                                                            .RECHORUS_MELON_STEM_KEY
+                                            )
+                                            .randomTicks()
+                            )
             );
 
     public static final DeferredHolder<Block, LiquidBlock>
@@ -330,6 +365,24 @@ public final class NeoForgeModBlocks {
                     }
             );
 
+    public static final DeferredHolder<
+            Block,
+            RechorusFarmlandBlock>
+            RECHORUS_FARMLAND =
+            BLOCKS.register(
+                    "rechorus_farmland",
+                    () -> new RechorusFarmlandBlock(
+                            BlockBehaviour.Properties
+                                    .ofFullCopy(
+                                            Blocks.FARMLAND
+                                    )
+                                    .setId(
+                                            ModBlocks
+                                                    .RECHORUS_FARMLAND_KEY
+                                    )
+                    )
+            );
+
 
 
 
@@ -352,12 +405,12 @@ public final class NeoForgeModBlocks {
                 RECHORUS_ROOT.get(),
                 RECHORUS_PLANT.get(),
                 RECHORUS_FLOWER.get(),
+                RECHORUS_MELON_STEM_PROTOTYPE.get(),
                 RECHORUS_MELON_STEM.get(),
                 RECHORUS_PLANT_CORE_PREVIEW.get(),
                 WATER_TRANSFER_MACHINE_B_PREVIEW.get(),
-                RECHORUS_JUICE.get()
-
-
+                RECHORUS_JUICE.get(),
+                RECHORUS_FARMLAND.get()
         );
     }
 

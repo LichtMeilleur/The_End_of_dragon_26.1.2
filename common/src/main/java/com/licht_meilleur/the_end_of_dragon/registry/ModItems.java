@@ -1,8 +1,7 @@
 package com.licht_meilleur.the_end_of_dragon.registry;
 
 import com.licht_meilleur.the_end_of_dragon.TheEndOfDragon;
-import com.licht_meilleur.the_end_of_dragon.item.TedDebugBowItem;
-import com.licht_meilleur.the_end_of_dragon.item.TrueEnderPearlItem;
+import com.licht_meilleur.the_end_of_dragon.item.*;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -168,6 +167,15 @@ public final class ModItems {
                     )
             );
 
+    public static final ResourceKey<Item>
+            DIFFERENT_PHASE_PEARL_KEY =
+            ResourceKey.create(
+                    Registries.ITEM,
+                    TheEndOfDragon.id(
+                            "different_phase_pearl"
+                    )
+            );
+
     public static Item THE_END_OF_DRAGON_ICON;
     public static Item THE_END_OF_DRAGON_SPAWN_EGG;
     public static Item THE_END_PIECE;
@@ -195,6 +203,8 @@ public final class ModItems {
 
     public static Item RECHORUS_JUICE_BUCKET;
     public static Item RECHORUS_JUICE_BOTTLE;
+
+    public static Item DIFFERENT_PHASE_PEARL;
 
     private static boolean fabricRegistered = false;
 
@@ -401,13 +411,17 @@ public final class ModItems {
                 Registry.register(
                         BuiltInRegistries.ITEM,
                         RECHORUS_MELON_CUT_KEY.identifier(),
-                        new Item(
+                        new RechorusMelonCutItem(
                                 new Item.Properties()
-                                        .setId(RECHORUS_MELON_CUT_KEY)
+                                        .setId(
+                                                RECHORUS_MELON_CUT_KEY
+                                        )
                                         .food(
                                                 new FoodProperties.Builder()
                                                         .nutrition(2)
-                                                        .saturationModifier(0.3F)
+                                                        .saturationModifier(
+                                                                0.3F
+                                                        )
                                                         .build()
                                         )
                         )
@@ -416,10 +430,15 @@ public final class ModItems {
         RECHORUS_MELON_SEED =
                 Registry.register(
                         BuiltInRegistries.ITEM,
-                        RECHORUS_MELON_SEED_KEY.identifier(),
-                        new Item(
+                        RECHORUS_MELON_SEED_KEY
+                                .identifier(),
+                        new BlockItem(
+                                ModBlocks.RECHORUS_MELON_STEM,
                                 new Item.Properties()
-                                        .setId(RECHORUS_MELON_SEED_KEY)
+                                        .setId(
+                                                RECHORUS_MELON_SEED_KEY
+                                        )
+                                        .useItemDescriptionPrefix()
                         )
                 );
 
@@ -428,11 +447,14 @@ public final class ModItems {
                         BuiltInRegistries.ITEM,
                         RECHORUS_MELON_SEED_PROTOTYPE_KEY
                                 .identifier(),
-                        new Item(
+                        new BlockItem(
+                                ModBlocks
+                                        .RECHORUS_MELON_STEM_PROTOTYPE,
                                 new Item.Properties()
                                         .setId(
                                                 RECHORUS_MELON_SEED_PROTOTYPE_KEY
                                         )
+                                        .useItemDescriptionPrefix()
                         )
                 );
 
@@ -490,8 +512,7 @@ public final class ModItems {
         RECHORUS_JUICE_BUCKET =
                 Registry.register(
                         BuiltInRegistries.ITEM,
-                        RECHORUS_JUICE_BUCKET_KEY
-                                .identifier(),
+                        RECHORUS_JUICE_BUCKET_KEY.identifier(),
                         new BucketItem(
                                 ModFluids.RECHORUS_JUICE_SOURCE,
                                 new Item.Properties()
@@ -508,14 +529,27 @@ public final class ModItems {
         RECHORUS_JUICE_BOTTLE =
                 Registry.register(
                         BuiltInRegistries.ITEM,
-                        RECHORUS_JUICE_BOTTLE_KEY
-                                .identifier(),
-                        new Item(
+                        RECHORUS_JUICE_BOTTLE_KEY.identifier(),
+                        new RechorusJuiceBottleItem(
                                 new Item.Properties()
                                         .setId(
                                                 RECHORUS_JUICE_BOTTLE_KEY
                                         )
                                         .stacksTo(16)
+                        )
+                );
+
+        DIFFERENT_PHASE_PEARL =
+                Registry.register(
+                        BuiltInRegistries.ITEM,
+                        DIFFERENT_PHASE_PEARL_KEY.identifier(),
+                        new DifferentPhasePearlItem(
+                                new Item.Properties()
+                                        .setId(
+                                                DIFFERENT_PHASE_PEARL_KEY
+                                        )
+                                        .stacksTo(1)
+                                        .fireResistant()
                         )
                 );
 
@@ -545,7 +579,8 @@ public final class ModItems {
             Item waterTransferMachineA,
             Item waterTransferMachineB,
             Item rechorusJuiceBucket,
-            Item rechorusJuiceBottle
+            Item rechorusJuiceBottle,
+            Item diffrent_phase_pearl
     )  {
         THE_END_OF_DRAGON_ICON =
                 icon;
@@ -609,6 +644,9 @@ public final class ModItems {
 
         RECHORUS_JUICE_BOTTLE =
                 rechorusJuiceBottle;
+
+        DIFFERENT_PHASE_PEARL =
+                diffrent_phase_pearl;
 
         TheEndOfDragon.LOGGER.info(
                 "Bound NeoForge items to common registry references"

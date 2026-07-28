@@ -13,9 +13,11 @@ import com.licht_meilleur.the_end_of_dragon.world.EndDragonSpawnHandler;
 import com.licht_meilleur.the_end_of_dragon.world.TedBattleController;
 import com.licht_meilleur.the_end_of_dragon.world.TedEndermanBattleHandler;
 import com.licht_meilleur.the_end_of_dragon.world.enderman.TedEndermanFriendship;
+import com.licht_meilleur.the_end_of_dragon.world.phase.TedDifferentPhaseManager;
 import com.licht_meilleur.the_end_of_dragon.world.village.*;
 import com.licht_meilleur.the_end_of_dragon.world.village.quest.TedVillageQuestRegistry;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.monster.EnderMan;
 import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.IEventBus;
@@ -27,6 +29,7 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 
 @Mod(TheEndOfDragon.MOD_ID)
 public final class TheEndOfDragonNeoForge {
@@ -158,6 +161,16 @@ public final class TheEndOfDragonNeoForge {
         for (ServerLevel level :
                 event.getServer().getAllLevels()) {
 
+
+            for (ServerPlayer player :
+                    level.players()) {
+
+                TedDifferentPhaseManager
+                        .serverTick(
+                                player
+                        );
+            }
+
             /*
              * 村ディメンション内の
              * 帰還門Bを監視・復元する。
@@ -228,6 +241,20 @@ public final class TheEndOfDragonNeoForge {
                 )) {
 
             event.setCanceled(true);
+        }
+    }
+
+    @SubscribeEvent
+    public void onPlayerLoggedIn(
+            PlayerEvent.PlayerLoggedInEvent event
+    ) {
+        if (event.getEntity()
+                instanceof ServerPlayer player) {
+
+            TedDifferentPhaseManager
+                    .synchronizeAllTo(
+                            player
+                    );
         }
     }
 }

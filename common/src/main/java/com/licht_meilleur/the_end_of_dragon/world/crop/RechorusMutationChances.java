@@ -7,11 +7,15 @@ public final class RechorusMutationChances {
             0.20F;
 
     private static final float
-            PROTOTYPE_WITH_JUICE =
+            PROTOTYPE_WITH_RECHORUS_JUICE =
             0.40F;
 
     private static final float
-            NORMAL_WITH_JUICE =
+            PROTOTYPE_WITHOUT_IRRIGATION =
+            0.0F;
+
+    private static final float
+            NORMAL_WITH_RECHORUS_JUICE =
             0.05F;
 
     private RechorusMutationChances() {
@@ -22,27 +26,26 @@ public final class RechorusMutationChances {
             RechorusIrrigationType irrigationType
     ) {
         return switch (seedType) {
-
-            case STABLE_MUTANT ->
-                    1.0F;
-
-            case PROTOTYPE ->
-                    switch (irrigationType) {
-                        case WATER ->
-                                PROTOTYPE_WITH_WATER;
-
-                        case RECHORUS_JUICE ->
-                                PROTOTYPE_WITH_JUICE;
-
-                        case NONE ->
-                                0.0F;
-                    };
-
             case NORMAL ->
                     irrigationType
                             == RechorusIrrigationType.RECHORUS_JUICE
-                            ? NORMAL_WITH_JUICE
+                            ? NORMAL_WITH_RECHORUS_JUICE
                             : 0.0F;
+
+            case PROTOTYPE ->
+                    switch (irrigationType) {
+                        case RECHORUS_JUICE ->
+                                PROTOTYPE_WITH_RECHORUS_JUICE;
+
+                        case WATER ->
+                                PROTOTYPE_WITH_WATER;
+
+                        case NONE ->
+                                PROTOTYPE_WITHOUT_IRRIGATION;
+                    };
+
+            case STABLE_MUTANT ->
+                    1.0F;
         };
     }
 }
