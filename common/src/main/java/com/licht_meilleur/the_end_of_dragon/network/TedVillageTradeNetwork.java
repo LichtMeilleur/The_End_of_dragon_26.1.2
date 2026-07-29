@@ -50,4 +50,33 @@ public final class TedVillageTradeNetwork {
                 TedOpenTradeScreenPayload payload
         );
     }
+
+    private static java.util.function.Consumer<
+            TedExecuteTradePayload
+            > executeTradeSender;
+
+    public static void bindExecuteTradeSender(
+            java.util.function.Consumer<
+                    TedExecuteTradePayload
+                    > sender
+    ) {
+        executeTradeSender =
+                java.util.Objects.requireNonNull(
+                        sender
+                );
+    }
+
+    public static void sendExecuteTrade(
+            TedExecuteTradePayload payload
+    ) {
+        if (executeTradeSender == null) {
+            throw new IllegalStateException(
+                    "Execute trade sender is not bound"
+            );
+        }
+
+        executeTradeSender.accept(
+                payload
+        );
+    }
 }

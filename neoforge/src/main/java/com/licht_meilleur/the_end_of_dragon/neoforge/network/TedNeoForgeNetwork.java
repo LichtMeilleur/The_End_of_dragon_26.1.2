@@ -1,5 +1,6 @@
 package com.licht_meilleur.the_end_of_dragon.neoforge.network;
 
+import com.licht_meilleur.the_end_of_dragon.client.TedVillageTradeClientHandler;
 import com.licht_meilleur.the_end_of_dragon.network.*;
 import com.licht_meilleur.the_end_of_dragon.world.village.quest.TedVillageQuestManager;
 import com.licht_meilleur.the_end_of_dragon.world.village.trade.TedVillageTradeManager;
@@ -136,7 +137,20 @@ public final class TedNeoForgeNetwork {
                         )
         );
 
-        registrar.playToClient(//ここが原因とかですかね？
+        registrar.playToClient(
+                TedOpenTradeScreenPayload.TYPE,
+                TedOpenTradeScreenPayload.STREAM_CODEC,
+                (payload, context) ->
+                        context.enqueueWork(
+                                () ->
+                                        TedVillageTradeClientHandler
+                                                .handleOpenScreen(
+                                                        payload
+                                                )
+                        )
+        );
+
+        registrar.playToClient(
                 TedOpenQuestListPayload.TYPE,
                 TedOpenQuestListPayload.STREAM_CODEC
         );

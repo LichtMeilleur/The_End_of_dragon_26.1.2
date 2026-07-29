@@ -1,0 +1,174 @@
+---- Minecraft Crash Report ----
+// Who set us up the TNT?
+
+Time: 2026-07-29 20:25:58
+Description: Unexpected error
+
+java.lang.IllegalArgumentException: Cannot set property IntegerProperty{name=level, clazz=class java.lang.Integer, values=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]} as it does not exist in Block{the_end_of_dragon:water_transfer_machine_b_preview}
+	at TRANSFORMER/minecraft@26.1.2/net.minecraft.world.level.block.state.StateHolder.setValue(StateHolder.java:108) ~[minecraft-patched-26.1.2.43-beta.jar:?] {}
+	at TRANSFORMER/the_end_of_dragon@1.0.1/com.licht_meilleur.the_end_of_dragon.world.fluid.RechorusJuiceFluid.createLegacyBlock(RechorusJuiceFluid.java:196) ~[main/:?] {}
+	at TRANSFORMER/minecraft@26.1.2/net.minecraft.world.level.material.FluidState.createLegacyBlock(FluidState.java:100) ~[minecraft-patched-26.1.2.43-beta.jar:?] {}
+	at TRANSFORMER/minecraft@26.1.2/net.minecraft.world.item.BucketItem.emptyContents(BucketItem.java:146) ~[minecraft-patched-26.1.2.43-beta.jar:?] {neoforge:access_transformer}
+	at TRANSFORMER/minecraft@26.1.2/net.minecraft.world.item.BucketItem.use(BucketItem.java:77) ~[minecraft-patched-26.1.2.43-beta.jar:?] {neoforge:access_transformer}
+	at TRANSFORMER/minecraft@26.1.2/net.minecraft.world.item.ItemStack.use(ItemStack.java:399) ~[minecraft-patched-26.1.2.43-beta.jar:?] {neoforge:mixin[APP:geckolib.mixins.json:common.ItemStackMixin from mod geckolib]}
+	at TRANSFORMER/minecraft@26.1.2/net.minecraft.client.multiplayer.MultiPlayerGameMode.lambda$useItem$0(MultiPlayerGameMode.java:427) ~[minecraft-patched-26.1.2.43-beta.jar:?] {}
+	at TRANSFORMER/minecraft@26.1.2/net.minecraft.client.multiplayer.MultiPlayerGameMode.startPrediction(MultiPlayerGameMode.java:309) ~[minecraft-patched-26.1.2.43-beta.jar:?] {}
+	at TRANSFORMER/minecraft@26.1.2/net.minecraft.client.multiplayer.MultiPlayerGameMode.useItem(MultiPlayerGameMode.java:415) ~[minecraft-patched-26.1.2.43-beta.jar:?] {}
+	at TRANSFORMER/minecraft@26.1.2/net.minecraft.client.Minecraft.startUseItem(Minecraft.java:1826) ~[minecraft-patched-26.1.2.43-beta.jar:?] {}
+	at TRANSFORMER/minecraft@26.1.2/net.minecraft.client.Minecraft.handleKeybinds(Minecraft.java:2102) [minecraft-patched-26.1.2.43-beta.jar:?] {}
+	at TRANSFORMER/minecraft@26.1.2/net.minecraft.client.Minecraft.tick(Minecraft.java:1905) [minecraft-patched-26.1.2.43-beta.jar:?] {}
+	at TRANSFORMER/minecraft@26.1.2/net.minecraft.client.Minecraft.runTick(Minecraft.java:1308) [minecraft-patched-26.1.2.43-beta.jar:?] {}
+	at TRANSFORMER/minecraft@26.1.2/net.minecraft.client.Minecraft.run(Minecraft.java:937) [minecraft-patched-26.1.2.43-beta.jar:?] {}
+	at TRANSFORMER/minecraft@26.1.2/net.minecraft.client.main.Main.main(Main.java:246) [minecraft-patched-26.1.2.43-beta.jar:?] {}
+	at net.neoforged.fml.startup.Client.main(Client.java:19) [loader-11.0.13.jar:11.0] {}
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104) ~[?:?] {}
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565) ~[?:?] {}
+	at net.neoforged.devlaunch.Main.main(Main.java:57) [DevLaunch-1.0.2.jar:?] {}
+
+
+A detailed walkthrough of the error, its code path and all known details is as follows:
+---------------------------------------------------------------------------------------
+
+-- Head --
+Thread: Render thread
+Stacktrace:
+	at TRANSFORMER/minecraft@26.1.2/net.minecraft.world.level.block.state.StateHolder.setValue(StateHolder.java:108) ~[minecraft-patched-26.1.2.43-beta.jar:?] {}
+	at TRANSFORMER/the_end_of_dragon@1.0.1/com.licht_meilleur.the_end_of_dragon.world.fluid.RechorusJuiceFluid.createLegacyBlock(RechorusJuiceFluid.java:196) ~[main/:?] {}
+	at TRANSFORMER/minecraft@26.1.2/net.minecraft.world.level.material.FluidState.createLegacyBlock(FluidState.java:100) ~[minecraft-patched-26.1.2.43-beta.jar:?] {}
+	at TRANSFORMER/minecraft@26.1.2/net.minecraft.world.item.BucketItem.emptyContents(BucketItem.java:146) ~[minecraft-patched-26.1.2.43-beta.jar:?] {neoforge:access_transformer}
+	at TRANSFORMER/minecraft@26.1.2/net.minecraft.world.item.BucketItem.use(BucketItem.java:77) ~[minecraft-patched-26.1.2.43-beta.jar:?] {neoforge:access_transformer}
+	at TRANSFORMER/minecraft@26.1.2/net.minecraft.world.item.ItemStack.use(ItemStack.java:399) ~[minecraft-patched-26.1.2.43-beta.jar:?] {neoforge:mixin[APP:geckolib.mixins.json:common.ItemStackMixin from mod geckolib]}
+	at TRANSFORMER/minecraft@26.1.2/net.minecraft.client.multiplayer.MultiPlayerGameMode.lambda$useItem$0(MultiPlayerGameMode.java:427) ~[minecraft-patched-26.1.2.43-beta.jar:?] {}
+	at TRANSFORMER/minecraft@26.1.2/net.minecraft.client.multiplayer.MultiPlayerGameMode.startPrediction(MultiPlayerGameMode.java:309) ~[minecraft-patched-26.1.2.43-beta.jar:?] {}
+	at TRANSFORMER/minecraft@26.1.2/net.minecraft.client.multiplayer.MultiPlayerGameMode.useItem(MultiPlayerGameMode.java:415) ~[minecraft-patched-26.1.2.43-beta.jar:?] {}
+	at TRANSFORMER/minecraft@26.1.2/net.minecraft.client.Minecraft.startUseItem(Minecraft.java:1826) ~[minecraft-patched-26.1.2.43-beta.jar:?] {}
+	at TRANSFORMER/minecraft@26.1.2/net.minecraft.client.Minecraft.handleKeybinds(Minecraft.java:2102) ~[minecraft-patched-26.1.2.43-beta.jar:?] {}
+-- Uptime --
+Details:
+	JVM uptime: 376.409s
+	Wall uptime: 370.382s
+	High-res time: 375.097s
+	Client ticks: 7364 ticks / 368.200s
+Stacktrace:
+	at TRANSFORMER/minecraft@26.1.2/net.minecraft.client.Minecraft.fillReport(Minecraft.java:2471) [minecraft-patched-26.1.2.43-beta.jar:?] {}
+	at TRANSFORMER/minecraft@26.1.2/net.minecraft.client.Minecraft.emergencySaveAndCrash(Minecraft.java:992) [minecraft-patched-26.1.2.43-beta.jar:?] {}
+	at TRANSFORMER/minecraft@26.1.2/net.minecraft.client.Minecraft.run(Minecraft.java:960) [minecraft-patched-26.1.2.43-beta.jar:?] {}
+	at TRANSFORMER/minecraft@26.1.2/net.minecraft.client.main.Main.main(Main.java:246) [minecraft-patched-26.1.2.43-beta.jar:?] {}
+	at net.neoforged.fml.startup.Client.main(Client.java:19) [loader-11.0.13.jar:11.0] {}
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104) ~[?:?] {}
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565) ~[?:?] {}
+	at net.neoforged.devlaunch.Main.main(Main.java:57) [DevLaunch-1.0.2.jar:?] {}
+
+
+-- Affected level --
+Details:
+	All players: 1 total; LocalPlayer{name=Dev, id=3, pos=(0.8705895311229204, 64.0, 44.69999998807907), mode=CREATIVE, permission=owner}
+	Chunk stats: 1521, 1057
+	Level dimension: the_end_of_dragon:enderman_village
+	Level time: 7824 game time, 7824 day time
+	Level spawn location: World: (0,85,0), Section: (at 0,5,0 in 0,5,0; chunk contains blocks 0,0,0 to 15,127,15), Region: (0,0; contains chunks 0,0 to 31,31, blocks 0,0,0 to 511,127,511)
+	Server brand: neoforge
+	Server type: Integrated singleplayer server
+	Tracked entity count: 3
+	Client weather: Raining: false, thundering: false
+
+-- Last reload --
+Details:
+	Reload number: 1
+	Reload reason: initial
+	Finished: Yes
+	Packs: vanilla, mod_resources, mod/curios, mod/geckolib, mod/the_end_of_dragon, mod/neoforge
+
+-- System Details --
+Details:
+	Minecraft Version: 26.1.2
+	Minecraft Version ID: 26.1.2
+	Operating System: Windows 11 (amd64) version 10.0
+	Java Version: 25.0.3, Oracle Corporation
+	Java VM Version: Java HotSpot(TM) 64-Bit Server VM (mixed mode, sharing), Oracle Corporation
+	Memory: 324661544 bytes (309 MiB) / 1744830464 bytes (1664 MiB) up to 17104371712 bytes (16312 MiB)
+	Memory (heap): init: 1024MiB, used: 1343MiB, committed: 1664MiB, max: 16312MiB
+	Memory (non-head): init: 007MiB, used: 219MiB, committed: 248MiB, max: 000MiB
+	CPUs: 28
+	Processor Vendor: GenuineIntel
+	Processor Name: Intel(R) Core(TM) i7-14700K
+	Identifier: Intel64 Family 6 Model 183 Stepping 1
+	Microarchitecture: Raptor Lake
+	Frequency (GHz): 3.42
+	Number of physical packages: 1
+	Number of physical CPUs: 20
+	Number of logical CPUs: 28
+	Graphics card #0 name: Intel(R) UHD Graphics 770
+	Graphics card #0 vendor: Intel Corporation
+	Graphics card #0 VRAM (MiB): 2048.00
+	Graphics card #0 deviceId: VideoController1
+	Graphics card #0 versionInfo: 32.0.101.7082
+	Graphics card #1 name: NVIDIA GeForce GTX 1650
+	Graphics card #1 vendor: NVIDIA
+	Graphics card #1 VRAM (MiB): 4096.00
+	Graphics card #1 deviceId: VideoController2
+	Graphics card #1 versionInfo: 32.0.15.9649
+	Memory slot #0 capacity (MiB): 32768.00
+	Memory slot #0 clockSpeed (GHz): 5.60
+	Memory slot #0 type: DDR5
+	Memory slot #1 capacity (MiB): 32768.00
+	Memory slot #1 clockSpeed (GHz): 5.60
+	Memory slot #1 type: DDR5
+	Virtual memory max (MiB): 88797.33
+	Virtual memory used (MiB): 50270.52
+	Swap memory total (MiB): 23552.00
+	Swap memory used (MiB): 79.68
+	Space in storage for jna.tmpdir (MiB): <path not set>
+	Space in storage for org.lwjgl.system.SharedLibraryExtractPath (MiB): <path not set>
+	Space in storage for io.netty.native.workdir (MiB): <path not set>
+	Space in storage for java.io.tmpdir (MiB): available: 396231.00, total: 952352.00
+	Space in storage for workdir (MiB): available: 878417.63, total: 3813873.00
+	JVM Flags: 0 total; 
+	Debug Flags: 0 total; 
+	Launched Version: 26.1.2.43-beta
+	Backend library: LWJGL version 3.4.1+2
+	Backend API: NVIDIA GeForce GTX 1650/PCIe/SSE2 GL version 3.3.0 NVIDIA 596.49, NVIDIA Corporation
+	Window size: 854x480
+	GFLW Platform: win32
+	Render Extensions: GL_ARB_buffer_storage, GL_KHR_debug, GL_ARB_vertex_attrib_binding, GL_ARB_direct_state_access, GL_EXT_texture_filter_anisotropic
+	GL debug messages: 
+	Is Modded: Definitely; Client brand changed to 'neoforge'; Server brand changed to 'neoforge'
+	Universe: 400921fb54442d18
+	Type: Integrated Server
+	Transparency: regular
+	Render Distance: 16/16 chunks
+	Resource Packs: vanilla, mod_resources, mod/curios (incompatible), mod/geckolib, mod/the_end_of_dragon, mod/neoforge (incompatible)
+	Sound Cache: 16394308 bytes in 74 buffers
+	Current Language: ja_jp
+	Locale: ja_JP
+	System encoding: MS932
+	File encoding: UTF-8
+	CPU: 28x Intel(R) Core(TM) i7-14700K
+	Server Running: true
+	Player Count: 1 / 8; [ServerPlayer['Dev'/3, l='ServerLevel[新規ワールド]', x=0.87, y=64.00, z=44.70]]
+	Active Data Packs: vanilla, mod_data, mod/curios (incompatible), mod/geckolib, mod/the_end_of_dragon, mod/neoforge
+	Available Data Packs: minecart_improvements, redstone_experiments, trade_rebalance, vanilla, mod/curios (incompatible), mod/geckolib, mod/neoforge, mod/the_end_of_dragon, mod_data
+	Enabled Feature Flags: minecraft:vanilla
+	World Generation: Experimental
+	World Seed: -8416747444597555239
+	Suppressed Exceptions: ~~NONE~~
+	Class Processors: 
+		00.00%: neoforge:neoforge_dev_dist_cleaner
+		00.00%: neoforge:computing_frames (marker)
+		00.00%: neoforge:runtime_enum_extender
+		04.32%: neoforge:access_transformer
+		00.39%: neoforge:mixin
+		00.00%: neoforge:simple_processors_default (marker)
+		00.01%: neoforge.coremods:field_to_getter.net.minecraft.world.level.biome.biome
+		00.01%: neoforge.coremods:field_to_getter.net.minecraft.world.level.block.flowerpotblock
+		00.01%: neoforge.coremods:field_to_getter.net.minecraft.world.level.levelgen.structure.structure
+		00.26%: neoforge.coremods:method_redirector
+	Mod List: 
+		curios-neoforge-15.0.0-beta.2+26.1.2.jar          |Curios API                    |curios                        |15.0.0-beta.2+26.1.2|Manifest: dd19b0964a615f0771b177eff668f45de5ffd9e8443937b598a5dd35c4a63136
+		geckolib-neoforge-26.1.2-5.5.2.jar                |GeckoLib 5                    |geckolib                      |5.5.2               |Manifest: e335e5392274016c0e50d52f867b8975c6ee9d21035b45e4baf853a4d2d9dd2d
+		minecraft-patched-26.1.2.43-beta.jar              |Minecraft                     |minecraft                     |26.1.2              |Manifest: NOSIGNATURE
+		neoforge-26.1.2.43-beta-universal.jar             |NeoForge                      |neoforge                      |26.1.2.43-beta      |Manifest: NOSIGNATURE
+		main                                              |the_end_of_dragon             |the_end_of_dragon             |1.0.1               |Manifest: NOSIGNATURE
+	Crash Report UUID: 638b458f-16dc-40b5-88e6-a56bdb299e21
+	FML: 11.0.13
+	NeoForge: 26.1.2.43-beta

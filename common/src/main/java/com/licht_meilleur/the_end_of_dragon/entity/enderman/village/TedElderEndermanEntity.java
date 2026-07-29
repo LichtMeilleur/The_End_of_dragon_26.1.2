@@ -43,6 +43,10 @@ public final class TedElderEndermanEntity
             return InteractionResult.PASS;
         }
 
+        this.beginMenuInteraction(
+                serverPlayer
+        );
+
         TedVillageQuestManager.openQuestList(
                 serverPlayer,
                 villageLevel,

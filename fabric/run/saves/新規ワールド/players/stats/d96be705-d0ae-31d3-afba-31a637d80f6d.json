@@ -1,0 +1,17 @@
+{
+  "stats": {
+    "minecraft:custom": {
+      "minecraft:time_since_rest": 1218,
+      "minecraft:walk_one_cm": 2379,
+      "minecraft:total_world_time": 1234,
+      "minecraft:leave_game": 1,
+      "minecraft:play_time": 1218,
+      "minecraft:time_since_death": 1218
+    },
+    "minecraft:picked_up": {
+      "minecraft:ender_pearl": 4,
+      "the_end_of_dragon:rechorus_plant_seed": 16
+    }
+  },
+  "DataVersion": 4790
+}

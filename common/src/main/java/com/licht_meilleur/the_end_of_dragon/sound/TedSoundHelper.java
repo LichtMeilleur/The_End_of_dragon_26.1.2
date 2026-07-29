@@ -162,23 +162,4 @@ public final class TedSoundHelper {
         );
     }
 
-    public static void playEventBgm(
-            ServerLevel level,
-            Entity source
-    ) {
-        /*
-         * BGMには効果音用MASTER_VOLUMEを適用しない。
-         * 音楽カテゴリなので、Minecraftの「音楽」音量で調節可能。
-         */
-        level.playSound(
-                null,
-                source.getX(),
-                source.getY(),
-                source.getZ(),
-                ModSounds.SYUUMATU_NO_LAEVATEIN,
-                SoundSource.MUSIC,
-                0.7F,
-                1.0F
-        );
-    }
 }

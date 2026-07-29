@@ -141,6 +141,21 @@ public class TheEndOfDragonCoreEntity extends Monster {
     private int airSequenceStillTicks = 0;
 
 
+    /*
+     * 被弾後の短い無敵時間。
+     * 5tick = 0.25秒。
+     */
+    private static final int
+            DAMAGE_INVULNERABILITY_TICKS =
+            5;
+
+    /*
+     * 次にダメージを受けられるEntity tick。
+     * 保存不要。
+     */
+    private int nextDamageAllowedTick = 0;
+
+
 
     private static boolean between(int age, int start, int end) {
         return age >= start && age <= end;

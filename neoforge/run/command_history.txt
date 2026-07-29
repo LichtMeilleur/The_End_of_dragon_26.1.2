@@ -13,3 +13,6 @@
 /gamemode creative
 /gamemode survival
 /gamemode creative
+/ted bow
+/ted kill
+/ted spawn

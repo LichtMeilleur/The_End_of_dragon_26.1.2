@@ -1,5 +1,10 @@
 package com.licht_meilleur.the_end_of_dragon.world.village.trade;
 
+import com.licht_meilleur.the_end_of_dragon.registry.ModItems;
+import com.licht_meilleur.the_end_of_dragon.world.village.trust.TedVillageTrustStage;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,10 +64,65 @@ public final class TedVillageTradeRegistry {
         );
     }
 
+    public static TedVillageTradeDefinition getByIndex(
+            int index
+    ) {
+        if (index < 0
+                || index >= TRADES.size()) {
+            return null;
+        }
+
+        return TRADES.values()
+                .stream()
+                .skip(index)
+                .findFirst()
+                .orElse(null);
+    }
+
+    public static int indexOf(
+            String tradeId
+    ) {
+        if (tradeId == null
+                || tradeId.isBlank()) {
+            return -1;
+        }
+
+        int index = 0;
+
+        for (String registeredId :
+                TRADES.keySet()) {
+
+            if (registeredId.equals(
+                    tradeId
+            )) {
+                return index;
+            }
+
+            index++;
+        }
+
+        return -1;
+    }
+
     /*
      * 正式な商品内容が決まったら、
      * ここからregister(...)を呼ぶ。
      */
-    public static void bootstrap() {
+
+    private static boolean bootstrapped =
+            false;
+
+    public static synchronized void bootstrap() {
+        if (bootstrapped) {
+            return;
+        }
+
+        /*
+         * 実際の商品内容はCatalog側にまとめる。
+         */
+        TedVillageTradeCatalog.registerAll();
+
+        bootstrapped =
+                true;
     }
 }

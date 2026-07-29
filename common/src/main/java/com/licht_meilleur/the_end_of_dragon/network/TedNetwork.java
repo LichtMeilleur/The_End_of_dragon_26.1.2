@@ -131,4 +131,31 @@ public final class TedNetwork {
                         TedQuestListEntryData> quests
         );
     }
+
+    private static java.util.function.Consumer<
+            TedExecuteTradePayload
+            > executeTradeSender;
+
+    public static void bindExecuteTradeSender(
+            java.util.function.Consumer<
+                    TedExecuteTradePayload
+                    > sender
+    ) {
+        executeTradeSender =
+                sender;
+    }
+
+    public static void sendExecuteTrade(
+            TedExecuteTradePayload payload
+    ) {
+        if (executeTradeSender == null) {
+            throw new IllegalStateException(
+                    "Execute trade sender is not bound"
+            );
+        }
+
+        executeTradeSender.accept(
+                payload
+        );
+    }
 }

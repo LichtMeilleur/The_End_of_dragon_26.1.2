@@ -15,6 +15,17 @@
   "item.the_end_of_dragon.ender_pearl_advanced_book": "Ender Pearl Advanced Guide",
   "item.the_end_of_dragon.ender_pearl_mastery_book": "Ender Pearl Mastery",
   "item.the_end_of_dragon.ender_pearl_secret_book": "Ender Pearl Secret",
+  "block.the_end_of_dragon.water_transfer_machine_a": "Water Transfer Machine A",
+  "block.the_end_of_dragon.water_transfer_machine_b": "Water Transfer Machine B",
+  "block.the_end_of_dragon.rechorus_melon": "Rechorus_melon",
+  "item.the_end_of_dragon.rechorus_melon_cut": "Rechorus_melon_cut",
+  "item.the_end_of_dragon.rechorus_melon_seed": "Rechorus_melon_seed",
+  "item.the_end_of_dragon.rechorus_melon_seed_prototype": "Rechorus_melon_seed_prototype",
+  "block.the_end_of_dragon.rechorus_plant_core": "Rechorus Plant_core",
+  "block.the_end_of_dragon.rechorus_plant_seed": "Rechorus Plant_seed",
+  "item.the_end_of_dragon.rechorus_juice_bucket": "Rechorus Juice_bucket",
+  "item.the_end_of_dragon.rechorus_juice_bottle": "Rechorus Juice_bottle",
+  "block.the_end_of_dragon.rechorus_juice": "Rechorus Juice",
 
   "item.the_end_of_dragon.different_phase_pearl": "Different Phase Pearl",
   "item.the_end_of_dragon.true_ender_pearl": "True Ender Pearl",
@@ -50,6 +61,8 @@
   "gui.the_end_of_dragon.village_trade": "Technician Trade",
   "gui.the_end_of_dragon.trade.input": "Trade",
   "gui.the_end_of_dragon.trade.work_bench": "Workbench",
+
+  "gui.the_end_of_dragon.trade.trust": "Trust %1$s  %2$s / %3$s",
 
   "message.the_end_of_dragon.quest.submit_hint": "Sneak and right-click to submit the quest.",
 

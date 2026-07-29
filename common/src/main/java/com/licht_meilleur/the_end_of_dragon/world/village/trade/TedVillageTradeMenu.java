@@ -1,10 +1,12 @@
 package com.licht_meilleur.the_end_of_dragon.world.village.trade;
 
+import com.licht_meilleur.the_end_of_dragon.entity.enderman.village
+        .TedTechEndermanEntity;
 import com.licht_meilleur.the_end_of_dragon.registry.ModMenus;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -15,15 +17,29 @@ import net.minecraft.world.item.ItemStack;
 public final class TedVillageTradeMenu
         extends AbstractContainerMenu {
 
-    /*
-     * 左側に表示する通常取引用スロット。
-     */
-    public static final int TRADE_SLOT_COUNT = 2;
 
-    /*
-     * 右側に表示する作業台取引用スロット。
-     */
-    public static final int WORK_BENCH_SLOT_COUNT = 4;
+    private static final int PLAYER_INVENTORY_X =
+            100;
+
+    private static final int PLAYER_INVENTORY_Y =
+            180;
+
+    private static final int PLAYER_HOTBAR_Y =
+            230;
+
+
+    public static final int TRADE_SLOT_START =
+            0;
+
+    public static final int TRADE_SLOT_COUNT =
+            2;
+
+    public static final int WORK_BENCH_SLOT_START =
+            TRADE_SLOT_START
+                    + TRADE_SLOT_COUNT;
+
+    public static final int WORK_BENCH_SLOT_COUNT =
+            4;
 
     public static final int TOTAL_INPUT_SLOT_COUNT =
             TRADE_SLOT_COUNT
@@ -33,48 +49,30 @@ public final class TedVillageTradeMenu
             TOTAL_INPUT_SLOT_COUNT;
 
     private static final int PLAYER_INVENTORY_END =
-            PLAYER_INVENTORY_START + 27;
+            PLAYER_INVENTORY_START
+                    + 27;
 
-    private static final int PLAYER_HOTBAR_START =
+    private static final int HOTBAR_START =
             PLAYER_INVENTORY_END;
 
-    private static final int PLAYER_HOTBAR_END =
-            PLAYER_HOTBAR_START + 9;
+    private static final int HOTBAR_END =
+            HOTBAR_START
+                    + 9;
 
-    private final Container inputContainer;
+    private static final int TRADE_BUTTON_BASE =
+            1000;
 
-    private int technicianEntityId;
+    private final Container inputContainer =
+            new SimpleContainer(
+                    TOTAL_INPUT_SLOT_COUNT
+            );
 
-    /*
-     * 選択されていない状態は空文字。
-     */
-    private String selectedTradeId = "";
+    private final DataSlot technicianEntityId =
+            DataSlot.standalone();
 
-    /*
-     * サーバーからMenuを開く際に使用。
-     */
-    public TedVillageTradeMenu(
-            int containerId,
-            Inventory playerInventory,
-            int technicianEntityId
-    ) {
-        this(
-                containerId,
-                playerInventory,
-                technicianEntityId,
-                new SimpleContainer(
-                        TOTAL_INPUT_SLOT_COUNT
-                )
-        );
-    }
+    private final DataSlot selectedTradeIndex =
+            DataSlot.standalone();
 
-    /*
-     * FabricのMenuTypeがクライアント側で使用する
-     * 追加データなしのコンストラクタ。
-     *
-     * 技術者Entity IDは、Menuの同期データとして
-     * 後からサーバーから受け取る。
-     */
     public TedVillageTradeMenu(
             int containerId,
             Inventory playerInventory
@@ -84,261 +82,255 @@ public final class TedVillageTradeMenu
                 playerInventory,
                 -1
         );
-
     }
 
-    private TedVillageTradeMenu(
+    public TedVillageTradeMenu(
             int containerId,
             Inventory playerInventory,
-            int technicianEntityId,
-            Container inputContainer
+            int technicianEntityId
     ) {
         super(
                 ModMenus.TED_VILLAGE_TRADE,
                 containerId
         );
 
-        this.technicianEntityId =
-                technicianEntityId;
+        this.technicianEntityId.set(
+                technicianEntityId
+        );
 
-        this.inputContainer =
-                inputContainer;
-
-        checkContainerSize(
-                inputContainer,
-                TOTAL_INPUT_SLOT_COUNT
+        this.selectedTradeIndex.set(
+                -1
         );
 
         this.addDataSlot(
-                new DataSlot() {
-                    @Override
-                    public int get() {
-                        return TedVillageTradeMenu.this
-                                .technicianEntityId;
-                    }
-
-                    @Override
-                    public void set(int value) {
-                        TedVillageTradeMenu.this
-                                .technicianEntityId = value;
-                    }
-                }
+                this.technicianEntityId
         );
 
-        inputContainer.startOpen(
-                playerInventory.player
+        this.addDataSlot(
+                this.selectedTradeIndex
         );
 
         /*
-         * 通常取引用スロット2個。
-         *
-         * 座標は後ほど画面テクスチャに合わせて
-         * TedVillageTradeScreenと一緒に調整する。
+         * 通常交換用・縦2スロット。
          */
         this.addSlot(
-                new Slot(
-                        inputContainer,
+                new TradeInputSlot(
+                        this.inputContainer,
                         0,
-                        35,
-                        48
+                        159,
+                        22,
+                        TedVillageTradeType.NORMAL
                 )
         );
 
         this.addSlot(
-                new Slot(
-                        inputContainer,
+                new TradeInputSlot(
+                        this.inputContainer,
                         1,
-                        57,
-                        48
+                        159,
+                        47,
+                        TedVillageTradeType.NORMAL
                 )
         );
 
         /*
-         * 作業台用スロット4個。
-         * 2×2配置。
+         * 作業台用・4スロット。
          */
         this.addSlot(
-                new Slot(
-                        inputContainer,
+                new TradeInputSlot(
+                        this.inputContainer,
                         2,
-                        119,
-                        39
+                        159,
+                        18,
+                        TedVillageTradeType.WORK_BENCH
                 )
         );
 
         this.addSlot(
-                new Slot(
-                        inputContainer,
+                new TradeInputSlot(
+                        this.inputContainer,
                         3,
-                        141,
-                        39
+                        159,
+                        72,
+                        TedVillageTradeType.WORK_BENCH
                 )
         );
 
         this.addSlot(
-                new Slot(
-                        inputContainer,
+                new TradeInputSlot(
+                        this.inputContainer,
                         4,
-                        119,
-                        61
+                        106,
+                        110,
+                        TedVillageTradeType.WORK_BENCH
                 )
         );
 
         this.addSlot(
-                new Slot(
-                        inputContainer,
+                new TradeInputSlot(
+                        this.inputContainer,
                         5,
-                        141,
-                        61
+                        214,
+                        110,
+                        TedVillageTradeType.WORK_BENCH
                 )
         );
 
-        addPlayerInventory(
+        //プレイヤーインベントリ＆ホットバー
+        this.addPlayerInventory(
                 playerInventory
         );
-
-        addPlayerHotbar(
-                playerInventory
-        );
-    }
-
-
-    private void addPlayerInventory(
-            Inventory inventory
-    ) {
-        for (int row = 0; row < 3; row++) {
-            for (int column = 0;
-                 column < 9;
-                 column++) {
-
-                this.addSlot(
-                        new Slot(
-                                inventory,
-                                column
-                                        + row * 9
-                                        + 9,
-                                8 + column * 18,
-                                103 + row * 18
-                        )
-                );
-            }
-        }
-    }
-
-    private void addPlayerHotbar(
-            Inventory inventory
-    ) {
-        for (int column = 0;
-             column < 9;
-             column++) {
-
-            this.addSlot(
-                    new Slot(
-                            inventory,
-                            column,
-                            8 + column * 18,
-                            161
-                    )
-            );
-        }
-    }
-
-    public int getTechnicianEntityId() {
-        return this.technicianEntityId;
-    }
-
-    public String getSelectedTradeId() {
-        return this.selectedTradeId;
-    }
-
-    public void setSelectedTradeId(
-            String selectedTradeId
-    ) {
-        if (selectedTradeId == null) {
-            this.selectedTradeId = "";
-            return;
-        }
-
-        this.selectedTradeId =
-                selectedTradeId;
     }
 
     public Container getInputContainer() {
         return this.inputContainer;
     }
 
-    public ItemStack getInputStack(
-            int inputSlot
-    ) {
-        if (inputSlot < 0
-                || inputSlot
-                >= TOTAL_INPUT_SLOT_COUNT) {
+    public int getTechnicianEntityId() {
+        return this.technicianEntityId.get();
+    }
 
-            return ItemStack.EMPTY;
+    public int getSelectedTradeIndex() {
+        return this.selectedTradeIndex.get();
+    }
+
+    public TedVillageTradeDefinition
+    getSelectedTrade() {
+        int index =
+                this.getSelectedTradeIndex();
+
+        if (index < 0) {
+            return null;
         }
 
-        return this.inputContainer
-                .getItem(inputSlot);
+        return TedVillageTradeRegistry
+                .getByIndex(
+                        index
+                );
+    }
+
+    public TedVillageTradeType
+    getSelectedTradeType() {
+        TedVillageTradeDefinition trade =
+                this.getSelectedTrade();
+
+        return trade == null
+                ? null
+                : trade.type();
+    }
+
+    public boolean isInputSlotActive(
+            TedVillageTradeType type
+    ) {
+        return type != null
+                && type
+                == this.getSelectedTradeType();
     }
 
     /*
-     * 成立処理専用。
-     *
-     * 必要個数だけスロットから削除する。
-     * 呼び出す前に必ず全素材を検証すること。
+     * Screenで一覧をクリックした直後に、
+     * クライアント側表示を即座に切り替える。
      */
-    public void consumeInput(
-            int inputSlot,
-            int amount
+    public void selectTradeClient(
+            int tradeIndex
     ) {
-        if (inputSlot < 0
-                || inputSlot
-                >= TOTAL_INPUT_SLOT_COUNT
-                || amount <= 0) {
+        this.selectedTradeIndex.set(
+                tradeIndex
+        );
+    }
 
-            return;
-        }
-
-        this.inputContainer
-                .removeItem(
-                        inputSlot,
-                        amount
-                );
-
-        this.inputContainer
-                .setChanged();
-
-        this.broadcastChanges();
+    public static int getTradeButtonId(
+            int tradeIndex
+    ) {
+        return TRADE_BUTTON_BASE
+                + tradeIndex;
     }
 
     @Override
-    public boolean stillValid(
-            Player player
+    public boolean clickMenuButton(
+            Player player,
+            int buttonId
     ) {
-        if (player.isRemoved()
-                || !player.isAlive()) {
+        int tradeIndex =
+                buttonId
+                        - TRADE_BUTTON_BASE;
 
-            return false;
-        }
-
-        /*
-         * 技術者が消失した場合や、
-         * 離れすぎた場合はMenuを閉じる。
-         */
-        var entity =
-                player.level()
-                        .getEntity(
-                                this.technicianEntityId
+        TedVillageTradeDefinition trade =
+                TedVillageTradeRegistry
+                        .getByIndex(
+                                tradeIndex
                         );
 
-        if (entity == null
-                || entity.isRemoved()) {
-
+        if (trade == null) {
             return false;
         }
 
-        return player.distanceToSqr(entity)
-                <= 64.0D;
+        if (!player.level()
+                .isClientSide()) {
+
+            TedVillageTradeDefinition oldTrade =
+                    this.getSelectedTrade();
+
+            if (oldTrade != null
+                    && oldTrade.type()
+                    != trade.type()) {
+
+                this.returnInputRange(
+                        player,
+                        oldTrade.type()
+                );
+            }
+        }
+
+        this.selectedTradeIndex.set(
+                tradeIndex
+        );
+
+        this.broadcastChanges();
+
+        return true;
+    }
+
+    private void returnInputRange(
+            Player player,
+            TedVillageTradeType type
+    ) {
+        int start =
+                type
+                        == TedVillageTradeType.NORMAL
+                        ? TRADE_SLOT_START
+                        : WORK_BENCH_SLOT_START;
+
+        int count =
+                type.getInputSlotCount();
+
+        for (int index = start;
+             index < start + count;
+             index++) {
+
+            ItemStack stack =
+                    this.inputContainer
+                            .removeItemNoUpdate(
+                                    index
+                            );
+
+            if (stack.isEmpty()) {
+                continue;
+            }
+
+            if (player
+                    instanceof ServerPlayer serverPlayer) {
+
+                serverPlayer
+                        .getInventory()
+                        .placeItemBackInInventory(
+                                stack
+                        );
+            }
+        }
+
+        this.inputContainer
+                .setChanged();
     }
 
     @Override
@@ -346,98 +338,98 @@ public final class TedVillageTradeMenu
             Player player,
             int slotIndex
     ) {
-        if (slotIndex < 0
-                || slotIndex
-                >= this.slots.size()) {
-
-            return ItemStack.EMPTY;
-        }
-
         Slot slot =
-                this.slots.get(slotIndex);
+                this.slots.get(
+                        slotIndex
+                );
 
         if (!slot.hasItem()) {
             return ItemStack.EMPTY;
         }
 
-        ItemStack slotStack =
+        ItemStack sourceStack =
                 slot.getItem();
 
         ItemStack originalStack =
-                slotStack.copy();
+                sourceStack.copy();
 
-        /*
-         * 取引入力欄
-         * → プレイヤーインベントリ。
-         */
         if (slotIndex
                 < TOTAL_INPUT_SLOT_COUNT) {
 
             if (!this.moveItemStackTo(
-                    slotStack,
+                    sourceStack,
                     PLAYER_INVENTORY_START,
-                    PLAYER_HOTBAR_END,
+                    HOTBAR_END,
                     true
             )) {
                 return ItemStack.EMPTY;
             }
         } else {
-            /*
-             * プレイヤーインベントリ
-             * → 取引入力欄。
-             */
+            TedVillageTradeDefinition trade =
+                    this.getSelectedTrade();
+
+            if (trade == null) {
+                return ItemStack.EMPTY;
+            }
+
+            int targetStart =
+                    trade.type()
+                            == TedVillageTradeType.NORMAL
+                            ? TRADE_SLOT_START
+                            : WORK_BENCH_SLOT_START;
+
+            int targetEnd =
+                    targetStart
+                            + trade.type()
+                            .getInputSlotCount();
+
             if (!this.moveItemStackTo(
-                    slotStack,
-                    0,
-                    TOTAL_INPUT_SLOT_COUNT,
+                    sourceStack,
+                    targetStart,
+                    targetEnd,
                     false
             )) {
-                /*
-                 * メインインベントリと
-                 * ホットバーの相互移動。
-                 */
-                if (slotIndex
-                        < PLAYER_INVENTORY_END) {
-
-                    if (!this.moveItemStackTo(
-                            slotStack,
-                            PLAYER_HOTBAR_START,
-                            PLAYER_HOTBAR_END,
-                            false
-                    )) {
-                        return ItemStack.EMPTY;
-                    }
-                } else if (!this.moveItemStackTo(
-                        slotStack,
-                        PLAYER_INVENTORY_START,
-                        PLAYER_INVENTORY_END,
-                        false
-                )) {
-                    return ItemStack.EMPTY;
-                }
+                return ItemStack.EMPTY;
             }
         }
 
-        if (slotStack.isEmpty()) {
-            slot.setByPlayer(
+        if (sourceStack.isEmpty()) {
+            slot.set(
                     ItemStack.EMPTY
             );
         } else {
             slot.setChanged();
         }
 
-        if (slotStack.getCount()
+        if (sourceStack.getCount()
                 == originalStack.getCount()) {
-
             return ItemStack.EMPTY;
         }
 
         slot.onTake(
                 player,
-                slotStack
+                sourceStack
         );
 
         return originalStack;
+    }
+
+    @Override
+    public boolean stillValid(
+            Player player
+    ) {
+        Entity entity =
+                player.level()
+                        .getEntity(
+                                this.getTechnicianEntityId()
+                        );
+
+        return entity
+                instanceof TedTechEndermanEntity technician
+                && technician.isAlive()
+                && player.distanceToSqr(
+                technician
+        ) <= 64.0D;
     }
 
     @Override
@@ -446,20 +438,129 @@ public final class TedVillageTradeMenu
     ) {
         super.removed(player);
 
-        this.inputContainer.stopOpen(
-                player
+        if (!(player
+                instanceof ServerPlayer serverPlayer)) {
+            return;
+        }
+
+        /*
+         * 取引スロットに残ったアイテムを返す。
+         */
+        this.clearContainer(
+                serverPlayer,
+                this.inputContainer
         );
 
         /*
-         * Menuを閉じた際、投入された素材を返却する。
-         *
-         * clearContainerはプレイヤーが生存中なら
-         * インベントリへ戻し、入らなければ足元へ落とす。
+         * DataSlotから実際のEntity IDを取得する。
          */
-        if (!player.level().isClientSide()) {
-            this.clearContainer(
-                    player,
-                    this.inputContainer
+        Entity entity =
+                serverPlayer.level()
+                        .getEntity(
+                                this.technicianEntityId.get()
+                        );
+
+        if (entity
+                instanceof TedTechEndermanEntity technician) {
+
+            technician.endMenuInteraction(
+                    serverPlayer
+            );
+        }
+    }
+
+    private final class TradeInputSlot
+            extends Slot {
+
+        private final TedVillageTradeType type;
+
+        private TradeInputSlot(
+                Container container,
+                int slot,
+                int x,
+                int y,
+                TedVillageTradeType type
+        ) {
+            super(
+                    container,
+                    slot,
+                    x,
+                    y
+            );
+
+            this.type =
+                    type;
+        }
+
+        @Override
+        public boolean isActive() {
+            return TedVillageTradeMenu.this
+                    .isInputSlotActive(
+                            this.type
+                    );
+        }
+
+        @Override
+        public boolean mayPlace(
+                ItemStack stack
+        ) {
+            return this.isActive();
+        }
+
+        @Override
+        public boolean mayPickup(
+                Player player
+        ) {
+            return this.isActive();
+        }
+    }
+
+
+
+    private void addPlayerInventory(
+            Inventory playerInventory
+    ) {
+        /*
+         * プレイヤーインベントリ。
+         */
+        for (int row = 0;
+             row < 3;
+             row++) {
+
+            for (int column = 0;
+                 column < 9;
+                 column++) {
+
+                this.addSlot(
+                        new Slot(
+                                playerInventory,
+                                column
+                                        + row * 9
+                                        + 9,
+                                PLAYER_INVENTORY_X
+                                        + column * 18,
+                                PLAYER_INVENTORY_Y
+                                        + row * 18
+                        )
+                );
+            }
+        }
+
+        /*
+         * ホットバー。
+         */
+        for (int column = 0;
+             column < 9;
+             column++) {
+
+            this.addSlot(
+                    new Slot(
+                            playerInventory,
+                            column,
+                            PLAYER_INVENTORY_X
+                                    + column * 18,
+                            PLAYER_HOTBAR_Y
+                    )
             );
         }
     }

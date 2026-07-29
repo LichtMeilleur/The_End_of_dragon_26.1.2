@@ -163,4 +163,6 @@ public final class TheEndOfDragonNeoForgeClient {
     ) {
         TedNeoForgeClientNetwork.registerClientPayloads(event);
     }
+
+
 }

@@ -59,6 +59,8 @@
   "gui.the_end_of_dragon.trade.input": "取引",
   "gui.the_end_of_dragon.trade.work_bench": "作業台",
 
+  "gui.the_end_of_dragon.trade.trust": "信頼度 %1$s　%2$s / %3$s",
+
   "message.the_end_of_dragon.quest.submit_hint": "依頼書から納品・達成確認を行えます。",
 
   "quest.the_end_of_dragon.water_transfer.title": "水転送装置の開発",

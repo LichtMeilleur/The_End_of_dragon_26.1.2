@@ -4,14 +4,17 @@ import com.licht_meilleur.the_end_of_dragon.network
         .TedTradeEntryData;
 import com.licht_meilleur.the_end_of_dragon.network
         .TedTradeIngredientData;
+import com.licht_meilleur.the_end_of_dragon.world.village.trust
+        .TedVillageTrustStage;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
 
 public record TedVillageTradeDefinition(
         String id,
-        int requiredTrustLevel,
-        List<ItemStack> ingredients,
+        TedVillageTradeType type,
+        TedVillageTrustStage requiredTrustStage,
+        List<TedVillageTradeIngredient> ingredients,
         ItemStack result
 ) {
 
@@ -26,45 +29,49 @@ public record TedVillageTradeDefinition(
             );
         }
 
-        requiredTrustLevel =
-                Math.max(
-                        0,
-                        requiredTrustLevel
-                );
-
-        if (ingredients == null
-                || ingredients.isEmpty()) {
+        if (type == null) {
             throw new IllegalArgumentException(
-                    "Trade must have at least one ingredient: "
+                    "Trade type must not be null: "
                             + id
             );
         }
 
-        if (ingredients.size()
-                > MAX_INGREDIENTS) {
+        if (requiredTrustStage == null) {
             throw new IllegalArgumentException(
-                    "Trade has more than "
-                            + MAX_INGREDIENTS
-                            + " ingredients: "
+                    "Trust stage must not be null: "
+                            + id
+            );
+        }
+
+        if (ingredients == null
+                || ingredients.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Trade must have ingredients: "
                             + id
             );
         }
 
         ingredients =
-                ingredients.stream()
-                        .filter(
-                                stack ->
-                                        stack != null
-                                                && !stack.isEmpty()
-                                                && stack.getCount() > 0
-                        )
-                        .map(ItemStack::copy)
-                        .toList();
+                List.copyOf(
+                        ingredients
+                );
 
-        if (ingredients.isEmpty()) {
+        if (ingredients.size()
+                > MAX_INGREDIENTS) {
             throw new IllegalArgumentException(
-                    "Trade has no valid ingredients: "
+                    "Trade has too many ingredients: "
                             + id
+            );
+        }
+
+        if (ingredients.size()
+                > type.getInputSlotCount()) {
+            throw new IllegalArgumentException(
+                    "Trade "
+                            + id
+                            + " has more ingredients than "
+                            + type
+                            + " supports"
             );
         }
 
@@ -80,11 +87,26 @@ public record TedVillageTradeDefinition(
                 result.copy();
     }
 
+    public int requiredTrustLevel() {
+        return this.requiredTrustStage
+                .getRequiredInternalLevel();
+    }
+
+    public boolean isUnlocked(
+            int currentTrustLevel
+    ) {
+        return this.requiredTrustStage
+                .isUnlocked(
+                        currentTrustLevel
+                );
+    }
+
     @Override
-    public List<ItemStack> ingredients() {
-        return this.ingredients.stream()
-                .map(ItemStack::copy)
-                .toList();
+    public List<TedVillageTradeIngredient>
+    ingredients() {
+        return List.copyOf(
+                this.ingredients
+        );
     }
 
     @Override
@@ -95,10 +117,15 @@ public record TedVillageTradeDefinition(
     public TedTradeEntryData toNetworkData() {
         return new TedTradeEntryData(
                 this.id,
-                this.requiredTrustLevel,
+                this.type,
+                this.requiredTrustLevel(),
                 this.ingredients.stream()
                         .map(
-                                TedTradeIngredientData::new
+                                ingredient ->
+                                        new TedTradeIngredientData(
+                                                ingredient
+                                                        .displayStack()
+                                        )
                         )
                         .toList(),
                 this.result

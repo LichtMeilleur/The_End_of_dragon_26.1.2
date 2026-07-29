@@ -139,6 +139,8 @@ public final class TedFabricNetwork {
                                 )
                 );
 
+
+
         /*
          * クエスト提出。
          */

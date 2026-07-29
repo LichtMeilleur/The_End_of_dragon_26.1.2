@@ -1,0 +1,20 @@
+{
+  "stats": {
+    "minecraft:dropped": {
+      "the_end_of_dragon:enderman_village_gateway": 1
+    },
+    "minecraft:used": {
+      "the_end_of_dragon:enderman_village_gateway": 1
+    },
+    "minecraft:custom": {
+      "minecraft:time_since_rest": 2401,
+      "minecraft:walk_one_cm": 9323,
+      "minecraft:total_world_time": 2469,
+      "minecraft:leave_game": 1,
+      "minecraft:play_time": 2401,
+      "minecraft:time_since_death": 2401,
+      "minecraft:drop": 1
+    }
+  },
+  "DataVersion": 4790
+}

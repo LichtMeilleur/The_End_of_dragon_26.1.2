@@ -20,7 +20,7 @@
   "item.the_end_of_dragon.rechorus_melon_seed": "リコーラスメロンの種",
   "item.the_end_of_dragon.rechorus_melon_seed_prototype": "試作リコーラスメロンの種",
   "block.the_end_of_dragon.rechorus_plant_core": "リコーラスプラントコア",
-  "item.the_end_of_dragon.rechorus_plant_seed": "試作リコーラスプラントの苗木",
+  "block.the_end_of_dragon.rechorus_plant_seed": "試作リコーラスプラントの苗木",
   "item.the_end_of_dragon.rechorus_juice_bucket": "リコーラス果汁水入りバケツ",
   "item.the_end_of_dragon.rechorus_juice_bottle": "リコーラス果汁水入り瓶",
   "block.the_end_of_dragon.rechorus_juice": "リコーラス果汁水",
@@ -58,6 +58,8 @@
   "gui.the_end_of_dragon.village_trade": "技術屋との取引",
   "gui.the_end_of_dragon.trade.input": "取引",
   "gui.the_end_of_dragon.trade.work_bench": "作業台",
+
+  "gui.the_end_of_dragon.trade.trust": "信頼度 %1$s　%2$s / %3$s",
 
   "message.the_end_of_dragon.quest.submit_hint": "依頼書から納品・達成確認を行えます。",
 

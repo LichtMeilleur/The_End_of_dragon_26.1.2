@@ -1,6 +1,7 @@
 package com.licht_meilleur.the_end_of_dragon;
 
 import com.licht_meilleur.the_end_of_dragon.world.village.quest.TedVillageQuestRegistry;
+import com.licht_meilleur.the_end_of_dragon.world.village.trade.TedVillageTradeRegistry;
 import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +21,9 @@ public final class TheEndOfDragon {
      * ここからModEntities、ModItems、ModSoundsは呼ばない。
      */
     public static void init() {
+
+
+
 
 
         LOGGER.info(

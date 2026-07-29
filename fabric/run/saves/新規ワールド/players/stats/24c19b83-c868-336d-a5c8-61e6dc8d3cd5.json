@@ -1,0 +1,38 @@
+{
+  "stats": {
+    "minecraft:picked_up": {
+      "minecraft:ender_pearl": 5,
+      "the_end_of_dragon:the_end_piece": 1,
+      "the_end_of_dragon:enderman_village_gateway": 1
+    },
+    "minecraft:dropped": {
+      "minecraft:enchanted_golden_apple": 4
+    },
+    "minecraft:custom": {
+      "minecraft:time_since_rest": 3047,
+      "minecraft:walk_one_cm": 13889,
+      "minecraft:leave_game": 1,
+      "minecraft:mob_kills": 1,
+      "minecraft:play_time": 3047,
+      "minecraft:jump": 7,
+      "minecraft:time_since_death": 3047,
+      "minecraft:drop": 4,
+      "minecraft:sprint_one_cm": 10561,
+      "minecraft:total_world_time": 3059,
+      "minecraft:fly_one_cm": 22235,
+      "minecraft:crouch_one_cm": 95,
+      "minecraft:sneak_time": 26
+    },
+    "minecraft:killed": {
+      "minecraft:ender_dragon": 1
+    },
+    "minecraft:used": {
+      "the_end_of_dragon:the_end_of_dragon_spawn_egg": 1,
+      "minecraft:ender_eye": 12,
+      "minecraft:end_portal_frame": 12,
+      "minecraft:ender_pearl": 1,
+      "minecraft:bow": 16
+    }
+  },
+  "DataVersion": 4790
+}

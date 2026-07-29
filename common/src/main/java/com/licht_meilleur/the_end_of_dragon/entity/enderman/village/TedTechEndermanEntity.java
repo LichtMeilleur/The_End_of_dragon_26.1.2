@@ -88,7 +88,7 @@ public final class TedTechEndermanEntity
          * 解禁済みなら、
          * サーバー管理の取引Menuを開く。
          */
-        TedVillageTradeMenuOpener.open(
+        TedVillageTradeManager.open(
                 serverPlayer,
                 this
         );

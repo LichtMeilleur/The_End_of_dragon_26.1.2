@@ -1,5 +1,6 @@
 package com.licht_meilleur.the_end_of_dragon.fabric.client.network;
 
+import com.licht_meilleur.the_end_of_dragon.client.TedVillageTradeClientHandler;
 import com.licht_meilleur.the_end_of_dragon.client.TedWaterTransferClientHandler;
 import com.licht_meilleur.the_end_of_dragon.client.phase.TedDifferentPhaseClientState;
 import com.licht_meilleur.the_end_of_dragon.client.quest.TedVillageQuestClientHandler;
@@ -43,6 +44,18 @@ public final class TedFabricClientNetwork {
         );
 
         ClientPlayNetworking.registerGlobalReceiver(
+                TedOpenTradeScreenPayload.TYPE,
+                (payload, context) ->
+                        context.client().execute(
+                                () ->
+                                        TedVillageTradeClientHandler
+                                                .handleOpenScreen(
+                                                        payload
+                                                )
+                        )
+        );
+
+        ClientPlayNetworking.registerGlobalReceiver(
                 TedOpenQuestLetterPayload.TYPE,
                 (payload, context) ->
                         context.client().execute(
@@ -77,6 +90,12 @@ public final class TedFabricClientNetwork {
                                                 )
                         )
         );
+
+        TedVillageTradeNetwork
+                .bindExecuteTradeSender(
+                        ClientPlayNetworking::send
+                );
+
 
         TedQuestClientNetwork.setSubmitSender(
                 questId ->

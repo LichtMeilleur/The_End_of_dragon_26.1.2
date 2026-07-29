@@ -29,6 +29,15 @@ public abstract class LivingEntityDifferentPhaseMixin {
      * ・通常位相のEntityからの攻撃
      * ・炎、溶岩、落下、窒息、毒などの環境ダメージ
      */
+    /**
+     * 異なる位相間のダメージを禁止する。
+     *
+     * 別位相側から通常位相への攻撃と、
+     * 通常位相側から別位相への攻撃の両方を防ぐ。
+     *
+     * 別位相中の対象については、
+     * 独自酸素消費に使用する溺水ダメージだけ許可する。
+     */
     @Inject(
             method = "hurtServer",
             at = @At("HEAD"),
@@ -43,9 +52,48 @@ public abstract class LivingEntityDifferentPhaseMixin {
         LivingEntity target =
                 (LivingEntity) (Object) this;
 
+        Entity attacker =
+                damageSource.getEntity();
+
         /*
-         * 対象が別位相でなければ、
-         * バニラの処理をそのまま続行する。
+         * getEntity()は、矢などであれば通常は
+         * 発射したプレイヤーやMobを返す。
+         *
+         * 所有者が取得できない場合は、
+         * 直接ダメージを発生させたEntityを確認する。
+         */
+        if (attacker == null) {
+            attacker =
+                    damageSource.getDirectEntity();
+        }
+
+        /*
+         * 攻撃元Entityが存在し、
+         * 攻撃元と対象の位相が異なる場合は
+         * 双方向ともダメージを禁止する。
+         *
+         * これにより、
+         * ・別位相プレイヤー → 通常Mob
+         * ・通常Mob → 別位相プレイヤー
+         * の両方が無効になる。
+         */
+        if (attacker != null
+                && !TedDifferentPhaseManager.canInteract(
+                attacker,
+                target
+        )) {
+
+            callbackInfo.setReturnValue(
+                    false
+            );
+            return;
+        }
+
+        /*
+         * 対象が通常位相なら、ここから先の
+         * 環境ダメージ制御は不要。
+         *
+         * 攻撃元との位相比較はすでに上で済んでいる。
          */
         if (!TedDifferentPhaseManager
                 .isInDifferentPhase(
@@ -55,7 +103,7 @@ public abstract class LivingEntityDifferentPhaseMixin {
         }
 
         /*
-         * 位相中の酸素切れとして使用する
+         * 別位相中の酸素切れとして使用する
          * 溺水ダメージだけは許可する。
          */
         if (damageSource.is(
@@ -64,39 +112,12 @@ public abstract class LivingEntityDifferentPhaseMixin {
             return;
         }
 
-        Entity attacker =
-                damageSource.getEntity();
-
         /*
-         * 飛び道具に所有者が存在しない場合は
-         * 矢などの直接Entityを確認する。
+         * 攻撃元Entityを持たないダメージは、
+         * 炎、溶岩、落下、窒息、毒などの
+         * 環境ダメージとして無効化する。
          */
         if (attacker == null) {
-            attacker =
-                    damageSource.getDirectEntity();
-        }
-
-        /*
-         * 攻撃元Entityを持たないものは、
-         * 炎、落下、毒、窒息などの環境ダメージとして
-         * 別位相中は無効化する。
-         */
-        if (attacker == null) {
-            callbackInfo.setReturnValue(
-                    false
-            );
-            return;
-        }
-
-        /*
-         * 攻撃元と対象の位相が異なる場合も
-         * ダメージを無効化する。
-         */
-        if (!TedDifferentPhaseManager
-                .canInteract(
-                        attacker,
-                        target
-                )) {
             callbackInfo.setReturnValue(
                     false
             );

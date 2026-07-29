@@ -535,11 +535,12 @@ public final class ModBlocks {
             Block rechorusFlower,
             Block rechorusMelonStemPrototype,
             Block rechorusMelonStem,
+            Block rechorusPlantSeed,
             Block rechorusPlantCorePreview,
             Block waterTransferMachineBPreview,
             Block rechorusJuice,
-            Block rechorusFarmland,
-            Block rechorusPlantSeed
+            Block rechorusFarmland
+
 
     ) {
         {
@@ -562,11 +563,7 @@ public final class ModBlocks {
                 WATER_TRANSFER_MACHINE_B =
                         waterTransferMachineB;
 
-                RECHORUS_PLANT_CORE_PREVIEW =
-                        rechorusPlantCorePreview;
 
-                WATER_TRANSFER_MACHINE_B_PREVIEW =
-                        waterTransferMachineBPreview;
 
                 RECHORUS_ROOT =
                         rechorusRoot;
@@ -583,14 +580,22 @@ public final class ModBlocks {
                 RECHORUS_MELON_STEM =
                         rechorusMelonStem;
 
+                RECHORUS_PLANT_SEED =
+                        rechorusPlantSeed;
+
+                RECHORUS_PLANT_CORE_PREVIEW =
+                        rechorusPlantCorePreview;
+
+                WATER_TRANSFER_MACHINE_B_PREVIEW =
+                        waterTransferMachineBPreview;
+
                 RECHORUS_JUICE =
                         rechorusJuice;
 
                 RECHORUS_FARMLAND =
                         rechorusFarmland;
 
-                RECHORUS_PLANT_SEED =
-                        rechorusPlantSeed;
+
 
 
                 TheEndOfDragon.LOGGER.info(

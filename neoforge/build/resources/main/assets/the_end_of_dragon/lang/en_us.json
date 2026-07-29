@@ -62,6 +62,8 @@
   "gui.the_end_of_dragon.trade.input": "Trade",
   "gui.the_end_of_dragon.trade.work_bench": "Workbench",
 
+  "gui.the_end_of_dragon.trade.trust": "Trust %1$s  %2$s / %3$s",
+
   "message.the_end_of_dragon.quest.submit_hint": "Sneak and right-click to submit the quest.",
 
   "message.the_end_of_dragon.quest.submit_hint": "Use the request letter to submit or check the quest.",

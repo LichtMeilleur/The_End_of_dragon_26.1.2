@@ -4,9 +4,11 @@ import com.licht_meilleur.the_end_of_dragon.client.TedWaterTransferClientHandler
 import com.licht_meilleur.the_end_of_dragon.client.phase.TedDifferentPhaseClientState;
 import com.licht_meilleur.the_end_of_dragon.client.quest
         .TedVillageQuestClientHandler;
+import com.licht_meilleur.the_end_of_dragon.client.screen.TedVillageTradeScreen;
 import com.licht_meilleur.the_end_of_dragon.client.sound
         .TedBgmManager;
 import com.licht_meilleur.the_end_of_dragon.network.*;
+import com.licht_meilleur.the_end_of_dragon.registry.ModMenus;
 import net.neoforged.neoforge.client.network.event
         .RegisterClientPayloadHandlersEvent;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
@@ -42,6 +44,7 @@ public final class TedNeoForgeClientNetwork {
                                         payload.temporaryTicks()
                                 )
         );
+
 
         event.register(
                 TedOpenQuestLetterPayload.TYPE,
@@ -94,5 +97,14 @@ public final class TedNeoForgeClientNetwork {
                                 payload
                         )
         );
+
+        TedVillageTradeNetwork
+                .bindExecuteTradeSender(
+                        payload ->
+                                ClientPacketDistributor
+                                        .sendToServer(
+                                                payload
+                                        )
+                );
     }
 }

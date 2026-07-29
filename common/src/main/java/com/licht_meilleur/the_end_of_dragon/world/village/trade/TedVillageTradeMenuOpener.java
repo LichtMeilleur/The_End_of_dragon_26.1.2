@@ -60,5 +60,9 @@ public final class TedVillageTradeMenuOpener {
                         )
                 )
         );
+
+        technician.beginMenuInteraction(
+                player
+        );
     }
 }

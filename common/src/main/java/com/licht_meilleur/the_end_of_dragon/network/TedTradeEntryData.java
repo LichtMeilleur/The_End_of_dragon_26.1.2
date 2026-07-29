@@ -1,5 +1,7 @@
 package com.licht_meilleur.the_end_of_dragon.network;
 
+import com.licht_meilleur.the_end_of_dragon.world.village.trade
+        .TedVillageTradeType;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
@@ -9,6 +11,7 @@ import java.util.List;
 
 public record TedTradeEntryData(
         String tradeId,
+        TedVillageTradeType type,
         int requiredTrustLevel,
         List<TedTradeIngredientData> ingredients,
         ItemStack result
@@ -31,6 +34,11 @@ public record TedTradeEntryData(
                 tradeId == null
                         ? ""
                         : tradeId;
+
+        type =
+                type == null
+                        ? TedVillageTradeType.NORMAL
+                        : type;
 
         requiredTrustLevel =
                 Math.max(
@@ -58,6 +66,10 @@ public record TedTradeEntryData(
         );
 
         buffer.writeVarInt(
+                data.type().ordinal()
+        );
+
+        buffer.writeVarInt(
                 data.requiredTrustLevel()
         );
 
@@ -75,10 +87,13 @@ public record TedTradeEntryData(
              index < ingredientCount;
              index++) {
 
-            TedTradeIngredientData.STREAM_CODEC.encode(
-                    buffer,
-                    data.ingredients().get(index)
-            );
+            TedTradeIngredientData
+                    .STREAM_CODEC
+                    .encode(
+                            buffer,
+                            data.ingredients()
+                                    .get(index)
+                    );
         }
 
         ItemStack.OPTIONAL_STREAM_CODEC.encode(
@@ -92,6 +107,12 @@ public record TedTradeEntryData(
     ) {
         String tradeId =
                 buffer.readUtf();
+
+        TedVillageTradeType type =
+                TedVillageTradeType
+                        .fromNetworkId(
+                                buffer.readVarInt()
+                        );
 
         int requiredTrustLevel =
                 buffer.readVarInt();
@@ -126,6 +147,7 @@ public record TedTradeEntryData(
 
         return new TedTradeEntryData(
                 tradeId,
+                type,
                 requiredTrustLevel,
                 ingredients,
                 result

@@ -19,6 +19,7 @@ import com.licht_meilleur.the_end_of_dragon.world.enderman.TedEndermanFriendship
 import com.licht_meilleur.the_end_of_dragon.world.phase.TedDifferentPhaseManager;
 import com.licht_meilleur.the_end_of_dragon.world.village.*;
 import com.licht_meilleur.the_end_of_dragon.world.village.quest.TedVillageQuestRegistry;
+import com.licht_meilleur.the_end_of_dragon.world.village.trade.TedVillageTradeRegistry;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
