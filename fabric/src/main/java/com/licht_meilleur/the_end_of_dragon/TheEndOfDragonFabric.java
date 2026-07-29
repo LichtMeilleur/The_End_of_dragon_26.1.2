@@ -122,6 +122,9 @@ public final class TheEndOfDragonFabric implements ModInitializer {
         ModEntities.registerFabric();
         ModSounds.registerFabric();
         ModItems.registerFabric();
+
+        ModMenus.registerFabric();
+
         ModRecipeSerializers.registerFabric();
         ModCreativeTabs.registerFabric();
         TedVillageQuestRegistry.bootstrap();

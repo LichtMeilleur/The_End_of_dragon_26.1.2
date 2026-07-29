@@ -1,6 +1,7 @@
 package com.licht_meilleur.the_end_of_dragon.world.village;
 
 import com.licht_meilleur.the_end_of_dragon.TheEndOfDragon;
+import com.licht_meilleur.the_end_of_dragon.world.village.trust.TedVillageTrustConstants;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
@@ -8,6 +9,10 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 public final class TedVillageWorldState
         extends SavedData {
@@ -18,7 +23,7 @@ public final class TedVillageWorldState
      * 保存項目の意味や構造を変更したら増やす。
      */
     private static final int CURRENT_DATA_VERSION =
-            5;
+            6;
 
     private int dataVersion;
     /*
@@ -50,6 +55,15 @@ public final class TedVillageWorldState
      * 1以降は将来追加。
      */
     private int villageQuestStage;
+
+    /*
+     * プレイヤーごとの現在信頼度。
+     *
+     * キーはプレイヤーUUIDの文字列表現。
+     */
+    private final Map<String, Integer>
+            playerTrustPoints =
+            new HashMap<>();
 
 
     private BlockPos elderSpawnPosition =
@@ -327,6 +341,19 @@ public final class TedVillageWorldState
                                             .forGetter(
                                                     TedVillageWorldState
                                                             ::createFacilityData
+                                            ),
+
+                                    Codec.unboundedMap(
+                                                    Codec.STRING,
+                                                    Codec.INT
+                                            )
+                                            .optionalFieldOf(
+                                                    "player_trust_points",
+                                                    Map.of()
+                                            )
+                                            .forGetter(
+                                                    TedVillageWorldState
+                                                            ::createPlayerTrustData
                                             )
 
                             ).apply(
@@ -369,7 +396,8 @@ public final class TedVillageWorldState
                 BlockPos.ZERO,
                 BlockPos.ZERO,
                 BlockPos.ZERO,
-                RechorusFacilityData.empty()
+                RechorusFacilityData.empty(),
+                Map.of()
         );
     }
 
@@ -386,7 +414,8 @@ public final class TedVillageWorldState
             BlockPos elderSpawnPosition,
             BlockPos technicianSpawnPosition,
             BlockPos allyHomePosition,
-            RechorusFacilityData facilityData
+            RechorusFacilityData facilityData,
+            Map<String, Integer> playerTrustPoints
     ) {
         this.dataVersion =
                 Math.max(
@@ -493,6 +522,49 @@ public final class TedVillageWorldState
                         0,
                         safeFacilityData.pendingJuice()
                 );
+
+        if (playerTrustPoints != null) {
+            for (Map.Entry<String, Integer> entry
+                    : playerTrustPoints.entrySet()) {
+
+                String playerId =
+                        entry.getKey();
+
+                Integer points =
+                        entry.getValue();
+
+                if (playerId == null
+                        || points == null) {
+                    continue;
+                }
+
+                /*
+                 * 不正なUUID文字列は保存対象にしない。
+                 */
+                try {
+                    UUID.fromString(playerId);
+                } catch (IllegalArgumentException exception) {
+                    continue;
+                }
+
+                int safePoints =
+                        Math.clamp(
+                                points,
+                                0,
+                                TedVillageTrustConstants
+                                        .ABSOLUTE_MAX_TRUST
+                        );
+
+                if (safePoints > 0) {
+                    this.playerTrustPoints.put(
+                            playerId,
+                            safePoints
+                    );
+                }
+            }
+        }
+
+
 
         migrateDataIfNeeded();
     }
@@ -613,6 +685,14 @@ public final class TedVillageWorldState
             version = 5;
         }
 
+        if (version < 6) {
+            /*
+             * 信頼度マップはCodecのデフォルト値で
+             * 空の状態から開始する。
+             */
+            version = 6;
+        }
+
         this.dataVersion =
                 Math.min(
                         version,
@@ -653,6 +733,130 @@ public final class TedVillageWorldState
                 this.rechorusStoredWater,
                 this.rechorusPendingJuice
         );
+    }
+
+    private Map<String, Integer>
+    createPlayerTrustData() {
+        return Map.copyOf(
+                this.playerTrustPoints
+        );
+    }
+
+    public int getTrustPoints(
+            UUID playerId
+    ) {
+        if (playerId == null) {
+            return 0;
+        }
+
+        return this.playerTrustPoints
+                .getOrDefault(
+                        playerId.toString(),
+                        0
+                );
+    }
+
+    public int getTrustCap() {
+        return TedVillageTrustConstants
+                .getTrustCapForStage(
+                        this.getVillageQuest()
+                );
+    }
+
+    public int getTrustLevel(
+            UUID playerId
+    ) {
+        return TedVillageTrustConstants
+                .levelFromPoints(
+                        this.getTrustPoints(
+                                playerId
+                        )
+                );
+    }
+
+    public void setTrustPoints(
+            UUID playerId,
+            int points
+    ) {
+        if (playerId == null) {
+            return;
+        }
+
+        int trustCap =
+                this.getTrustCap();
+
+        int safePoints =
+                Math.clamp(
+                        points,
+                        0,
+                        trustCap
+                );
+
+        String key =
+                playerId.toString();
+
+        int oldPoints =
+                this.playerTrustPoints
+                        .getOrDefault(
+                                key,
+                                0
+                        );
+
+        if (oldPoints == safePoints) {
+            return;
+        }
+
+        if (safePoints <= 0) {
+            this.playerTrustPoints.remove(
+                    key
+            );
+        } else {
+            this.playerTrustPoints.put(
+                    key,
+                    safePoints
+            );
+        }
+
+        this.setDirty();
+    }
+
+    public int addTrustPoints(
+            UUID playerId,
+            int amount
+    ) {
+        if (playerId == null
+                || amount == 0) {
+            return this.getTrustPoints(
+                    playerId
+            );
+        }
+
+        int currentPoints =
+                this.getTrustPoints(
+                        playerId
+                );
+
+        this.setTrustPoints(
+                playerId,
+                currentPoints + amount
+        );
+
+        return this.getTrustPoints(
+                playerId
+        );
+    }
+
+    public boolean hasTrustLevel(
+            UUID playerId,
+            int requiredLevel
+    ) {
+        if (requiredLevel <= 0) {
+            return true;
+        }
+
+        return this.getTrustLevel(
+                playerId
+        ) >= requiredLevel;
     }
 
     public void completeGeneration(
@@ -844,6 +1048,8 @@ public final class TedVillageWorldState
 
         this.rechorusPlantBuilt =
                 false;
+
+        this.playerTrustPoints.clear();
 
         this.setDirty();
     }

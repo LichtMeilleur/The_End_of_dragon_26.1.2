@@ -475,9 +475,13 @@ public final class ModItems {
                 Registry.register(
                         BuiltInRegistries.ITEM,
                         RECHORUS_PLANT_SEED_KEY.identifier(),
-                        new Item(
+                        new BlockItem(
+                                ModBlocks.RECHORUS_PLANT_SEED,
                                 new Item.Properties()
-                                        .setId(RECHORUS_PLANT_SEED_KEY)
+                                        .setId(
+                                                RECHORUS_PLANT_SEED_KEY
+                                        )
+                                        .useBlockDescriptionPrefix()
                         )
                 );
 
@@ -580,7 +584,7 @@ public final class ModItems {
             Item waterTransferMachineB,
             Item rechorusJuiceBucket,
             Item rechorusJuiceBottle,
-            Item diffrent_phase_pearl
+            Item diffrentPhasePearl
     )  {
         THE_END_OF_DRAGON_ICON =
                 icon;
@@ -646,7 +650,7 @@ public final class ModItems {
                 rechorusJuiceBottle;
 
         DIFFERENT_PHASE_PEARL =
-                diffrent_phase_pearl;
+                diffrentPhasePearl;
 
         TheEndOfDragon.LOGGER.info(
                 "Bound NeoForge items to common registry references"

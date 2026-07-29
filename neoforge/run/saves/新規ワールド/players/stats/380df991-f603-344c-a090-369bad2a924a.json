@@ -1,47 +1,20 @@
 {
   "stats": {
     "minecraft:used": {
-      "minecraft:grass_block": 5,
-      "minecraft:lava_bucket": 3,
-      "minecraft:diamond_hoe": 8,
-      "minecraft:enderman_spawn_egg": 2,
-      "minecraft:bone_meal": 7,
-      "minecraft:carrot": 7,
-      "minecraft:flint_and_steel": 1,
-      "the_end_of_dragon:rechorus_melon_seed_prototype": 2,
-      "the_end_of_dragon:rechorus_melon_cut": 1,
-      "the_end_of_dragon:rechorus_juice_bucket": 1,
-      "minecraft:enchanted_golden_apple": 4,
-      "minecraft:dirt": 14,
-      "minecraft:obsidian": 12
-    },
-    "minecraft:picked_up": {
-      "minecraft:diamond_hoe": 1,
-      "the_end_of_dragon:different_phase_pearl": 1,
-      "the_end_of_dragon:rechorus_juice_bucket": 1,
-      "minecraft:grass_block": 1,
-      "minecraft:lava_bucket": 1,
-      "the_end_of_dragon:rechorus_melon_seed_prototype": 1,
-      "the_end_of_dragon:rechorus_juice_bottle": 1,
-      "minecraft:enderman_spawn_egg": 1,
-      "minecraft:bone_meal": 1
+      "the_end_of_dragon:enderman_village_gateway": 1
     },
     "minecraft:custom": {
-      "minecraft:damage_resisted": 12,
-      "minecraft:time_since_rest": 28454,
-      "minecraft:walk_one_cm": 81391,
-      "minecraft:leave_game": 31,
-      "minecraft:damage_taken": 420,
-      "minecraft:play_time": 24751,
-      "minecraft:damage_absorbed": 48,
-      "minecraft:jump": 92,
-      "minecraft:time_since_death": 14372,
-      "minecraft:fall_one_cm": 225,
-      "minecraft:swim_one_cm": 1925,
-      "minecraft:total_world_time": 35100,
-      "minecraft:fly_one_cm": 107,
-      "minecraft:sneak_time": 14,
-      "minecraft:deaths": 1
+      "minecraft:time_since_rest": 1328,
+      "minecraft:walk_one_cm": 3313,
+      "minecraft:total_world_time": 681,
+      "minecraft:leave_game": 1,
+      "minecraft:play_time": 664,
+      "minecraft:damage_dealt": 8,
+      "minecraft:time_since_death": 664,
+      "minecraft:drop": 1
+    },
+    "minecraft:dropped": {
+      "the_end_of_dragon:enderman_village_gateway": 1
     }
   },
   "DataVersion": 4790

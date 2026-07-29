@@ -281,11 +281,16 @@ public final class NeoForgeModItems {
             RECHORUS_PLANT_SEED =
             ITEMS.register(
                     "rechorus_plant_seed",
-                    () -> new Item(
+                    () -> new BlockItem(
+                            NeoForgeModBlocks
+                                    .RECHORUS_PLANT_SEED
+                                    .get(),
                             new Item.Properties()
                                     .setId(
-                                            ModItems.RECHORUS_PLANT_SEED_KEY
+                                            ModItems
+                                                    .RECHORUS_PLANT_SEED_KEY
                                     )
+                                    .useBlockDescriptionPrefix()
                     )
             );
 
@@ -397,7 +402,6 @@ public final class NeoForgeModItems {
                 ENDER_PEARL_MASTERY_BOOK.get(),
                 ENDER_PEARL_SECRET_BOOK.get(),
                 TRUE_ENDER_PEARL.get(),
-                DIFFERENT_PHASE_PEARL.get(),
                 RECHORUS_MELON.get(),
                 RECHORUS_MELON_CUT.get(),
                 RECHORUS_MELON_SEED.get(),
@@ -407,7 +411,8 @@ public final class NeoForgeModItems {
                 WATER_TRANSFER_MACHINE_A.get(),
                 WATER_TRANSFER_MACHINE_B.get(),
                 RECHORUS_JUICE_BUCKET.get(),
-                RECHORUS_JUICE_BOTTLE.get()
+                RECHORUS_JUICE_BOTTLE.get(),
+                DIFFERENT_PHASE_PEARL.get()
         );
     }
 

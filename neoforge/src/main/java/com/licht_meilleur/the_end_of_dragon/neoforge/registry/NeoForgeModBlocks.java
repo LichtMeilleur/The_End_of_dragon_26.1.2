@@ -5,6 +5,7 @@ import com.licht_meilleur.the_end_of_dragon.registry.ModBlocks;
 import com.licht_meilleur.the_end_of_dragon.registry.ModItems;
 import com.licht_meilleur.the_end_of_dragon.world.block.*;
 import com.licht_meilleur.the_end_of_dragon.world.crop.RechorusMelonStemBlock;
+import com.licht_meilleur.the_end_of_dragon.world.crop.RechorusPlantSeedBlock;
 import com.licht_meilleur.the_end_of_dragon.world.crop.RechorusSeedType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -13,6 +14,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.grower.TreeGrower;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.FlowingFluid;
 import net.neoforged.bus.api.IEventBus;
@@ -383,6 +385,24 @@ public final class NeoForgeModBlocks {
                     )
             );
 
+    public static final DeferredHolder<
+            Block,
+            RechorusPlantSeedBlock>
+            RECHORUS_PLANT_SEED =
+            BLOCKS.register(
+                    "rechorus_plant_seed",
+                    () -> new RechorusPlantSeedBlock(
+                            TreeGrower.MANGROVE,
+                            BlockBehaviour.Properties
+                                    .ofFullCopy(
+                                            Blocks.MANGROVE_PROPAGULE
+                                    )
+                                    .setId(
+                                            ModBlocks.RECHORUS_PLANT_SEED_KEY
+                                    )
+                    )
+            );
+
 
 
 
@@ -407,6 +427,7 @@ public final class NeoForgeModBlocks {
                 RECHORUS_FLOWER.get(),
                 RECHORUS_MELON_STEM_PROTOTYPE.get(),
                 RECHORUS_MELON_STEM.get(),
+                RECHORUS_PLANT_SEED.get(),
                 RECHORUS_PLANT_CORE_PREVIEW.get(),
                 WATER_TRANSFER_MACHINE_B_PREVIEW.get(),
                 RECHORUS_JUICE.get(),

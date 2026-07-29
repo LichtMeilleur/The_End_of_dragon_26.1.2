@@ -8,9 +8,11 @@ import com.licht_meilleur.the_end_of_dragon.client.entity.enderman.TedAllyEnderm
 import com.licht_meilleur.the_end_of_dragon.client.entity.enderman.renderer.TedElderEndermanRenderer;
 import com.licht_meilleur.the_end_of_dragon.client.entity.enderman.renderer.TedTechEndermanRenderer;
 import com.licht_meilleur.the_end_of_dragon.client.render.*;
+import com.licht_meilleur.the_end_of_dragon.client.screen.TedVillageTradeScreen;
 import com.licht_meilleur.the_end_of_dragon.neoforge.client.network.TedNeoForgeClientNetwork;
 import com.licht_meilleur.the_end_of_dragon.neoforge.registry.NeoForgeModEntities;
 import com.licht_meilleur.the_end_of_dragon.neoforge.registry.NeoForgeModFluids;
+import com.licht_meilleur.the_end_of_dragon.neoforge.registry.NeoForgeModMenus;
 import com.licht_meilleur.the_end_of_dragon.registry.ModEntities;
 import net.minecraft.client.color.block.BlockTintSources;
 import net.minecraft.client.renderer.block.FluidModel;
@@ -21,6 +23,7 @@ import net.minecraft.util.ARGB;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterFluidModelsEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlersEvent;
 
@@ -141,6 +144,17 @@ public final class TheEndOfDragonNeoForgeClient {
                         .RECHORUS_JUICE_SOURCE,
                 NeoForgeModFluids
                         .RECHORUS_JUICE_FLOWING
+        );
+    }
+
+    public static void registerMenuScreens(
+            RegisterMenuScreensEvent event
+    ) {
+        event.register(
+                NeoForgeModMenus
+                        .TED_VILLAGE_TRADE
+                        .get(),
+                TedVillageTradeScreen::new
         );
     }
 

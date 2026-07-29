@@ -3,6 +3,7 @@ package com.licht_meilleur.the_end_of_dragon.registry;
 import com.licht_meilleur.the_end_of_dragon.TheEndOfDragon;
 import com.licht_meilleur.the_end_of_dragon.world.block.*;
 import com.licht_meilleur.the_end_of_dragon.world.crop.RechorusMelonStemBlock;
+import com.licht_meilleur.the_end_of_dragon.world.crop.RechorusPlantSeedBlock;
 import com.licht_meilleur.the_end_of_dragon.world.crop.RechorusSeedType;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -12,6 +13,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.grower.TreeGrower;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
 public final class ModBlocks {
@@ -57,6 +59,8 @@ public final class ModBlocks {
                     Registries.BLOCK,
                     TheEndOfDragon.id("water_transfer_machine_b")
             );
+
+
 
 
     public static final ResourceKey<Block>
@@ -141,10 +145,14 @@ public final class ModBlocks {
                     )
             );
 
-
-
-
-
+    public static final ResourceKey<Block>
+            RECHORUS_PLANT_SEED_KEY =
+            ResourceKey.create(
+                    Registries.BLOCK,
+                    TheEndOfDragon.id(
+                            "rechorus_plant_seed"
+                    )
+            );
 
 
 
@@ -171,7 +179,7 @@ public final class ModBlocks {
     public static Block RECHORUS_MELON_STEM;
 
 
-
+    public static Block RECHORUS_PLANT_SEED;
 
     private static boolean fabricRegistered = false;
 
@@ -488,6 +496,22 @@ public final class ModBlocks {
                         )
                 );
 
+        RECHORUS_PLANT_SEED =
+                Registry.register(
+                        BuiltInRegistries.BLOCK,
+                        RECHORUS_PLANT_SEED_KEY.identifier(),
+                        new RechorusPlantSeedBlock(
+                                TreeGrower.MANGROVE,
+                                BlockBehaviour.Properties
+                                        .ofFullCopy(
+                                                Blocks.MANGROVE_PROPAGULE
+                                        )
+                                        .setId(
+                                                RECHORUS_PLANT_SEED_KEY
+                                        )
+                        )
+                );
+
 
 
 
@@ -514,7 +538,8 @@ public final class ModBlocks {
             Block rechorusPlantCorePreview,
             Block waterTransferMachineBPreview,
             Block rechorusJuice,
-            Block rechorusFarmland
+            Block rechorusFarmland,
+            Block rechorusPlantSeed
 
     ) {
         {
@@ -563,6 +588,9 @@ public final class ModBlocks {
 
                 RECHORUS_FARMLAND =
                         rechorusFarmland;
+
+                RECHORUS_PLANT_SEED =
+                        rechorusPlantSeed;
 
 
                 TheEndOfDragon.LOGGER.info(

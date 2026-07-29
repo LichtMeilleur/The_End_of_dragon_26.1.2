@@ -49,6 +49,10 @@ public final class TheEndOfDragonNeoForge {
         NeoForgeModRecipeSerializers.register(
                 modBus
         );
+
+        NeoForgeModMenus.register(
+                modBus
+        );
         NeoForgeCreativeTabs.register(modBus);
 
         TheEndOfDragon.init();
@@ -65,6 +69,11 @@ public final class TheEndOfDragonNeoForge {
         );
         modBus.addListener(
                 TheEndOfDragonNeoForgeClient::registerEntityRenderers
+        );
+
+        modBus.addListener(
+                TheEndOfDragonNeoForgeClient
+                        ::registerMenuScreens
         );
 
         modBus.addListener(
@@ -92,14 +101,25 @@ public final class TheEndOfDragonNeoForge {
 
             NeoForgeModDataComponents
                     .bindCommonReferences();
+
             NeoForgeModFluids.bindCommonReferences();
+
             NeoForgeModBlocks.bindCommonReferences();
+
             NeoForgeModBlockEntities.bindCommonReferences();
+
             NeoForgeModEntities.bindCommonReferences();
+
             NeoForgeModSounds.bindCommonReferences();
+
             NeoForgeModItems.bindCommonReferences();
+
             NeoForgeModRecipeSerializers
                     .bindCommonReferences();
+
+            NeoForgeModMenus
+                    .bindCommonReferences();
+
             NeoForgeCreativeTabs.bindCommon();
 
             /*

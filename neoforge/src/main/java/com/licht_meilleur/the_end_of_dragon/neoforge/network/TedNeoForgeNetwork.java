@@ -2,6 +2,7 @@ package com.licht_meilleur.the_end_of_dragon.neoforge.network;
 
 import com.licht_meilleur.the_end_of_dragon.network.*;
 import com.licht_meilleur.the_end_of_dragon.world.village.quest.TedVillageQuestManager;
+import com.licht_meilleur.the_end_of_dragon.world.village.trade.TedVillageTradeManager;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
@@ -58,6 +59,15 @@ public final class TedNeoForgeNetwork {
                                 payload
                         )
         );
+
+        TedVillageTradeNetwork
+                .bindOpenScreenSender(
+                        (player, payload) ->
+                                PacketDistributor.sendToPlayer(
+                                        player,
+                                        payload
+                                )
+                );
     }
 
     public static void registerPayloads(
@@ -105,7 +115,28 @@ public final class TedNeoForgeNetwork {
                         )
         );
 
-        registrar.playToClient(
+
+        registrar.playToServer(
+                TedExecuteTradePayload.TYPE,
+                TedExecuteTradePayload.STREAM_CODEC,
+                (payload, context) ->
+                        context.enqueueWork(
+                                () -> {
+                                    if (context.player()
+                                            instanceof ServerPlayer player) {
+
+                                        TedVillageTradeManager
+                                                .handleExecuteRequest(
+                                                        player,
+                                                        payload.technicianEntityId(),
+                                                        payload.tradeId()
+                                                );
+                                    }
+                                }
+                        )
+        );
+
+        registrar.playToClient(//ここが原因とかですかね？
                 TedOpenQuestListPayload.TYPE,
                 TedOpenQuestListPayload.STREAM_CODEC
         );
@@ -123,6 +154,25 @@ public final class TedNeoForgeNetwork {
                                                 .selectQuest(
                                                         player,
                                                         payload.questId()
+                                                );
+                                    }
+                                }
+                        )
+        );
+
+        registrar.playToServer(
+                TedSetWaterTransferChannelPayload.TYPE,
+                TedSetWaterTransferChannelPayload.STREAM_CODEC,
+                (payload, context) ->
+                        context.enqueueWork(
+                                () -> {
+                                    if (context.player()
+                                            instanceof ServerPlayer player) {
+
+                                        TedWaterTransferServerHandler
+                                                .handleSetChannel(
+                                                        player,
+                                                        payload
                                                 );
                                     }
                                 }

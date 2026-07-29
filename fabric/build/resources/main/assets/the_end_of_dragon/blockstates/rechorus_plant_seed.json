@@ -1,0 +1,9 @@
+{
+  "multipart": [
+    {
+      "apply": {
+        "model": "the_end_of_dragon:block/rechorus_plant_seed"
+      }
+    }
+  ]
+}

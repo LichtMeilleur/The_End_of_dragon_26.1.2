@@ -53,11 +53,11 @@
   "entity.the_end_of_dragon.ally_tech_enderman": "エンダーマンの技術屋",
   "message.the_end_of_dragon.technician.not_ready": "<技術屋> ジュンビチュウ、マタキテ",
 
-
   "message.the_end_of_dragon.technician.locked": "チョウロウ　カラ　ハナシ　キイテ。",
   "message.the_end_of_dragon.technician.preparing": "<技術屋> ジュンビチュウ、マタキテ",
-
-  "message.the_end_of_dragon.quest.submit_hint": "スニークしながら右クリックすると、納品・達成確認を行います。",
+  "gui.the_end_of_dragon.village_trade": "技術屋との取引",
+  "gui.the_end_of_dragon.trade.input": "取引",
+  "gui.the_end_of_dragon.trade.work_bench": "作業台",
 
   "message.the_end_of_dragon.quest.submit_hint": "依頼書から納品・達成確認を行えます。",
 

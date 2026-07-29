@@ -4,6 +4,8 @@ import com.licht_meilleur.the_end_of_dragon.world.village
         .TedVillageQuestStage;
 import com.licht_meilleur.the_end_of_dragon.world.village
         .TedVillageWorldState;
+import com.licht_meilleur.the_end_of_dragon.world.village.trade.TedVillageTradeManager;
+import com.licht_meilleur.the_end_of_dragon.world.village.trade.TedVillageTradeMenuOpener;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -39,12 +41,20 @@ public final class TedTechEndermanEntity
             return InteractionResult.PASS;
         }
 
+        /*
+         * クライアント側では処理せず、
+         * サーバーからMenuを開く。
+         */
         if (!(player instanceof ServerPlayer serverPlayer)) {
             return InteractionResult.SUCCESS;
         }
 
+        /*
+         * 村のクエスト進行度を取得する。
+         */
         if (!(this.level()
                 instanceof ServerLevel villageLevel)) {
+
             return InteractionResult.PASS;
         }
 
@@ -57,7 +67,8 @@ public final class TedTechEndermanEntity
                 villageState.getVillageQuest();
 
         /*
-         * 水転送研究が始まる前。
+         * 水転送研究が始まるまでは
+         * 技術者との取引を利用できない。
          */
         if (!stage.isAtLeast(
                 TedVillageQuestStage
@@ -74,17 +85,12 @@ public final class TedTechEndermanEntity
         }
 
         /*
-         * 現段階では取引画面未実装。
-         *
-         * 後でここを
-         * TedVillageTradeManager.open(...)
-         * などに置き換える。
+         * 解禁済みなら、
+         * サーバー管理の取引Menuを開く。
          */
-        serverPlayer.sendSystemMessage(
-                Component.translatable(
-                        "message.the_end_of_dragon.technician.preparing"
-                ),
-                false
+        TedVillageTradeMenuOpener.open(
+                serverPlayer,
+                this
         );
 
         return InteractionResult.SUCCESS;

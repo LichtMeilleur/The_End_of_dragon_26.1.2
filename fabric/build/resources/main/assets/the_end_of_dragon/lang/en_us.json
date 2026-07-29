@@ -43,8 +43,13 @@
   "entity.the_end_of_dragon.ally_tech_enderman": "Enderman Technician",
   "message.the_end_of_dragon.technician.not_ready": "<Technician> Preparing...Come...Later...",
 
+
+
   "message.the_end_of_dragon.technician.locked": "Talk...To...Elder...",
   "message.the_end_of_dragon.technician.preparing": "<Technician> Preparing...Come...Later...",
+  "gui.the_end_of_dragon.village_trade": "Technician Trade",
+  "gui.the_end_of_dragon.trade.input": "Trade",
+  "gui.the_end_of_dragon.trade.work_bench": "Workbench",
 
   "message.the_end_of_dragon.quest.submit_hint": "Sneak and right-click to submit the quest.",
 

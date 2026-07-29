@@ -6,10 +6,13 @@
     "MobTargetMixin",
     "PlayerDifferentPhaseMixin",
     "LivingEntityDifferentPhaseMixin",
+    "ServerPlayerDifferentPhaseMixin",
     "EntityDifferentPhaseInteractionMixin",
     "ServerPlayerGameModeDifferentPhaseMixin",
     "ServerPlayerGameModeUseDifferentPhaseMixin",
-    "ItemStackDifferentPhaseMixin",
+
+
+
     "EntityRechorusJuiceMixin",
     "LivingEntityRechorusJuiceMixin",
     "HoeItemRechorusFarmlandMixin",

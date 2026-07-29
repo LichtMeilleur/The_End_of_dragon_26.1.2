@@ -12,12 +12,14 @@ import com.licht_meilleur.the_end_of_dragon.client.render.RechorusJuiceBlobRende
 import com.licht_meilleur.the_end_of_dragon.client.render.TheEndOfDragonCollisionRenderer;
 import com.licht_meilleur.the_end_of_dragon.client.render.TheEndOfDragonCoreRenderer;
 import com.licht_meilleur.the_end_of_dragon.client.render.TheEndOfDragonDisplayRenderer;
+import com.licht_meilleur.the_end_of_dragon.client.screen.TedVillageTradeScreen;
 import com.licht_meilleur.the_end_of_dragon.fabric.client.network.TedFabricClientNetwork;
 import com.licht_meilleur.the_end_of_dragon.network.TedOpenQuestLetterPayload;
 import com.licht_meilleur.the_end_of_dragon.network.TedQuestClientNetwork;
 import com.licht_meilleur.the_end_of_dragon.network.TedSubmitQuestPayload;
 import com.licht_meilleur.the_end_of_dragon.registry.ModEntities;
 import com.licht_meilleur.the_end_of_dragon.registry.ModFluids;
+import com.licht_meilleur.the_end_of_dragon.registry.ModMenus;
 import com.licht_meilleur.the_end_of_dragon.world.fluid.RechorusJuiceFluid;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -28,6 +30,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.fabricmc.fabric.impl.client.rendering.EntityRendererRegistryImpl;
 import net.minecraft.client.color.block.BlockTintSources;
+import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.renderer.block.FluidModel;
 import net.minecraft.client.renderer.entity.NoopRenderer;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
@@ -84,6 +87,11 @@ public final class TheEndOfDragonFabricClient implements ClientModInitializer {
         EntityRendererRegistry.register(
                 ModEntities.RECHORUS_JUICE_BLOB,
                 RechorusJuiceBlobRenderer::new
+        );
+
+        MenuScreens.register(
+                ModMenus.TED_VILLAGE_TRADE,
+                TedVillageTradeScreen::new
         );
 
 

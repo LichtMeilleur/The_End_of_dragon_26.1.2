@@ -8,6 +8,7 @@ import com.licht_meilleur.the_end_of_dragon.world.village
         .TedVillageQuestStage;
 import com.licht_meilleur.the_end_of_dragon.world.village
         .TedVillageWorldState;
+import com.licht_meilleur.the_end_of_dragon.world.village.trust.TedVillageTrustManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -165,9 +166,20 @@ public final class TedVillageQuestManager {
         }
 
         if (quest.completionStage() != null) {
+            TedVillageQuestStage newStage =
+                    quest.completionStage();
+
             state.setVillageQuestStage(
-                    quest.completionStage()
+                    newStage
             );
+
+            TedVillageTrustManager
+                    .rewardQuestProgress(
+                            state,
+                            player,
+                            currentStage,
+                            newStage
+                    );
         }
 
         player.sendSystemMessage(
