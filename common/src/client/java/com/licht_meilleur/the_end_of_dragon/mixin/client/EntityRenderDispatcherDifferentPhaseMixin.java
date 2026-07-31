@@ -75,8 +75,8 @@ public abstract class EntityRenderDispatcherDifferentPhaseMixin {
          * 観察者と対象の位相が異なる場合は、
          * 対象を描画対象から除外する。
          */
-        if (viewerInDifferentPhase
-                != targetInDifferentPhase) {
+        if (!viewerInDifferentPhase
+                && targetInDifferentPhase) {
 
             callbackInfo.setReturnValue(
                     false

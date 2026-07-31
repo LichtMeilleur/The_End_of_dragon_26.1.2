@@ -45,6 +45,75 @@ public final class TedVillageStructurePlacer {
             RECHORUS_PLANT_CORE_SLOT_NAME =
             "ted:rechorus_plant_core_slot";
 
+
+    private static final String
+            PROTECTED_COAL_ORE_NAME =
+            "ted:protected_ore_coal";
+
+    private static final String
+            PROTECTED_IRON_ORE_NAME =
+            "ted:protected_ore_iron";
+
+    private static final String
+            PROTECTED_COPPER_ORE_NAME =
+            "ted:protected_ore_copper";
+
+    private static final String
+            PROTECTED_GOLD_ORE_NAME =
+            "ted:protected_ore_gold";
+
+    private static final String
+            PROTECTED_REDSTONE_ORE_NAME =
+            "ted:protected_ore_redstone";
+
+    private static final String
+            PROTECTED_EMERALD_ORE_NAME =
+            "ted:protected_ore_emerald";
+
+
+    private static final String
+            PROTECTED_DIAMOND_ORE_NAME =
+            "ted:protected_ore_diamond";
+
+    private static final String
+            PROTECTED_FURNACE_NAME =
+            "ted:protected_job_block_furnace";
+
+    private static final String
+            PROTECTED_COMPOSTER_NAME =
+            "ted:protected_job_block_composter";
+    private static final String
+            PROTECTED_CAULDRON_NAME =
+            "ted:protected_job_block_cauldron";
+    private static final String
+            PROTECTED_FLETCHING_TABLE_NAME =
+            "ted:protected_job_block_fletching_table";
+    private static final String
+            PROTECTED_LOOM_NAME =
+            "ted:protected_job_block_loom";
+    private static final String
+            PROTECTED_CARTOGRAPHY_TABLE_NAME =
+            "ted:protected_job_block_cartography_table";
+    private static final String
+            PROTECTED_BREWING_STAND_NAME =
+            "ted:protected_job_block_brewing_stand";
+    private static final String
+            PROTECTED_GRINDSTONE_NAME =
+            "ted:protected_job_block_grindstone";
+    private static final String
+            PROTECTED_SMITHING_TABLE_NAME =
+            "ted:protected_job_block_smithing_table";
+    private static final String
+            PROTECTED_STONECUTTER_NAME =
+            "ted:protected_job_block_stonecutter";
+    private static final String
+            PROTECTED_BLAST_FURNACE_NAME =
+            "ted:protected_job_block_blast_furnace";
+    private static final String
+            PROTECTED_SMOKER_NAME =
+            "ted:protected_job_block_smoker";
+
+
     /*
      * 村の基準XZ。
      *
@@ -127,6 +196,17 @@ public final class TedVillageStructurePlacer {
     public static BlockPos generateVillage(
             ServerLevel level
     ) {
+
+        /*
+         * 村を再生成する場合に、
+         * 以前の保護座標を残さない。
+         */
+        TedVillageProtectionManager
+                .clearProtectedBlocks(
+                        level
+                );
+
+
         BlockPos villageCenter =
                 new BlockPos(
                         0,
@@ -310,6 +390,279 @@ public final class TedVillageStructurePlacer {
         );
     }
 
+
+    private static List<BlockPos> findMarkers(
+            StructureTemplate template,
+            StructurePlaceSettings settings,
+            String markerName
+    ) {
+        List<BlockPos> positions =
+                new java.util.ArrayList<>();
+
+        List<StructureTemplate.StructureBlockInfo>
+                jigsawBlocks =
+                template.filterBlocks(
+                        BlockPos.ZERO,
+                        settings,
+                        Blocks.JIGSAW
+                );
+
+        for (StructureTemplate.StructureBlockInfo info
+                : jigsawBlocks) {
+
+            if (info.nbt() == null) {
+                continue;
+            }
+
+            String foundName =
+                    info.nbt()
+                            .getString(
+                                    "name"
+                            )
+                            .orElse("");
+
+            if (!markerName.equals(
+                    foundName
+            )) {
+                continue;
+            }
+
+            positions.add(
+                    info.pos()
+            );
+        }
+
+        return positions;
+    }
+
+
+    private static void replaceProtectedMarkers(
+            ServerLevel level,
+            StructureTemplate template,
+            StructurePlaceSettings settings,
+            BlockPos structureOrigin
+    ) {
+        /*
+         * 鉱石
+         */
+        replaceProtectedMarkers(
+                level,
+                template,
+                settings,
+                structureOrigin,
+                PROTECTED_COAL_ORE_NAME,
+                Blocks.COAL_ORE.defaultBlockState()
+        );
+
+        replaceProtectedMarkers(
+                level,
+                template,
+                settings,
+                structureOrigin,
+                PROTECTED_IRON_ORE_NAME,
+                Blocks.IRON_ORE.defaultBlockState()
+        );
+
+        replaceProtectedMarkers(
+                level,
+                template,
+                settings,
+                structureOrigin,
+                PROTECTED_COPPER_ORE_NAME,
+                Blocks.COPPER_ORE.defaultBlockState()
+        );
+
+        replaceProtectedMarkers(
+                level,
+                template,
+                settings,
+                structureOrigin,
+                PROTECTED_GOLD_ORE_NAME,
+                Blocks.GOLD_ORE.defaultBlockState()
+        );
+
+        replaceProtectedMarkers(
+                level,
+                template,
+                settings,
+                structureOrigin,
+                PROTECTED_REDSTONE_ORE_NAME,
+                Blocks.REDSTONE_ORE.defaultBlockState()
+        );
+
+        replaceProtectedMarkers(
+                level,
+                template,
+                settings,
+                structureOrigin,
+                PROTECTED_EMERALD_ORE_NAME,
+                Blocks.EMERALD_ORE.defaultBlockState()
+        );
+
+        replaceProtectedMarkers(
+                level,
+                template,
+                settings,
+                structureOrigin,
+                PROTECTED_DIAMOND_ORE_NAME,
+                Blocks.DIAMOND_ORE.defaultBlockState()
+        );
+
+        /*
+         * 職業ブロック・設備
+         */
+        replaceProtectedMarkers(
+                level,
+                template,
+                settings,
+                structureOrigin,
+                PROTECTED_FURNACE_NAME,
+                Blocks.FURNACE.defaultBlockState()
+        );
+
+        replaceProtectedMarkers(
+                level,
+                template,
+                settings,
+                structureOrigin,
+                PROTECTED_COMPOSTER_NAME,
+                Blocks.COMPOSTER.defaultBlockState()
+        );
+
+        replaceProtectedMarkers(
+                level,
+                template,
+                settings,
+                structureOrigin,
+                PROTECTED_CAULDRON_NAME,
+                Blocks.CAULDRON.defaultBlockState()
+        );
+
+        replaceProtectedMarkers(
+                level,
+                template,
+                settings,
+                structureOrigin,
+                PROTECTED_FLETCHING_TABLE_NAME,
+                Blocks.FLETCHING_TABLE.defaultBlockState()
+        );
+
+        replaceProtectedMarkers(
+                level,
+                template,
+                settings,
+                structureOrigin,
+                PROTECTED_LOOM_NAME,
+                Blocks.LOOM.defaultBlockState()
+        );
+
+        replaceProtectedMarkers(
+                level,
+                template,
+                settings,
+                structureOrigin,
+                PROTECTED_CARTOGRAPHY_TABLE_NAME,
+                Blocks.CARTOGRAPHY_TABLE.defaultBlockState()
+        );
+
+        replaceProtectedMarkers(
+                level,
+                template,
+                settings,
+                structureOrigin,
+                PROTECTED_BREWING_STAND_NAME,
+                Blocks.BREWING_STAND.defaultBlockState()
+        );
+
+        replaceProtectedMarkers(
+                level,
+                template,
+                settings,
+                structureOrigin,
+                PROTECTED_GRINDSTONE_NAME,
+                Blocks.GRINDSTONE.defaultBlockState()
+        );
+
+        replaceProtectedMarkers(
+                level,
+                template,
+                settings,
+                structureOrigin,
+                PROTECTED_SMITHING_TABLE_NAME,
+                Blocks.SMITHING_TABLE.defaultBlockState()
+        );
+
+        replaceProtectedMarkers(
+                level,
+                template,
+                settings,
+                structureOrigin,
+                PROTECTED_STONECUTTER_NAME,
+                Blocks.STONECUTTER.defaultBlockState()
+        );
+
+        replaceProtectedMarkers(
+                level,
+                template,
+                settings,
+                structureOrigin,
+                PROTECTED_BLAST_FURNACE_NAME,
+                Blocks.BLAST_FURNACE.defaultBlockState()
+        );
+
+        replaceProtectedMarkers(
+                level,
+                template,
+                settings,
+                structureOrigin,
+                PROTECTED_SMOKER_NAME,
+                Blocks.SMOKER.defaultBlockState()
+        );
+    }
+
+    private static void replaceProtectedMarkers(
+            ServerLevel level,
+            StructureTemplate template,
+            StructurePlaceSettings settings,
+            BlockPos structureOrigin,
+            String markerName,
+            net.minecraft.world.level.block.state.BlockState
+                    replacementState
+    ) {
+        List<BlockPos> localPositions =
+                findMarkers(
+                        template,
+                        settings,
+                        markerName
+                );
+
+        for (BlockPos localPosition :
+                localPositions) {
+
+            BlockPos worldPosition =
+                    structureOrigin.offset(
+                            localPosition
+                    );
+
+            /*
+             * ジグソーを実ブロックへ置換し、
+             * 同時に保護対象へ登録する。
+             */
+            TedVillageProtectionManager
+                    .placeAndRegisterProtectedBlock(
+                            level,
+                            worldPosition,
+                            replacementState
+                    );
+
+            TheEndOfDragon.LOGGER.info(
+                    "Placed protected village block marker={} at {}",
+                    markerName,
+                    worldPosition
+            );
+        }
+    }
+
     /**
      * NBT内のsurface_anhorを、
      * 指定した地表座標へ合わせて配置する。
@@ -442,6 +795,17 @@ public final class TedVillageStructurePlacer {
 
             return PlacedVillagePiece.failed();
         }
+
+        /*
+         * 保護用ジグソーマーカーを
+         * 実ブロックへ置換して登録する。
+         */
+        replaceProtectedMarkers(
+                level,
+                template,
+                settings,
+                structureOrigin
+        );
 
         /*
          * マーカーのワールド座標を求める。

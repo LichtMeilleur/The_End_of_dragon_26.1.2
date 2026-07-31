@@ -1431,8 +1431,22 @@ public class TheEndOfDragonCoreEntity extends Monster {
 
         this.eventBgmStarted = true;
 
+        TheEndOfDragon.LOGGER.warn(
+                "Starting event BGM: boss={}, tick={}, players={}",
+                this.getUUID(),
+                this.tickCount,
+                level.players().size()
+        );
+
         for (ServerPlayer player : level.players()) {
-            TedNetwork.sendBgmStart(player);
+            TheEndOfDragon.LOGGER.warn(
+                    "Sending event BGM start to {}",
+                    player.getGameProfile().name()
+            );
+
+            TedNetwork.sendBgmStart(
+                    player
+            );
         }
     }
 

@@ -22,8 +22,10 @@ import com.licht_meilleur.the_end_of_dragon.world.village.quest.TedVillageQuestR
 import com.licht_meilleur.the_end_of_dragon.world.village.trade.TedVillageTradeRegistry;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.fabricmc.loader.api.FabricLoader;
@@ -31,6 +33,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.monster.EnderMan;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -239,6 +242,51 @@ public final class TheEndOfDragonFabric implements ModInitializer {
 
                         enderman.discard();
                     }
+                }
+        );
+        AttackBlockCallback.EVENT.register(
+                (player, world, hand, position, direction) -> {
+                    if (!(player instanceof ServerPlayer serverPlayer)
+                            || !(world instanceof ServerLevel serverLevel)) {
+                        return InteractionResult.PASS;
+                    }
+
+                    boolean protectedBlock =
+                            TedVillageProtectionManager
+                                    .handleBlockBreakAttempt(
+                                            serverLevel,
+                                            serverPlayer,
+                                            position
+                                    );
+
+                    return protectedBlock
+                            ? InteractionResult.FAIL
+                            : InteractionResult.PASS;
+                }
+        );
+
+        /*
+         * 直接攻撃だけでなく、矢などによる攻撃も対象にする。
+         */
+        ServerLivingEntityEvents.ALLOW_DAMAGE.register(
+                (victim, source, amount) -> {
+                    if (!(victim.level()
+                            instanceof ServerLevel serverLevel)) {
+                        return true;
+                    }
+
+                    boolean protectedEnderman =
+                            TedVillageProtectionManager
+                                    .handleEndermanDamage(
+                                            serverLevel,
+                                            victim,
+                                            source
+                                    );
+
+                    /*
+                     * falseを返すとダメージをキャンセル。
+                     */
+                    return !protectedEnderman;
                 }
         );
     }

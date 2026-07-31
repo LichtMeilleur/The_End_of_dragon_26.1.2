@@ -240,13 +240,31 @@ public final class TedDifferentPhaseManager {
     }
 
     private static void synchronize(
-            ServerPlayer player
+            ServerPlayer changedPlayer
     ) {
-        TedDifferentPhaseNetwork.sendState(
-                player,
-                isPersistent(player),
-                getTemporaryTicks(player)
-        );
+        boolean persistent =
+                isPersistent(
+                        changedPlayer
+                );
+
+        int temporaryTicks =
+                getTemporaryTicks(
+                        changedPlayer
+                );
+
+        for (ServerPlayer receiver :
+                changedPlayer.level()
+                        .getServer()
+                        .getPlayerList()
+                        .getPlayers()) {
+
+            TedDifferentPhaseNetwork.sendStateTo(
+                    receiver,
+                    changedPlayer,
+                    persistent,
+                    temporaryTicks
+            );
+        }
     }
 
     public static void synchronizeAllTo(

@@ -10,6 +10,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
@@ -137,6 +138,23 @@ public final class WaterTransferMachineBBlockEntity
             return;
         }
 
+        /*
+         * 保存されている液体がFLOWING_WATERなどでも、
+         * 出力には必ず水源状態を使う。
+         */
+        FluidState outputSourceState =
+                getSourceFluidState(
+                        channelFluid
+                );
+
+        if (outputSourceState == null
+                || !outputSourceState.isSource()) {
+            return;
+        }
+
+        Fluid outputSourceFluid =
+                outputSourceState.getType();
+
         int placedSources =
                 0;
 
@@ -172,34 +190,50 @@ public final class WaterTransferMachineBBlockEntity
                             direction
                     );
 
+            FluidState existingFluidState =
+                    level.getFluidState(
+                            outputPosition
+                    );
+
             /*
-             * 同じ液体の水源が既にある場合は、
-             * 重複して液体量を消費しない。
+             * 同じ液体の水源がすでにある場合は、
+             * 消費せず次の方向を探す。
              */
-            if (isExistingFluidSource(
-                    level,
-                    outputPosition,
-                    channelFluid
-            )) {
+            if (isSameFluidFamily(
+                    existingFluidState,
+                    outputSourceFluid
+            )
+                    && existingFluidState.isSource()) {
                 continue;
             }
 
+            BlockState existingBlockState =
+                    level.getBlockState(
+                            outputPosition
+                    );
+
             /*
-             * 他のブロックや植物は破壊しない。
+             * 空気または同じ種類の流水には出力可能。
              *
-             * 完全な空気ブロックだけに出力する。
+             * 上の水源から横へ流れた流水を、
+             * 新しい水源で置き換えられるようにする。
              */
-            if (!level.getBlockState(
-                    outputPosition
-            ).isAir()) {
+            boolean isSameFlowingFluid =
+                    !existingFluidState.isEmpty()
+                            && isSameFluidFamily(
+                            existingFluidState,
+                            outputSourceFluid
+                    );
+
+            if (!existingBlockState.isAir()
+                    && !isSameFlowingFluid) {
                 continue;
             }
 
             boolean placed =
                     level.setBlock(
                             outputPosition,
-                            channelFluid
-                                    .defaultFluidState()
+                            outputSourceState
                                     .createLegacyBlock(),
                             3
                     );
@@ -209,16 +243,17 @@ public final class WaterTransferMachineBBlockEntity
             }
 
             /*
-             * 配置後、本当に目的の液体が
-             * Sourceとして存在しているか確認する。
-             *
-             * 特殊な他Mod流体でLegacyBlock生成に
-             * 対応していない場合を検出できる。
+             * 配置後、水源になったか確認する。
              */
-            if (!isExistingFluidSource(
-                    level,
-                    outputPosition,
-                    channelFluid
+            FluidState placedFluidState =
+                    level.getFluidState(
+                            outputPosition
+                    );
+
+            if (!placedFluidState.isSource()
+                    || !isSameFluidFamily(
+                    placedFluidState,
+                    outputSourceFluid
             )) {
                 level.removeBlock(
                         outputPosition,
@@ -228,9 +263,6 @@ public final class WaterTransferMachineBBlockEntity
                 continue;
             }
 
-            /*
-             * 配置成功後にだけチャンネルから消費する。
-             */
             if (!network.consumeFluid(
                     channelName,
                     FLUID_PER_OUTPUT
@@ -253,23 +285,46 @@ public final class WaterTransferMachineBBlockEntity
 
             this.setChanged();
         }
+    }
 
-        if (placedSources <= 0) {
-            return;
+    private static FluidState getSourceFluidState(
+            Fluid fluid
+    ) {
+        if (fluid instanceof FlowingFluid flowingFluid) {
+            return flowingFluid.getSource(
+                    false
+            );
         }
 
-        TheEndOfDragon.LOGGER.debug(
-                "Transfer B output succeeded: position={}, channel={}, fluid={}, sources={}, remaining={}",
-                machinePosition,
-                channelName,
-                BuiltInRegistries.FLUID.getKey(
-                        channelFluid
-                ),
-                placedSources,
-                network.getStoredAmount(
-                        channelName
-                )
-        );
+        FluidState defaultState =
+                fluid.defaultFluidState();
+
+        if (!defaultState.isSource()) {
+            return null;
+        }
+
+        return defaultState;
+    }
+
+    private static boolean isSameFluidFamily(
+            FluidState fluidState,
+            Fluid sourceFluid
+    ) {
+        if (fluidState.isEmpty()) {
+            return false;
+        }
+
+        FluidState existingSourceState =
+                getSourceFluidState(
+                        fluidState.getType()
+                );
+
+        if (existingSourceState == null) {
+            return false;
+        }
+
+        return existingSourceState.getType()
+                == sourceFluid;
     }
 
     /*

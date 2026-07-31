@@ -1,50 +1,60 @@
 {
   "stats": {
-    "minecraft:picked_up": {
-      "minecraft:enchanted_golden_apple": 5,
-      "minecraft:ender_pearl": 1,
-      "the_end_of_dragon:enderman_village_gateway": 1,
-      "minecraft:wheat_seeds": 1,
-      "minecraft:end_stone": 72
-    },
-    "minecraft:custom": {
-      "minecraft:time_since_rest": 40738,
-      "minecraft:walk_one_cm": 74670,
-      "minecraft:leave_game": 8,
-      "minecraft:mob_kills": 2,
-      "minecraft:walk_under_water_one_cm": 1411,
-      "minecraft:damage_dealt": 340,
-      "minecraft:play_time": 20369,
-      "minecraft:jump": 73,
-      "minecraft:time_since_death": 20369,
-      "minecraft:drop": 9,
-      "minecraft:sprint_one_cm": 3155,
-      "minecraft:total_world_time": 22841,
-      "minecraft:fly_one_cm": 114029,
-      "minecraft:walk_on_water_one_cm": 7903,
-      "minecraft:crouch_one_cm": 358,
-      "minecraft:sneak_time": 134
-    },
-    "minecraft:dropped": {
-      "minecraft:enchanted_golden_apple": 8,
-      "the_end_of_dragon:enderman_village_gateway": 1
-    },
     "minecraft:killed": {
-      "minecraft:polar_bear": 1,
       "minecraft:ender_dragon": 1
     },
     "minecraft:used": {
-      "the_end_of_dragon:rechorus_melon": 11,
-      "minecraft:water_bucket": 2,
-      "the_end_of_dragon:water_transfer_machine_b": 5,
+      "the_end_of_dragon:water_transfer_machine_b": 1,
       "the_end_of_dragon:water_transfer_machine_a": 1,
-      "minecraft:ender_eye": 12,
-      "minecraft:end_portal_frame": 13,
-      "the_end_of_dragon:rechorus_juice_bucket": 1,
-      "the_end_of_dragon:enderman_village_gateway": 3,
-      "the_end_of_dragon:rechorus_plant_core": 2,
-      "minecraft:polar_bear_spawn_egg": 2,
-      "minecraft:bow": 80
+      "minecraft:ender_eye": 24,
+      "minecraft:bucket": 5,
+      "minecraft:end_portal_frame": 25,
+      "minecraft:netherite_pickaxe": 24,
+      "the_end_of_dragon:rechorus_plant_core": 1,
+      "minecraft:ender_pearl": 1,
+      "minecraft:armor_stand": 1
+    },
+    "minecraft:dropped": {
+      "minecraft:ender_eye": 1,
+      "minecraft:golden_apple": 64,
+      "minecraft:end_portal_frame": 1
+    },
+    "minecraft:crafted": {
+      "the_end_of_dragon:true_ender_pearl": 4
+    },
+    "minecraft:picked_up": {
+      "minecraft:ender_pearl": 4,
+      "minecraft:end_portal_frame": 1,
+      "minecraft:torch": 8,
+      "minecraft:ender_eye": 1,
+      "minecraft:end_stone": 149,
+      "minecraft:golden_apple": 60,
+      "minecraft:cactus": 2
+    },
+    "minecraft:killed_by": {
+      "the_end_of_dragon:the_end_of_dragon": 2
+    },
+    "minecraft:mined": {
+      "minecraft:end_stone": 24
+    },
+    "minecraft:custom": {
+      "minecraft:time_since_rest": 2134,
+      "minecraft:walk_one_cm": 33494,
+      "minecraft:leave_game": 7,
+      "minecraft:mob_kills": 1,
+      "minecraft:walk_under_water_one_cm": 66,
+      "minecraft:damage_taken": 100500,
+      "minecraft:play_time": 12976,
+      "minecraft:jump": 74,
+      "minecraft:time_since_death": 1033,
+      "minecraft:drop": 66,
+      "minecraft:sprint_one_cm": 1840,
+      "minecraft:fall_one_cm": 1586,
+      "minecraft:total_world_time": 15441,
+      "minecraft:fly_one_cm": 67887,
+      "minecraft:walk_on_water_one_cm": 3796,
+      "minecraft:sneak_time": 50,
+      "minecraft:deaths": 3
     }
   },
   "DataVersion": 4790

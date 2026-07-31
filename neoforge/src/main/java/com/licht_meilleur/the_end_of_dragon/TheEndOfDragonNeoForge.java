@@ -29,7 +29,9 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
+import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
 @Mod(TheEndOfDragon.MOD_ID)
 public final class TheEndOfDragonNeoForge {
@@ -275,6 +277,63 @@ public final class TheEndOfDragonNeoForge {
                     .synchronizeAllTo(
                             player
                     );
+        }
+    }
+
+    @SubscribeEvent
+    public void onLeftClickBlock(
+            PlayerInteractEvent.LeftClickBlock event
+    ) {
+        /*
+         * START以外も処理すると、一度の破壊操作で
+         * 信頼度が複数回減る可能性がある。
+         */
+        if (event.getAction()
+                != PlayerInteractEvent
+                .LeftClickBlock
+                .Action.START) {
+            return;
+        }
+
+        if (!(event.getEntity()
+                instanceof ServerPlayer player)) {
+            return;
+        }
+
+        if (!(event.getLevel()
+                instanceof ServerLevel level)) {
+            return;
+        }
+
+        if (TedVillageProtectionManager
+                .handleBlockBreakAttempt(
+                        level,
+                        player,
+                        event.getPos()
+                )) {
+
+            event.setCanceled(true);
+        }
+    }
+
+    @SubscribeEvent
+    public void onLivingIncomingDamage(
+            LivingIncomingDamageEvent event
+    ) {
+        if (!(event.getEntity()
+                .level()
+                instanceof ServerLevel level)) {
+            return;
+        }
+
+        if (TedVillageProtectionManager
+                .handleEndermanDamage(
+                        level,
+                        event.getEntity(),
+                        event.getSource()
+                )) {
+
+            event.setCanceled(true);
         }
     }
 }

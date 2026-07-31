@@ -11,6 +11,9 @@ import com.licht_meilleur.the_end_of_dragon.entity.enderman.goal.*;
 import com.licht_meilleur.the_end_of_dragon.registry.ModItems;
 import com.licht_meilleur.the_end_of_dragon.world.TedAllyEndermanMessageHandler;
 import com.licht_meilleur.the_end_of_dragon.world.TedBattleWorldState;
+import com.licht_meilleur.the_end_of_dragon.world.dimension.TedDimensions;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -36,6 +39,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 
 
@@ -78,6 +82,35 @@ public class TedAllyEndermanEntity
     private int rescueMessageTicks;
     private boolean rescueMessagesStarted;
 
+
+
+    /*
+     * 怒りアニメーション全体の長さ。
+     *
+     * 実際のanimation.model.angerの長さに応じて
+     * 後から調整可能。
+     */
+    private static final int VILLAGE_ANGER_DURATION =
+            24;
+
+    /*
+     * 怒りアニメーション内で攻撃が当たるtick。
+     */
+    private static final int VILLAGE_ANGER_HIT_TICK =
+            10;
+
+    /*
+     * 攻撃が実際に届く最大距離。
+     *
+     * ワープ後にプレイヤーが逃げた場合は空振りになる。
+     */
+    private static final double
+            VILLAGE_ANGER_ATTACK_DISTANCE_SQUARED =
+            4.0D * 4.0D;
+
+    private UUID villageRetaliationTargetUuid;
+
+    private boolean villageRetaliationHitDone;
 
     /*
      * このEntity独自NBTの現在バージョン。
@@ -604,11 +637,365 @@ public class TedAllyEndermanEntity
                 tickHandOver();
             }
 
+            case ANGER -> {
+                tickVillageRetaliation();
+            }
+
 
 
             default -> {
             }
         }
+    }
+
+    /**
+     * 村で違反したプレイヤーへの警告攻撃を開始する。
+     *
+     * 接近Goalは使用せず、
+     * プレイヤー付近へ直接ワープして
+     * angerアニメーションを再生する。
+     */
+    public void startVillageRetaliation(
+            ServerPlayer offender
+    ) {
+        if (offender == null
+                || !offender.isAlive()
+                || offender.isRemoved()
+                || !this.isAlive()
+                || this.isRemoved()) {
+            return;
+        }
+
+        if (!(this.level()
+                instanceof ServerLevel serverLevel)) {
+            return;
+        }
+
+        /*
+         * 報復処理は村ディメンション内だけで許可する。
+         * 移住直後の住民フラグ不整合には依存しない。
+         */
+        if (!serverLevel.dimension()
+                .equals(
+                        TedDimensions.ENDERMAN_VILLAGE
+                )) {
+            return;
+        }
+
+
+        if (offender.level() != serverLevel) {
+            return;
+        }
+
+        boolean teleported =
+                teleportNearOffender(
+                        serverLevel,
+                        offender
+                );
+
+        if (!teleported) {
+            /*
+             * 安全なワープ位置がなければ、
+             * 壁の中へ強制移動させず中止する。
+             */
+            return;
+        }
+
+        this.villageRetaliationTargetUuid =
+                offender.getUUID();
+
+        this.villageRetaliationHitDone =
+                false;
+
+        this.getNavigation().stop();
+
+        this.setTarget(null);
+
+        this.setDeltaMovement(
+                Vec3.ZERO
+        );
+
+        /*
+         * 同じプレイヤーが連続で違反し、
+         * 既にANGERだった場合も
+         * アニメーションを最初から再開する。
+         */
+        this.entityData.set(
+                DATA_STATE,
+                AllyEndermanState.ANGER.ordinal()
+        );
+
+        this.stateStartTick =
+                this.tickCount;
+
+        faceVillageOffender(
+                offender
+        );
+    }
+
+    private void tickVillageRetaliation() {
+        this.getNavigation().stop();
+
+        this.setTarget(null);
+
+        this.setDeltaMovement(
+                Vec3.ZERO
+        );
+
+        if (!(this.level()
+                instanceof ServerLevel serverLevel)) {
+            finishVillageRetaliation();
+            return;
+        }
+
+        if (this.villageRetaliationTargetUuid
+                == null) {
+            finishVillageRetaliation();
+            return;
+        }
+
+        ServerPlayer offender =
+                serverLevel.getServer()
+                        .getPlayerList()
+                        .getPlayer(
+                                this.villageRetaliationTargetUuid
+                        );
+
+        if (offender == null
+                || !offender.isAlive()
+                || offender.isRemoved()
+                || offender.level()
+                != serverLevel) {
+
+            finishVillageRetaliation();
+            return;
+        }
+
+        faceVillageOffender(
+                offender
+        );
+
+        int stateAge =
+                this.getStateAgeTicks();
+
+        /*
+         * アニメーション内の攻撃動作に合わせて、
+         * 一度だけ実際のダメージ判定を行う。
+         */
+        if (!this.villageRetaliationHitDone
+                && stateAge
+                >= VILLAGE_ANGER_HIT_TICK) {
+
+            this.villageRetaliationHitDone =
+                    true;
+
+            if (this.distanceToSqr(
+                    offender
+            ) <= VILLAGE_ANGER_ATTACK_DISTANCE_SQUARED) {
+
+                this.doHurtTarget(
+                        serverLevel,
+                        offender
+                );
+            }
+        }
+
+        if (stateAge
+                >= VILLAGE_ANGER_DURATION) {
+
+            finishVillageRetaliation();
+        }
+    }
+
+    private void finishVillageRetaliation() {
+        this.villageRetaliationTargetUuid =
+                null;
+
+        this.villageRetaliationHitDone =
+                false;
+
+        this.getNavigation().stop();
+
+        this.setTarget(null);
+
+        this.setDeltaMovement(
+                Vec3.ZERO
+        );
+
+        this.setAllyState(
+                AllyEndermanState.SUPPORT_IDLE
+        );
+    }
+
+    private boolean teleportNearOffender(
+            ServerLevel level,
+            ServerPlayer offender
+    ) {
+        Vec3 horizontalLook =
+                new Vec3(
+                        offender.getLookAngle().x,
+                        0.0D,
+                        offender.getLookAngle().z
+                );
+
+        if (horizontalLook.lengthSqr()
+                < 0.0001D) {
+            horizontalLook =
+                    new Vec3(
+                            0.0D,
+                            0.0D,
+                            1.0D
+                    );
+        } else {
+            horizontalLook =
+                    horizontalLook.normalize();
+        }
+
+        Vec3 side =
+                new Vec3(
+                        -horizontalLook.z,
+                        0.0D,
+                        horizontalLook.x
+                );
+
+        /*
+         * 最初はプレイヤーの正面、
+         * 塞がっていれば左右・背後を試す。
+         */
+        Vec3[] offsets =
+                new Vec3[]{
+                        horizontalLook.scale(2.0D),
+                        horizontalLook.scale(1.5D),
+                        side.scale(2.0D),
+                        side.scale(-2.0D),
+                        horizontalLook.scale(-2.0D),
+
+                        horizontalLook.scale(2.0D)
+                                .add(side.scale(1.5D)),
+
+                        horizontalLook.scale(2.0D)
+                                .add(side.scale(-1.5D)),
+
+                        horizontalLook.scale(-2.0D)
+                                .add(side.scale(1.5D)),
+
+                        horizontalLook.scale(-2.0D)
+                                .add(side.scale(-1.5D))
+                };
+
+        for (Vec3 offset : offsets) {
+            double targetX =
+                    offender.getX()
+                            + offset.x;
+
+            double targetY =
+                    offender.getY();
+
+            double targetZ =
+                    offender.getZ()
+                            + offset.z;
+
+            double moveX =
+                    targetX - this.getX();
+
+            double moveY =
+                    targetY - this.getY();
+
+            double moveZ =
+                    targetZ - this.getZ();
+
+            if (!level.noCollision(
+                    this,
+                    this.getBoundingBox()
+                            .move(
+                                    moveX,
+                                    moveY,
+                                    moveZ
+                            )
+            )) {
+                continue;
+            }
+
+            float yaw =
+                    calculateYawToward(
+                            targetX,
+                            targetZ,
+                            offender.getX(),
+                            offender.getZ()
+                    );
+
+            boolean teleported =
+                    this.teleportTo(
+                            level,
+                            targetX,
+                            targetY,
+                            targetZ,
+                            java.util.Set.of(),
+                            yaw,
+                            0.0F,
+                            true
+                    );
+
+            if (!teleported) {
+                continue;
+            }
+
+            this.setYRot(
+                    yaw
+            );
+
+            this.setYHeadRot(
+                    yaw
+            );
+
+            this.setYBodyRot(
+                    yaw
+            );
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private void faceVillageOffender(
+            ServerPlayer offender
+    ) {
+        float yaw =
+                calculateYawToward(
+                        this.getX(),
+                        this.getZ(),
+                        offender.getX(),
+                        offender.getZ()
+                );
+
+        this.setYRot(
+                yaw
+        );
+
+        this.setYHeadRot(
+                yaw
+        );
+
+        this.setYBodyRot(
+                yaw
+        );
+    }
+
+    private static float calculateYawToward(
+            double sourceX,
+            double sourceZ,
+            double targetX,
+            double targetZ
+    ) {
+        return (float) (
+                Mth.atan2(
+                        targetZ - sourceZ,
+                        targetX - sourceX
+                )
+                        * (180.0D / Math.PI)
+                        - 90.0D
+        );
     }
 
     private void finishRecovering() {
@@ -1299,6 +1686,15 @@ public class TedAllyEndermanEntity
                                     return PlayState.CONTINUE;
                                 }
 
+                                case ANGER -> {
+                                    animationTest.controller()
+                                            .setAnimation(
+                                                    ANGER_ANIMATION
+                                            );
+
+                                    return PlayState.CONTINUE;
+                                }
+
                                 case COMBAT_SUPPLY_HAND_OVER -> {
                                     animationTest.controller()
                                             .setAnimation(
@@ -1763,6 +2159,7 @@ public class TedAllyEndermanEntity
                  WARP_KICK,
                  WARP_SMASH,
                  WITH_PLAYER_WARP,
+                 ANGER,
                  VICTORY ->
                     AllyEndermanState.SUPPORT_IDLE;
 
@@ -1822,14 +2219,22 @@ public class TedAllyEndermanEntity
                         serverLevel
                 );
 
-        /*
-         * 討伐後かつ未配布の門がある場合だけ、
-         * 手渡しを開始する。
-         */
         if (!worldState.isBattleCompleted()
                 || !worldState
                 .hasInvitationGatewayToGive()) {
             return;
+        }
+
+        /*
+         * 門の手渡し開始時、
+         * プレイヤーと味方エンダーマンを
+         * 中央エンドポータル付近へ移動させる。
+         */
+        if (player instanceof ServerPlayer serverPlayer) {
+            teleportForInvitationHandOver(
+                    serverLevel,
+                    serverPlayer
+            );
         }
 
         this.handOverTargetUuid =
@@ -1840,19 +2245,242 @@ public class TedAllyEndermanEntity
         this.getNavigation().stop();
 
         this.setDeltaMovement(
-                0.0D,
-                this.getDeltaMovement().y,
-                0.0D
+                Vec3.ZERO
         );
 
-        /*
-         * hand_over開始時から門を右手に表示。
-         */
         showInvitationGatewayInHand();
 
         this.setAllyState(
                 AllyEndermanState.HAND_OVER
         );
+    }
+
+    private void teleportForInvitationHandOver(
+            ServerLevel currentLevel,
+            ServerPlayer player
+    ) {
+        /*
+         * このイベントはエンドで起こる想定。
+         * ほかのディメンションだった場合は
+         * 現在地でそのまま手渡しを行う。
+         */
+        if (currentLevel.dimension()
+                != Level.END) {
+            return;
+        }
+
+        /*
+         * 中央帰還ポータルから少し離れた位置。
+         *
+         * ポータルそのものへ落ちないよう、
+         * X方向へ8ブロック離す。
+         */
+        int playerX = 8;
+        int playerZ = 0;
+
+        BlockPos playerPosition =
+                findSafeHandOverPosition(
+                        currentLevel,
+                        playerX,
+                        playerZ
+                );
+
+        if (playerPosition == null) {
+            return;
+        }
+
+        /*
+         * エンダーマンはプレイヤーの正面、
+         * ポータル寄りへ配置する。
+         */
+        BlockPos endermanPosition =
+                findSafeHandOverPosition(
+                        currentLevel,
+                        playerPosition.getX() - 3,
+                        playerPosition.getZ()
+                );
+
+        if (endermanPosition == null) {
+            return;
+        }
+
+        double playerTargetX =
+                playerPosition.getX() + 0.5D;
+
+        double playerTargetY =
+                playerPosition.getY();
+
+        double playerTargetZ =
+                playerPosition.getZ() + 0.5D;
+
+        double endermanTargetX =
+                endermanPosition.getX() + 0.5D;
+
+        double endermanTargetY =
+                endermanPosition.getY();
+
+        double endermanTargetZ =
+                endermanPosition.getZ() + 0.5D;
+
+        /*
+         * 両者が向かい合う角度。
+         */
+        float playerYaw =
+                calculateYawToward(
+                        playerTargetX,
+                        playerTargetZ,
+                        endermanTargetX,
+                        endermanTargetZ
+                );
+
+        float endermanYaw =
+                calculateYawToward(
+                        endermanTargetX,
+                        endermanTargetZ,
+                        playerTargetX,
+                        playerTargetZ
+                );
+
+        player.teleportTo(
+                currentLevel,
+                playerTargetX,
+                playerTargetY,
+                playerTargetZ,
+                java.util.Set.of(),
+                playerYaw,
+                0.0F,
+                true
+        );
+
+        boolean endermanTeleported =
+                this.teleportTo(
+                        currentLevel,
+                        endermanTargetX,
+                        endermanTargetY,
+                        endermanTargetZ,
+                        java.util.Set.of(),
+                        endermanYaw,
+                        0.0F,
+                        true
+                );
+
+        if (!endermanTeleported) {
+            return;
+        }
+
+        this.setYRot(
+                endermanYaw
+        );
+
+        this.setYHeadRot(
+                endermanYaw
+        );
+
+        this.setYBodyRot(
+                endermanYaw
+        );
+
+        this.setDeltaMovement(
+                Vec3.ZERO
+        );
+
+        player.setDeltaMovement(
+                Vec3.ZERO
+        );
+    }
+
+    private BlockPos findSafeHandOverPosition(
+            ServerLevel level,
+            int centerX,
+            int centerZ
+    ) {
+        /*
+         * 指定位置を中心に、
+         * 最大6ブロックの範囲から安全な場所を探す。
+         */
+        for (int radius = 0;
+             radius <= 6;
+             radius++) {
+
+            for (int offsetX = -radius;
+                 offsetX <= radius;
+                 offsetX++) {
+
+                for (int offsetZ = -radius;
+                     offsetZ <= radius;
+                     offsetZ++) {
+
+                    if (radius > 0
+                            && Math.abs(offsetX) != radius
+                            && Math.abs(offsetZ) != radius) {
+                        continue;
+                    }
+
+                    int x =
+                            centerX + offsetX;
+
+                    int z =
+                            centerZ + offsetZ;
+
+                    int y =
+                            level.getHeight(
+                                    Heightmap.Types
+                                            .MOTION_BLOCKING_NO_LEAVES,
+                                    x,
+                                    z
+                            );
+
+                    BlockPos position =
+                            new BlockPos(
+                                    x,
+                                    y,
+                                    z
+                            );
+
+                    /*
+                     * エンダーマンの高さを考慮して
+                     * 足元から3ブロック分空ける。
+                     */
+                    if (!level.getBlockState(position)
+                            .isAir()) {
+                        continue;
+                    }
+
+                    if (!level.getBlockState(
+                            position.above()
+                    ).isAir()) {
+                        continue;
+                    }
+
+                    if (!level.getBlockState(
+                            position.above(2)
+                    ).isAir()) {
+                        continue;
+                    }
+
+                    BlockPos ground =
+                            position.below();
+
+                    if (!level.getBlockState(ground)
+                            .isFaceSturdy(
+                                    level,
+                                    ground,
+                                    Direction.UP
+                            )) {
+                        continue;
+                    }
+
+                    if (!level.getFluidState(position)
+                            .isEmpty()) {
+                        continue;
+                    }
+
+                    return position;
+                }
+            }
+        }
+
+        return null;
     }
 
     private void tickHandOver() {

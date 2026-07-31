@@ -65,6 +65,15 @@ public final class TedVillageResidentManager {
         }
 
         /*
+         * 村人がいない場合でも、
+         * 読み込まれている保護ブロックは復元する。
+         */
+        TedVillageProtectionManager
+                .restoreMissingProtectedBlocks(
+                        level
+                );
+
+        /*
          * 村が無人なら、未ロード住民を
          * 不在扱いして再生成しない。
          */
@@ -72,9 +81,6 @@ public final class TedVillageResidentManager {
             return;
         }
 
-        /*
-         * 過去に増殖した個体を整理。
-         */
         removeDuplicateResidents(level);
 
         ensureElder(level);

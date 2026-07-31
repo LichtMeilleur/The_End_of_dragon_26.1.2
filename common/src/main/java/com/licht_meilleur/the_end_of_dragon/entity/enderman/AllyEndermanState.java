@@ -90,5 +90,9 @@ public enum AllyEndermanState {
     /*
      * ボス討伐後の勝利待機。
      */
-    VICTORY
-}
+    VICTORY,
+
+    //怒って攻撃
+    ANGER
+
+    }
